@@ -7,6 +7,8 @@
 
 Welcome to the **System Design Interview Prep** repository! This repository is designed to help software engineers prepare for system design interviews by providing comprehensive resources, examples, and study materials.
 
+** Documenting my journey of continuous learning and growth through daily challenges.** 
+
 ## Table of Contents
 
 - [Introduction](#introduction)
