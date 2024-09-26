@@ -1,13 +1,8 @@
-# System_design_interview_prep
-
-
-[GitHub CheatSheet](https://education.github.com/git-cheat-sheet-education.pdf)
-
-[GitHub Markdown CheatSheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+ # System_design_interview_prep
 
 Welcome to the **System Design Interview Prep** repository! This repository is designed to help software engineers prepare for system design interviews by providing comprehensive resources, examples, and study materials.
 
-** Documenting my journey of continuous learning and growth through daily challenges.** 
+==** Documenting my journey of continuous learning and growth through daily challenges. **== 
 
 ## Table of Contents
 
@@ -122,6 +117,11 @@ Here’s how you can contribute:
 We appreciate all the contributions that help make this resource more valuable for everyone.
 
 ## Resources
+
+## Links 
+[GitHub CheatSheet](https://education.github.com/git-cheat-sheet-education.pdf)
+[GitHub Markdown CheatSheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+
 
 
 Happy Learning, and Good Luck with your System Design Interviews!
