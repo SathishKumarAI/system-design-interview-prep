@@ -14,10 +14,14 @@ DNS is hierarchical, with a few authoritative servers at the top level. Your rou
 
 Services such as [CloudFlare](https://www.cloudflare.com/dns/) and [Route 53](https://aws.amazon.com/route53/) provide managed DNS services. Some DNS services can route traffic through various methods:
 
-- [Weighted round robin](https://www.jscape.com/blog/load-balancing-algorithms)
+
+- 
+	- please learn about [Round Robin](https://en.wikipedia.org/wiki/Round-robin_scheduling)
+	- https://en.wikipedia.org/wiki/File:RoundRobin.jpg 
+-  [Weighted round robin](https://www.jscape.com/blog/load-balancing-algorithms) 
     - Prevent traffic from going to servers under maintenance
     - Balance between varying cluster sizes
-    - A/B testing
+    - A/B testing`
 - [Latency-based](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-latency.html)
 - [Geolocation-based](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html)
 
