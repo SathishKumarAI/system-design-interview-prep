@@ -22,4 +22,5 @@ AP is a good choice if the business needs to allow for [eventual consistency](h
 - [A plain english introduction to CAP theorem](http://ksat.me/a-plain-english-introduction-to-cap-theorem)
 - [CAP FAQ](https://github.com/henryr/cap-faq)
 - [The CAP theorem](https://www.youtube.com/watch?v=k-Yaq8AHlFA)
+- [What is the CAP theorem?](https://www.ibm.com/topics/cap-theorem)
 

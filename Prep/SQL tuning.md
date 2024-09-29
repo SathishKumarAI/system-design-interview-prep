@@ -1,17 +1,3 @@
-From BOSSCODER academy:
-
-SQL is Structured Query Language. 
-
-Day - 1:
-
-1: Write a SQL query to insert a new record into the "employees" table.
-Ans: 
-
-
-
-
-
-
 #### SQL tuning
 SQL tuning is a broad topic and many [books](https://www.amazon.com/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=sql+tuning) have been written as reference.
 

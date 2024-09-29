@@ -16,8 +16,24 @@ System design concepts are foundational principles that guide the creation of sc
 [[Federation]]
 [[Sharding]]
 [[Denormalization]]
-[[system_design_interview_prep/SQL]]
+[[SQL tuning]]
 [[NoSQL]]
 [[Document store]]
 [[Wide column store]]
 [[Graph Database]]
+[[SQL or NoSQL]]
+[[Cache]]
+[[Asynchronism]]
+[[Communication]]
+[[TCP UDP]]
+[[RPC]]
+[[system_design_interview_prep/data engineering/AWS/Security /Security]]
+[[Microservices]]
+
+Applications:
+[[Apache Kafka]]
+
+basic / Databases:
+[[SQL]]
+[[NoSQL]]
+
