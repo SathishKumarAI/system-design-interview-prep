@@ -98,6 +98,11 @@ Here’s how you can contribute:
 3. Make your changes.
 4. Submit a pull request.
 We appreciate all the contributions that help make this resource more valuable for everyone.
+### Obsidian Setup 
+
+- To use Markdown links from the start so you don’t have to convert them later, 
+	- disable Settings > Files & Links > Use Wikilinks.
+- Once you do that, you can still type the double brackets (you have to if you want autocomplete suggestions), and they will convert to Markdown when completed.
 ## Links 
 [GitHub Cheat Sheet](https://education.github.com/git-cheat-sheet-education.pdf)
 [GitHub Markdown Cheat Sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
