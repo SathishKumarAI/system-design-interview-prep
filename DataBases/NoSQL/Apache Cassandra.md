@@ -1,0 +1,14 @@
+- Wide columns data store
+- NoSQL
+- [[shard key]] and sort key
+- allows for flexible schemas 
+- ease of partitioning
+- Multileader or Leaderless replication(Configurable)
+- super fast writes, albeit uses last write if they were not the winner of LWW
+- Index based off the [[LSM tree]] and [[SSTables]]
+- Fast writes
+-
+- Great applications with high write volume, consistency is not as important, all writes and reads go to same shard(no transactions)
+
+- Examples: Chat applications
+- 

@@ -1,0 +1,11 @@
+- Relational / Normalized data 
+- changes to one table may require changes to others
+	- may require two phase commits
+- have transactional (ACID guarantees)
+	- Excessively slow if you don't need them
+	- due to two phase locking
+- using B-trees
+	- better for reads than writes in theory
+examples:
+	-Banking applications
+	- JOB scheduling 
