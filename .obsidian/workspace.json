@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "main.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               }
@@ -48,7 +48,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#resources",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -65,7 +65,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -85,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "main.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "main.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "main.md"
+                "file": "README.md"
               }
             }
           }
@@ -146,10 +147,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "179c36f00e3b7a7c",
+  "active": "719b6064329c537f",
   "lastOpenFiles": [
-    "basic/advanced/DevOps/DevOps.md",
     "main.md",
+    "basic/advanced/DevOps/DevOps.md",
     "data engineering/Openmined_Introduction_to_Remote_DS/Use-Case.md",
     "data engineering/database/SQL/SQL-Database.md",
     "data engineering/database/NoSQL/Apache-Cassandra.md",
