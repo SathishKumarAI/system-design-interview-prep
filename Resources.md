@@ -1,0 +1,3 @@
+- I am currently learning from [System-design-primer](https://github.com/donnemartin/system-design-primer) from this GitHub Repo by Donne Martin.
+	- its has many implementation examples. 
+- please check [system design](https://github.com/karanpratapsingh/system-design?tab=readme-ov-file#what-is-system-design) from Karan Pratap Singh

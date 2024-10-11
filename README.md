@@ -1,6 +1,8 @@
- # System Design Interview Preparation 
+# System Design Interview Preparation 
 
-Welcome to the **System Design Interview Prep** repository! This repository is designed to help software engineers prepare for system design interviews by providing comprehensive resources, examples, and study materials.
+Welcome to the **System Design Interview Prep** repository! This repository is designed to help software engineers prepare for system design interviews by providing comprehensive resources, examples, and study materials. 
+
+I am learning and making study materials for preparation. 
 
 ** Documenting my journey of continuous learning and growth through daily challenges. ** 
 ## Table of Contents
@@ -37,26 +39,13 @@ This repository is organized into multiple sections for ease of learning:
 ```
 .
 ├── README.md                   # You're here!
-├── Basics                      # Foundational system design concepts
-│   ├── VerticalScaling.md
-│   ├── HorizontalScaling.md
-│   ├── Caching.md
-│   ├── LoadBalancing.md
-│   ├── DatabaseReplication.md
-│   ├── DatabasePartitioning.md
-│   └── Cloning.md
+├── Basics                      # Foundational system design 
 ├── Advanced                    # In-depth topics and case studies
-│   ├── CAPTheorem.md
-│   ├── ConsistencyModels.md
-│   ├── EventDrivenArchitecture.md
-│   └── Microservices.md
+│   
 	├── CaseStudies                 # Real-world system design problems
-	│   ├── DesignTwitter.md
-	│   ├── DesignInstagram.md
-	│   ├── DesignUber.md
-	│   └── DesignWhatsApp.md
+	│   
 	├── MockInterviews               # Mock system design interview examples
-	│   └── DesignStreamingService.md
+	│   
 ├── Resources.md                # Additional learning materials and references
 └── Contributing.md             # Guide to contributing to this repo
 ```

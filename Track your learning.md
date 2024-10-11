@@ -32,3 +32,14 @@ My apologize my friend for my doing the daily task.
 - lets study some topics today.
 	- 
 
+# 📅 Daily Log  07-10-2024
+
+---
+## 📅 Today's Notes
+
+- Today i was asked by one of my friends that design a ==live streaming music system==
+	- initially i am thinking how to answer, after a talk about 10-20mins that i got see i still need to learn.
+	- so today lets try to understand in and out.
+	- 
+	- 
+

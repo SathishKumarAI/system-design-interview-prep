@@ -1,1 +1,0 @@
-- I am currently learning from [System-design-primer](https://github.com/donnemartin/system-design-primer) from this GitHub Repo.
