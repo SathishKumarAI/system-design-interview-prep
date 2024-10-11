@@ -16,7 +16,8 @@ def convert_obsidian_to_github(text, current_file_path, all_md_files):
         for md_file in all_md_files:
             if md_file.endswith(note_file):
                 # Compute the relative path between the current file and the note
-                rel_path = os.path.relpath(md_file, start=os.path.dirname(current_file_path))
+                rel_path = os.path.relpath(md_file, start=os.path.join(r"https://SathishKumar9866",
+                                                                       os.path.dirname(current_file_path)))
                 return f"[{note_name}]({rel_path})"
         
         # If no matching file found, return the original text

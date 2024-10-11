@@ -20,7 +20,7 @@ CI/CD:
 GitHub:
 	
 
-[[CI]]:
+[CI](..\..\..\CI.md):
 	divided into 2 parts
 	checks 
 	app dynamics  - application level
