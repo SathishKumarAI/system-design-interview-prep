@@ -39,7 +39,7 @@ If your application is sensitive to latency (the delay between a request for dat
 
 ## Availability Zones
 
-Inside every Region is a cluster of Availability Zones. An [Availability Zone](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Tags/Availability Zone.md) consists of one or more data centers with redundant power, networking, and connectivity. These data centers operate in discrete facilities in undisclosed locations. They are connected using redundant high-speed and low-latency links.  
+Inside every Region is a cluster of Availability Zones. An [Availability Zone](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Tags/Availability-Zone.md) consists of one or more data centers with redundant power, networking, and connectivity. These data centers operate in discrete facilities in undisclosed locations. They are connected using redundant high-speed and low-latency links.  
   
 Availability Zones also have code names. Because they are located inside Regions, they can be addressed by appending a letter to the end of the Region code name. Here are examples of Availability Zone codes:
 

@@ -1,24 +1,33 @@
-Let's review your code and refine it to handle all cases and ensure the changes are saved to the files. We'll also add exception handling, debugging, and save the changes to the files.
+To meet your updated requirement, I’ve modified the script so that:
 
-### Issues Identified:
-1. **Not Saving Changes**: Currently, the script reads the markdown files and processes them but does not write the updated content back to the files.
-2. **Link Matching Issues**: The script assumes filenames will always match exactly after replacing spaces with hyphens, which might not always be the case. It should handle both spaces and hyphens more flexibly.
-3. **Error Handling**: There's no exception handling, which is important when working with file I/O or patterns that might not match.
-4. **Debugging Output**: There’s a need to debug how filenames and paths are matched, and ensure that all markdown files are processed as expected.
+1. **File Renaming:** It will first rename all markdown files in your directory that contain spaces by replacing the spaces with hyphens (`-`).
+2. **Link Conversion:** After renaming the files, the script will update all `[[...]]` links in the markdown files to reflect these new filenames and convert them into GitHub-style links.
+3. **Saving Changes:** The script will save all changes (both file renames and backlink updates) in your local repository.
 
-### Steps to Fix:
-1. Add **file writing** to save changes to disk.
-2. Improve the **filename matching** logic by considering edge cases where filenames may have spaces, hyphens, or be slightly different.
-3. Add **exception handling** to catch and report errors, while ensuring the script continues to run for other files.
-4. Clean up and add appropriate **debugging messages** to trace what the script is doing at each step.
-
-Here’s an updated version of your script:
-
-### Updated Python Script:
+### Updated Python Script
 
 ```python
 import os
 import re
+
+# Function to rename markdown files with spaces to hyphens
+def rename_files_with_hyphens(root_dir):
+    renamed_files = {}
+    for subdir, _, files in os.walk(root_dir):
+        for file in files:
+            if file.endswith(".md") and ' ' in file:
+                # Generate new filename with hyphens instead of spaces
+                new_file_name = file.replace(' ', '-')
+                old_file_path = os.path.join(subdir, file)
+                new_file_path = os.path.join(subdir, new_file_name)
+
+                # Rename the file
+                os.rename(old_file_path, new_file_path)
+                print(f"Renamed: {old_file_path} -> {new_file_path}")
+                
+                # Store the renamed files
+                renamed_files[old_file_path] = new_file_path
+    return renamed_files
 
 # Function to convert Obsidian-style links to GitHub markdown links
 def convert_obsidian_to_github(text, repo_url, current_file_path, all_md_files):
@@ -26,25 +35,25 @@ def convert_obsidian_to_github(text, repo_url, current_file_path, all_md_files):
     
     def replace_link(match):
         note_name = match.group(1)
-        note_file_variations = [
-            note_name.replace(' ', '-') + ".md",  # Replace spaces with hyphens
-            note_name.replace(' ', '_') + ".md",  # Replace spaces with underscores
-            note_name + ".md"  # Keep spaces if any
-        ]
+        note_file = note_name.replace(' ', '-') + ".md"  # Normalize filename (spaces to hyphens)
         
-        # Debug: Print possible filename variations
-        print(f"Possible filenames for note '{note_name}': {note_file_variations}")
+        # Debug: Print possible filename
+        print(f"Looking for file: {note_file}")
         
         # Search for the corresponding markdown file
         for md_file in all_md_files:
-            if any(md_file.endswith(variation) for variation in note_file_variations):
+            if md_file.endswith(note_file):
                 # Convert local path to GitHub URL
                 rel_path = os.path.relpath(md_file, start=os.path.dirname(current_file_path))
                 rel_path = rel_path.replace("\\", "/")  # Ensure URL uses forward slashes
                 github_link = f"{repo_url}/{rel_path}"
                 
+                # Debug: Print the converted link
                 print(f"Converted link for '{note_name}': [{note_name}]({github_link})")
-                return f"[{note_name}]({github_link})"
+                
+                # Ensure the link format is updated correctly
+                note_name_for_link = note_name.replace(' ', '-')  # Update note name in the link
+                return f"[{note_name_for_link}]({github_link})"
         
         # If no matching file is found, return the original link (to avoid broken links)
         print(f"No matching file found for note: {note_name}")
@@ -66,10 +75,13 @@ def find_all_md_files(root_dir):
 
 # Function to process each markdown file and update content
 def process_md_files(root_dir, repo_url):
-    # Find all markdown files
+    # Step 1: Rename all files with spaces in their names to use hyphens
+    renamed_files = rename_files_with_hyphens(root_dir)
+
+    # Step 2: Find all markdown files after renaming
     all_md_files = find_all_md_files(root_dir)
     
-    # Process each markdown file
+    # Step 3: Process each markdown file to update links
     for md_file in all_md_files:
         try:
             with open(md_file, 'r', encoding='utf-8') as f:
@@ -102,39 +114,43 @@ if __name__ == "__main__":
     process_md_files(root_directory, github_repo_url)
 ```
 
-### Key Changes:
+### Explanation of Changes:
 
-1. **Saving Changes to Files**: 
-   - The script now saves the updated content back to the markdown file if any changes were made.
-   - We use `with open(md_file, 'w', encoding='utf-8')` to write the updated content.
+1. **File Renaming**:
+   - The function `rename_files_with_hyphens` will rename any `.md` file that contains spaces in its name by replacing spaces with hyphens.
+   - It logs each rename operation and returns a dictionary (`renamed_files`) mapping old file paths to new file paths.
 
-2. **Filename Matching Logic**:
-   - I added multiple possible variations of file names (e.g., handling spaces as `-`, `_`, or preserving spaces). This makes the filename matching more robust.
-   - It prints possible file variations and tries to match any of them.
+2. **Link Conversion After Renaming**:
+   - After renaming the files, the `process_md_files` function calls `find_all_md_files` to get the updated list of markdown files and processes each one for Obsidian-style backlinks.
+   - The links are then converted to GitHub markdown links with hyphenated filenames, ensuring consistency.
 
-3. **Debugging**:
-   - Added debugging messages to trace:
-     - All found markdown files.
-     - Possible filenames for each Obsidian link.
-     - Converted links and any failures in matching.
-   
-4. **Exception Handling**:
-   - Wrapped file reading and writing in a `try-except` block to catch any file I/O errors.
-   - If an error occurs (e.g., file not found or encoding issues), it prints the error and continues processing other files.
+3. **Markdown Link Updates**:
+   - The function `convert_obsidian_to_github` updates the internal backlinks to use the newly hyphenated filenames in the correct GitHub markdown link format.
 
-5. **Comparison Before Writing**:
-   - The script compares the updated content with the original. If there’s no change, it skips writing to the file.
+### Example:
 
-### Next Steps:
+#### Before:
 
-1. **Run the Script**: 
-   - You can run this updated script on your local system. It will process each `.md` file and update the links as needed.
-   - Make sure the `root_directory` points to your Obsidian markdown vault, and the `github_repo_url` is set to the base URL of your GitHub repository.
+- **File**: `Common Principles.md`
+- **Link**: `[Common-Principles](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/../basic/prep/Common-Principles.md)`
 
-2. **Test Changes**:
-   - After running the script, review the files in your local repository to ensure all links have been converted correctly.
+#### After:
+
+- **File Renamed to**: `Common-Principles.md`
+- **Link Updated to**: `[Common-Principles](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/path/to/Common-Principles.md)`
+
+### Instructions:
+
+1. **Run the Script**:
+   - The script will first rename any files that contain spaces in their names to use hyphens, and then update all backlinks to reflect these changes.
+   - It will print the renamed files and the updated links.
+
+2. **Check the Output**:
+   - After the script has run, check your local repository to confirm that:
+     - Files with spaces in their names have been renamed.
+     - Backlinks have been updated accordingly.
 
 3. **Push to GitHub**:
-   - Once you're satisfied with the changes, commit and push the updated markdown files to your GitHub repository.
+   - Once you're satisfied with the results, push the changes to your GitHub repository.
 
-Let me know if you encounter any issues or need further adjustments!
+Let me know if this solution works for you or if further adjustments are needed!
