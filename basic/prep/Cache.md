@@ -1,26 +1,26 @@
 ## Cache
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/Q6z24La.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/Q6z24La.png)  
-_[Source: Scalable system design patterns](http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html)_
+[[Q6z24La]]](https://github.com/donnemartin/system-design-primer/blob/master/images/Q6z24La.png)  
+_[[scalable system design patterns]]_
 
 Caching improves page load times and can reduce the load on your servers and databases. In this model, the dispatcher will first lookup if the request has been made before and try to find the previous result to return, in order to save the actual execution.
 
 Databases often benefit from a uniform distribution of reads and writes across its partitions. Popular items can skew the distribution, causing bottlenecks. Putting a cache in front of a database can help absorb uneven loads and spikes in traffic.
 
 ### Client caching
-Caches can be located on the client side (OS or browser), [server side](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#reverse-proxy-web-server), or in a distinct cache layer.
+Caches can be located on the client side (OS or browser), [[system design primer?tab=readme ov file#reverse proxy web server]], or in a distinct cache layer.
 
 ### CDN caching
-[CDNs](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#content-delivery-network) are considered a type of cache.
+[[system design primer?tab=readme ov file#content delivery network]] are considered a type of cache.
 
 ### Web server caching
-[Reverse proxies](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#reverse-proxy-web-server) and caches such as [Varnish](https://www.varnish-cache.org/) can serve static and dynamic content directly. Web servers can also cache requests, returning responses without having to contact application servers.
+[[system design primer?tab=readme ov file#reverse proxy web server]] and caches such as [[]] can serve static and dynamic content directly. Web servers can also cache requests, returning responses without having to contact application servers.
 
 ### Database caching
 Your database usually includes some level of caching in a default configuration, optimized for a generic use case. Tweaking these settings for specific usage patterns can further boost performance.
 
 ### Application caching
-In-memory caches such as Memcached and Redis are key-value stores between your application and your data storage. Since the data is held in RAM, it is much faster than typical databases where data is stored on disk. RAM is more limited than disk, so [cache invalidation](https://en.wikipedia.org/wiki/Cache_algorithms) algorithms such as [least recently used (LRU)](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) can help invalidate 'cold' entries and keep 'hot' data in RAM.
+In-memory caches such as Memcached and Redis are key-value stores between your application and your data storage. Since the data is held in RAM, it is much faster than typical databases where data is stored on disk. RAM is more limited than disk, so [[Cache_algorithms]] algorithms such as [[Cache_replacement_policies#Least_recently_used_(LRU]]) can help invalidate 'cold' entries and keep 'hot' data in RAM.
 
 Redis has the following additional features:
 
@@ -60,8 +60,8 @@ Since you can only store a limited amount of data in cache, you'll need to deter
 #### Cache-aside
 
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/ONjORqk.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/ONjORqk.png)  
-_[Source: From cache to in-memory data grid](http://www.slideshare.net/tmatyashovsky/from-cache-to-in-memory-data-grid-introduction-to-hazelcast)_
+[[ONjORqk]]](https://github.com/donnemartin/system-design-primer/blob/master/images/ONjORqk.png)  
+_[[from cache to in memory data grid introduction to hazelcast]]_
 
 The application is responsible for reading and writing from storage. The cache does not interact with storage directly. The application does the following:
 
@@ -81,7 +81,7 @@ def get_user(self, user_id):
     return user
 ```
 
-[Memcached](https://memcached.org/) is generally used in this manner.
+[[]] is generally used in this manner.
 
 Subsequent reads of data added to cache are fast. Cache-aside is also referred to as lazy loading. Only requested data is cached, which avoids filling up the cache with data that isn't requested.
 
@@ -92,8 +92,8 @@ Subsequent reads of data added to cache are fast. Cache-aside is also referred t
 
 #### Write-through
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/0vBc0hN.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/0vBc0hN.png)  
-_[Source: Scalability, availability, stability, patterns](http://www.slideshare.net/jboner/scalability-availability-stability-patterns/)_
+[[0vBc0hN]]](https://github.com/donnemartin/system-design-primer/blob/master/images/0vBc0hN.png)  
+_[[]]_
 
 The application uses the cache as the main data store, reading and writing data to it, while the cache is responsible for reading and writing to the database:
 
@@ -123,8 +123,8 @@ Write-through is a slow overall operation due to the write operation, but subseq
 
 #### Write-behind (write-back)
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/rgSrvjG.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/rgSrvjG.png)  
-_[Source: Scalability, availability, stability, patterns](http://www.slideshare.net/jboner/scalability-availability-stability-patterns/)_
+[[rgSrvjG]]](https://github.com/donnemartin/system-design-primer/blob/master/images/rgSrvjG.png)  
+_[[]]_
 
 In write-behind, the application does the following:
 
@@ -137,8 +137,8 @@ In write-behind, the application does the following:
 
 #### Refresh-ahead
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/kxtjqgE.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/kxtjqgE.png)  
-_[Source: From cache to in-memory data grid](http://www.slideshare.net/tmatyashovsky/from-cache-to-in-memory-data-grid-introduction-to-hazelcast)_
+[[kxtjqgE]]](https://github.com/donnemartin/system-design-primer/blob/master/images/kxtjqgE.png)  
+_[[from cache to in memory data grid introduction to hazelcast]]_
 
 You can configure the cache to automatically refresh any recently accessed cache entry prior to its expiration.
 
@@ -148,15 +148,15 @@ Refresh-ahead can result in reduced latency vs read-through if the cache can acc
 - Not accurately predicting which items are likely to be needed in the future can result in reduced performance than without refresh-ahead.
 
 ### Disadvantage(s): cache
-- Need to maintain consistency between caches and the source of truth such as the database through [cache invalidation](https://en.wikipedia.org/wiki/Cache_algorithms).
+- Need to maintain consistency between caches and the source of truth such as the database through [[Cache_algorithms]].
 - Cache invalidation is a difficult problem, there is additional complexity associated with when to update the cache.
 - Need to make application changes such as adding Redis or memcached.
 
 ### Source(s) and further reading
-- [From cache to in-memory data grid](http://www.slideshare.net/tmatyashovsky/from-cache-to-in-memory-data-grid-introduction-to-hazelcast)
-- [Scalable system design patterns](http://horicky.blogspot.com/2010/10/scalable-system-design-patterns.html)
-- [Introduction to architecting systems for scale](http://lethain.com/introduction-to-architecting-systems-for-scale/)
-- [Scalability, availability, stability, patterns](http://www.slideshare.net/jboner/scalability-availability-stability-patterns/)
-- [Scalability](http://www.lecloud.net/post/9246290032/scalability-for-dummies-part-3-cache)
-- [AWS ElastiCache strategies](http://docs.aws.amazon.com/AmazonElastiCache/latest/UserGuide/Strategies.html)
-- [Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+- [[from cache to in memory data grid introduction to hazelcast]]
+- [[scalable system design patterns]]
+- [[]]
+- [[]]
+- [[scalability for dummies part 3 cache]]
+- [[Strategies]]
+- [[Cache_(computing]])

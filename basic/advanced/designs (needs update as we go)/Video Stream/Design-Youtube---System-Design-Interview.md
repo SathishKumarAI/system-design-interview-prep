@@ -56,4 +56,4 @@ particularly focusing on the System Design Interview context. Here are the key p
 Together, these summaries provide a comprehensive understanding of the design considerations, technical solutions, and historical context in developing a scalable video streaming platform like YouTube.
 
 Reference:
-[Design Youtube - System Design Interview Link](https://youtu.be/jPKTo1iGQiE?si=tfF61UlqL78lUSp8)
+[[jPKTo1iGQiE?si=tfF61UlqL78lUSp8]]

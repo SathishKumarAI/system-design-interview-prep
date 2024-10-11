@@ -49,11 +49,11 @@ def convert_obsidian_to_github(text, repo_url, current_file_path, all_md_files):
                 github_link = f"{repo_url}/{rel_path}"
                 
                 # Debug: Print the converted link
-                print(f"Converted link for '{note_name}': [{note_name}]({github_link})")
+                print(f"Converted link for '{note_name}': [[{github_link}]]")
                 
                 # Ensure the link format is updated correctly
                 note_name_for_link = note_name.replace(' ', '-')  # Update note name in the link
-                return f"[{note_name_for_link}]({github_link})"
+                return f"[[{github_link}]]"
         
         # If no matching file is found, return the original link (to avoid broken links)
         print(f"No matching file found for note: {note_name}")
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 #### After:
 
 - **File Renamed to**: `Common-Principles.md`
-- **Link Updated to**: `[Common-Principles](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/path/to/Common-Principles.md)`
+- **Link Updated to**: `[Common-Principles](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/../basic/prep/Common-Principles.md)`
 
 ### Instructions:
 

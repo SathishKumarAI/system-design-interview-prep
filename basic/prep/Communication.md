@@ -1,7 +1,7 @@
 ## Communication
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/5KeocQs.jpg)](https://github.com/donnemartin/system-design-primer/blob/master/images/5KeocQs.jpg)  
-_[Source: OSI 7 layer model](http://www.escotal.com/osilayer.html)_
+[[5KeocQs]]](https://github.com/donnemartin/system-design-primer/blob/master/images/5KeocQs.jpg)  
+_[[osilayer]]_
 
 ### Hypertext transfer protocol (HTTP)
 HTTP is a method for encoding and transporting data between a client and a server. It is a request/response protocol: clients issue requests and servers issue responses with relevant content and completion status info about the request. HTTP is self-contained, allowing requests and responses to flow through many intermediate routers and servers that perform load balancing, caching, encryption, and compression.
@@ -21,6 +21,6 @@ A basic HTTP request consists of a verb (method) and a resource (endpoint). Belo
 HTTP is an application layer protocol relying on lower-level protocols such as **TCP** and **UDP**.
 
 #### Source(s) and further reading: HTTP
-- [What is HTTP?](https://www.nginx.com/resources/glossary/http/)
-- [Difference between HTTP and TCP](https://www.quora.com/What-is-the-difference-between-HTTP-protocol-and-TCP-protocol)
-- [Difference between PUT and PATCH](https://laracasts.com/discuss/channels/general-discussion/whats-the-differences-between-put-and-patch?page=1)
+- [[]]
+- [[What is the difference between HTTP protocol and TCP protocol]]
+- [[whats the differences between put and patch?page=1]]

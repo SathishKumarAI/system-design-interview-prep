@@ -1,8 +1,8 @@
 ### SQL or NoSQL
 
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/wXGqG5f.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/wXGqG5f.png)  
-_[Source: Transitioning from RDBMS to NoSQL](https://www.infoq.com/articles/Transition-RDBMS-NoSQL/)_
+[[wXGqG5f]]](https://github.com/donnemartin/system-design-primer/blob/master/images/wXGqG5f.png)  
+_[[]]_
 
 Reasons for **SQL**:
 
@@ -33,5 +33,5 @@ Sample data well-suited for NoSQL:
 - Frequently accessed ('hot') tables
 - Metadata/lookup tables
 ##### Source(s) and further reading: SQL or NoSQL
-- [Scaling up to your first 10 million users](https://www.youtube.com/watch?v=kKjm4ehYiMs)
-- [SQL vs NoSQL differences](https://www.sitepoint.com/sql-vs-nosql-differences/)
+- [[watch?v=kKjm4ehYiMs]]
+- [[]]

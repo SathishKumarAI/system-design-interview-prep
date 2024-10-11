@@ -4,7 +4,7 @@ Infrastructure, like data centers and networking connectivity, still exists as t
 
 ## **Regions**
 
-![The AWS Cloud spans 93 Availability Zones within 29 geographic Regions around the world](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/IvaJxtpsoS4aZO4y_dwdwrOZ6lWRw96bM.jpg)
+![[IvaJxtpsoS4aZO4y_dwdwrOZ6lWRw96bM]]
 
 Regions are geographic locations worldwide where AWS hosts its data centers. AWS Regions are named after the location where they reside. For example, in the United States, the Region in Northern Virginia is called the Northern Virginia Region, and the Region in Oregon is called the Oregon Region. AWS has Regions in Asia Pacific, China, Europe, the Middle East, North America, and South America. And we continue to expand to meet our customers' needs.
 
@@ -15,7 +15,7 @@ Here are examples of Region codes:
 - **us-east-1** is the first Region created in the eastern US area. The geographical name for this Region is N. Virginia.
 - **ap-northeast-1** is the first Region created in the northeast Asia Pacific area. The geographical name for this Region is Tokyo.
 
-! [A dropdown view of AWS Regions in the AWS Management Console.](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/FVqj2WTva3l2DZEw_UB1vzpgv31Y9lgIX.jpg)
+! [[FVqj2WTva3l2DZEw_UB1vzpgv31Y9lgIX]]
 
 Within the AWS Console, you can select an available region from the dropdown menu
 
@@ -39,7 +39,7 @@ If your application is sensitive to latency (the delay between a request for dat
 
 ## Availability Zones
 
-Inside every Region is a cluster of Availability Zones. An [Availability Zone](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Tags/Availability-Zone.md) consists of one or more data centers with redundant power, networking, and connectivity. These data centers operate in discrete facilities in undisclosed locations. They are connected using redundant high-speed and low-latency links.  
+Inside every Region is a cluster of Availability Zones. An [Availability-Zone](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Tags/Availability-Zone.md) consists of one or more data centers with redundant power, networking, and connectivity. These data centers operate in discrete facilities in undisclosed locations. They are connected using redundant high-speed and low-latency links.  
   
 Availability Zones also have code names. Because they are located inside Regions, they can be addressed by appending a letter to the end of the Region code name. Here are examples of Availability Zone codes:
 
@@ -60,9 +60,9 @@ On the other hand, some services ask you to specify an Availability Zone. With t
 
 ## ****Maintaining resiliency****
 
-To keep your application available, you must maintain high availability and [resiliency](Tags\resiliency.md). A well-known best practice for cloud architecture is to use Region-scoped, managed services. These services come with availability and resiliency built in. When that is not possible, make sure your workload is replicated across multiple Availability Zones. At a minimum, you should use two Availability Zones. That way, if an Availability Zone fails, your application will have infrastructure up and running in a second Availability Zone to take over the traffic.
+To keep your application available, you must maintain high availability and [resiliency](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Tags/resiliency.md). A well-known best practice for cloud architecture is to use Region-scoped, managed services. These services come with availability and resiliency built in. When that is not possible, make sure your workload is replicated across multiple Availability Zones. At a minimum, you should use two Availability Zones. That way, if an Availability Zone fails, your application will have infrastructure up and running in a second Availability Zone to take over the traffic.
 
-![Replicate your workload across multiple Availability Zones to maintain high availability and resiliency.](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/dhozItxyf5VCYnL9_hoflaaUCH5jvaJMM.png)
+![[dhozItxyf5VCYnL9_hoflaaUCH5jvaJMM]]
 
 ## **Edge locations  **
 
@@ -70,4 +70,4 @@ Edge locations are global locations where content is cached. For example, if you
 
 Amazon CloudFront delivers your content through a worldwide network of edge locations. When a user requests content that is being served with CloudFront, the request is routed to the location that provides the lowest latency. So that content is delivered with the best possible performance. CloudFront speeds up the distribution of your content by routing each user request through the AWS backbone network to the edge location that can best serve your content.
 
-![Cache your content in an edge location closest to your customers.](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/XwzRSOJ7v49YBXYC_6wjg5Qmcv-Jg7jd4.png)
+![[XwzRSOJ7v49YBXYC_6wjg5Qmcv Jg7jd4]]

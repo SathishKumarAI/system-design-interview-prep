@@ -1,9 +1,9 @@
 ### Remote procedure call (RPC)
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/iF4Mkb5.png)](https://github.com/donnemartin/system-design-primer/blob/master/images/iF4Mkb5.png)  
-_[Source: Crack the system design interview](http://www.puncsky.com/blog/2016-02-13-crack-the-system-design-interview)_
+[[iF4Mkb5]]](https://github.com/donnemartin/system-design-primer/blob/master/images/iF4Mkb5.png)  
+_[[2016 02 13 crack the system design interview]]_
 
-In an RPC, a client causes a procedure to execute on a different address space, usually a remote server. The procedure is coded as if it were a local procedure call, abstracting away the details of how to communicate with the server from the client program. Remote calls are usually slower and less reliable than local calls so it is helpful to distinguish RPC calls from local calls. Popular RPC frameworks include [Protobuf](https://developers.google.com/protocol-buffers/), [Thrift](https://thrift.apache.org/), and [Avro](https://avro.apache.org/docs/current/).
+In an RPC, a client causes a procedure to execute on a different address space, usually a remote server. The procedure is coded as if it were a local procedure call, abstracting away the details of how to communicate with the server from the client program. Remote calls are usually slower and less reliable than local calls so it is helpful to distinguish RPC calls from local calls. Popular RPC frameworks include [[]], [[]], and [[]].
 
 RPC is a request-response protocol:
 
@@ -41,7 +41,7 @@ HTTP APIs following **REST** tend to be used more often for public APIs.
 - RPC clients become tightly coupled to the service implementation.
 - A new API must be defined for every new operation or use case.
 - It can be difficult to debug RPC.
-- You might not be able to leverage existing technologies out of the box. For example, it might require additional effort to ensure [RPC calls are properly cached](https://web.archive.org/web/20170608193645/http://etherealbits.com/2012/12/debunking-the-myths-of-rpc-rest/) on caching servers such as [Squid](http://www.squid-cache.org/).
+- You might not be able to leverage existing technologies out of the box. For example, it might require additional effort to ensure [[]] on caching servers such as [[]].
 
 ### Representational state transfer (REST)
 REST is an architectural style enforcing a client/server model where the client acts on a set of resources managed by the server. The server provides a representation of resources and actions that can either manipulate or get a new representation of resources. All communication must be stateless and cacheable.
@@ -51,7 +51,7 @@ There are four qualities of a RESTful interface:
 - **Identify resources (URI in HTTP)** - use the same URI regardless of any operation.
 - **Change with representations (Verbs in HTTP)** - use verbs, headers, and body.
 - **Self-descriptive error message (status response in HTTP)** - Use status codes, don't reinvent the wheel.
-- **[HATEOAS](http://restcookbook.com/Basics/hateoas/) (HTML interface for HTTP)** - your web service should be fully accessible in a browser.
+- **[[]] (HTML interface for HTTP)** - your web service should be fully accessible in a browser.
 
 Sample REST calls:
 
@@ -62,7 +62,7 @@ PUT /someresources/anId
 {"anotherdata": "another value"}
 ```
 
-REST is focused on exposing data. It minimizes the coupling between client/server and is often used for public HTTP APIs. REST uses a more generic and uniform method of exposing resources through URIs, [representation through headers](https://github.com/for-GET/know-your-http-well/blob/master/headers.md), and actions through verbs such as GET, POST, PUT, DELETE, and PATCH. Being stateless, REST is great for horizontal scaling and partitioning.
+REST is focused on exposing data. It minimizes the coupling between client/server and is often used for public HTTP APIs. REST uses a more generic and uniform method of exposing resources through URIs, [[headers]], and actions through verbs such as GET, POST, PUT, DELETE, and PATCH. Being stateless, REST is great for horizontal scaling and partitioning.
 
 #### Disadvantage(s): REST
 - With REST being focused on exposing data, it might not be a good fit if resources are not naturally organized or accessed in a simple hierarchy. For example, returning all updated records from the past hour matching a particular set of events is not easily expressed as a path. With REST, it is likely to be implemented with a combination of URI path, query parameters, and possibly the request body.
@@ -82,14 +82,14 @@ REST is focused on exposing data. It minimizes the coupling between client/serve
 |Update an item|**POST** /modifyItem  <br>{  <br>"itemid": "456";  <br>"key": "value"  <br>}|**PUT** /items/456  <br>{  <br>"key": "value"  <br>}|
 |Delete an item|**POST** /removeItem  <br>{  <br>"itemid": "456"  <br>}|**DELETE** /items/456|
 
-_[Source: Do you really know why you prefer REST over RPC](https://apihandyman.io/do-you-really-know-why-you-prefer-rest-over-rpc/)_
+_[[]]_
 
 #### Source(s) and further reading: REST and RPC
-- [Do you really know why you prefer REST over RPC](https://apihandyman.io/do-you-really-know-why-you-prefer-rest-over-rpc/)
-- [When are RPC-ish approaches more appropriate than REST?](http://programmers.stackexchange.com/a/181186)
-- [REST vs JSON-RPC](http://stackoverflow.com/questions/15056878/rest-vs-json-rpc)
-- [Debunking the myths of RPC and REST](https://web.archive.org/web/20170608193645/http://etherealbits.com/2012/12/debunking-the-myths-of-rpc-rest/)
-- [What are the drawbacks of using REST](https://www.quora.com/What-are-the-drawbacks-of-using-RESTful-APIs)
-- [Crack the system design interview](http://www.puncsky.com/blog/2016-02-13-crack-the-system-design-interview)
-- [Thrift](https://code.facebook.com/posts/1468950976659943/)
-- [Why REST for internal use and not RPC](http://arstechnica.com/civis/viewtopic.php?t=1190508)
+- [[]]
+- [[181186]]
+- [[rest vs json rpc]]
+- [[]]
+- [[What are the drawbacks of using RESTful APIs]]
+- [[2016 02 13 crack the system design interview]]
+- [[]]
+- [[viewtopic]]

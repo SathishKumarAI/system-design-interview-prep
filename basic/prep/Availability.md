@@ -31,10 +31,10 @@ Active-active failover can also be referred to as master-master failover.
 #### Master-slave and master-master
 
 
-This topic is further discussed in the [Database](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#database) section:
+This topic is further discussed in the [[system design primer?tab=readme ov file#database]] section:
 
-- [Master-slave replication](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#master-slave-replication)
-- [Master-master replication](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#master-master-replication)
+- [[system design primer?tab=readme ov file#master slave replication]]
+- [[system design primer?tab=readme ov file#master master replication]]
 
 ### Availability in numbers
 

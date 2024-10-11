@@ -7,9 +7,9 @@ Before proceeding with the installation, please review the following resources a
 
 ## Resources
 
-- [Installing Spark on Linux is a breeze. On Windows, it is a tedious manual process.](https://www.reddit.com/r/apachespark/comments/12k9qam/installing_spark_on_linux_is_a_breeze_on_windows/)
-- [Why is Pyspark so much slower on Windows than on Linux?](https://stackoverflow.com/questions/64136964/why-is-pyspark-so-much-slower-on-windows-than-on-linux)
-- [Spark WSL Install (GitHub)](https://github.com/nicholsonjohnc/spark-wsl-install)
+- [[]]
+- [[why is pyspark so much slower on windows than on linux]]
+- [[spark wsl install]]
   - Most content is derived from this repository.
 
 ---
@@ -176,7 +176,7 @@ spark-shell
 ### Additional Java Resource
 
 If you need more details on the Java installation process, refer to this resource:
-- [Java Development Kit (JDK) 22 Installation Guide for WSL](https://medium.com/@vpriyanshu671/java-development-kit-jdk-22-installation-guide-for-wsl-455f34676b45)
+- [[java development kit jdk 22 installation guide for wsl 455f34676b45]]
 
 ---
 

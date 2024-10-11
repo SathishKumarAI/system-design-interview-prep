@@ -1506,8 +1506,8 @@ EXECUTE PROCEDURE functionname {arguments}
 
 **_Resources_**
 
-[www.wikipedia.org](http://www.wikipedia.org/)
+[[]]
 
-[www.w3schools.com](http://www.w3schools.com/)
+[[]]
 
-[www.freefeast.info](https://freefeast.info/)
+[[]]

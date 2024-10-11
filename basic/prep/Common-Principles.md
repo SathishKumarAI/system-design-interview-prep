@@ -1,9 +1,9 @@
-- [Vertical scaling](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Vertical-scaling.md)
-- [Horizontal scaling](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Horizontal-scaling.md)
-- [Caching](Caching.md)
-- [Load balancing](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Load-balancing.md)
-- [Database replication](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Database-replication.md)
-- [Database partitioning](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Database-partitioning.md)
+- [Vertical-scaling](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Vertical-scaling.md)
+- [Horizontal-scaling](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Horizontal-scaling.md)
+- [Caching](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Caching.md)
+- [Load-balancing](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Load-balancing.md)
+- [Database-replication](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Database-replication.md)
+- [Database-partitioning](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/Database-partitioning.md)
 - 
 ### 7. **Clones**
 

@@ -1,7 +1,7 @@
 ## Content delivery network
 
-[![](https://github.com/donnemartin/system-design-primer/raw/master/images/h9TAuGI.jpg)](https://github.com/donnemartin/system-design-primer/blob/master/images/h9TAuGI.jpg)  
-_[Source: Why use a CDN](https://www.creative-artworks.eu/why-use-a-content-delivery-network-cdn/)_
+[[h9TAuGI]]](https://github.com/donnemartin/system-design-primer/blob/master/images/h9TAuGI.jpg)  
+_[[]]_
 
 A content delivery network (CDN) is a globally distributed network of proxy servers, serving content from locations closer to the user. Generally, static files such as HTML/CSS/JS, photos, and videos are served from CDN, although some CDNs such as Amazon's CloudFront support dynamic content. The site's DNS resolution will tell clients which server to contact.
 
@@ -20,7 +20,7 @@ Sites with a small amount of traffic or sites with content that isn't often upda
 
 Pull CDNs grab new content from your server when the first user requests the content. You leave the content on your server and rewrite URLs to point to the CDN. This results in a slower request until the content is cached on the CDN.
 
-A [time-to-live (TTL)](https://en.wikipedia.org/wiki/Time_to_live) determines how long content is cached. Pull CDNs minimize storage space on the CDN, but can create redundant traffic if files expire and are pulled before they have actually changed.
+A [[Time_to_live]] determines how long content is cached. Pull CDNs minimize storage space on the CDN, but can create redundant traffic if files expire and are pulled before they have actually changed.
 
 Sites with heavy traffic work well with pull CDNs, as traffic is spread out more evenly with only recently-requested content remaining on the CDN.
 
@@ -30,6 +30,6 @@ Sites with heavy traffic work well with pull CDNs, as traffic is spread out more
 - CDNs require changing URLs for static content to point to the CDN.
 
 ### Source(s) and further reading
-- [Globally distributed content delivery](https://figshare.com/articles/Globally_distributed_content_delivery/6605972)
-- [The differences between push and pull CDNs](http://www.travelblogadvice.com/technical/the-differences-between-push-and-pull-cdns/)
-- [Wikipedia](https://en.wikipedia.org/wiki/Content_delivery_network)
+- [[6605972]]
+- [[]]
+- [[Content_delivery_network]]

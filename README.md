@@ -6,17 +6,17 @@ I am learning and making study materials for preparation.
 
 ** Documenting my journey of continuous learning and growth through daily challenges. ** 
 ## Table of Contents
-- [Resources](#resources)
-- [Introduction](#introduction)
-- [Why System Design?](#why-system-design)
-- [Repository Structure](#repository-structure)
-- [Topics Covered](#topics-covered)
-- [How to Use this Repository](#how-to-use-this-repository)
-- [Contributing](#contributing)
+- [[#resources]]
+- [[#introduction]]
+- [[#why system design]]
+- [[#repository structure]]
+- [[#topics covered]]
+- [[#how to use this repository]]
+- [[#contributing]]
 ---
 ## Resources
 
-- I am currently learning from [System-design-primer](https://github.com/donnemartin/system-design-primer) from this GitHub Repo.
+- I am currently learning from [[system design primer]] from this GitHub Repo.
 ## Introduction
 
 System design interviews are a critical part of the technical interview process for many software engineering roles. These interviews evaluate your ability to design scalable, high-performing, and fault-tolerant systems. This repository serves as a one-stop resource to help you master these concepts and ace your interviews.
@@ -80,7 +80,7 @@ Mock system design interview examples that simulate the interview process and he
 4. **Practice with mock interviews**: Use the `MockInterviews` section to simulate actual system design interviews. Try solving these on a whiteboard or in front of a peer to replicate interview conditions.
 5. **Contribute**: If you find any mistakes or want to add new topics, feel free to contribute! Check out the `Contributing.md` file for more information. %%
 ## Contributing
-We welcome contributions from the community! If you want to add new topics, fix errors, or provide better examples, please read our [Contributing Guide](./Contributing.md) to get started.
+We welcome contributions from the community! If you want to add new topics, fix errors, or provide better examples, please read our [[Contributing]] to get started.
 Here’s how you can contribute:
 1. Fork the repository.
 2. Create a new branch.
@@ -93,8 +93,8 @@ We appreciate all the contributions that help make this resource more valuable f
 	- disable Settings > Files & Links > Use Wikilinks.
 - Once you do that, you can still type the double brackets (you have to if you want autocomplete suggestions), and they will convert to Markdown when completed.
 ## Links 
-[GitHub Cheat Sheet](https://education.github.com/git-cheat-sheet-education.pdf)
-[GitHub Markdown Cheat Sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+[[git cheat sheet education]]
+[[Markdown Cheatsheet]]
 
 Happy Learning, and Good Luck with your System Design Interviews!
 

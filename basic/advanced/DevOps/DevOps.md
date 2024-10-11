@@ -20,14 +20,14 @@ CI/CD:
 GitHub:
 	
 
-[CI](..\..\..\CI.md):
+[CI](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/../../../CI.md):
 	divided into 2 parts
 	checks 
 	app dynamics  - application level
 	
 	
 
-[CD](..\CI-CD\CI-CD.md):
+[CI-CD](https://github.com/SathishKumar9866/system-design-interview-prep/blob/backlinks_test/../CI-CD/CI-CD.md):
 Microservices 
 	
 	Netflix: Docker images

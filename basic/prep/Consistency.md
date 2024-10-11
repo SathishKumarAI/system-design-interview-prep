@@ -3,7 +3,7 @@
 
 ## Consistency patterns
 
-With multiple copies of the same data, we are faced with options on how to synchronize them so clients have a consistent view of the data. Recall the definition of consistency from the [CAP theorem](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#cap-theorem) - Every read receives the most recent write or an error.
+With multiple copies of the same data, we are faced with options on how to synchronize them so clients have a consistent view of the data. Recall the definition of consistency from the [[system design primer?tab=readme ov file#cap theorem]] - Every read receives the most recent write or an error.
 
 ### Weak consistency
 
@@ -25,4 +25,4 @@ This approach is seen in file systems and RDBMSes. Strong consistency works well
 
 ### Source(s) and further reading
 
-- [Transactions across data centers](http://snarfed.org/transactions_across_datacenters_io.html)
+- [[transactions_across_datacenters_io]]
