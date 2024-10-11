@@ -25,7 +25,7 @@ System design concepts are foundational principles that guide the creation of sc
 - [Database](basic\prep\Graph Database.md)
 - [Federation](basic\prep\Federation.md)
 - [Sharding](basic\prep\Sharding.md)
-- [Denormalization](basic\prep\Denormalization.md)
+- [[Denormalization]]
 - [[SQL tuning]]
 - [NoSQL](basic\prep\SQL or NoSQL.md)
 - [[Document store]]
@@ -40,10 +40,10 @@ System design concepts are foundational principles that guide the creation of sc
 - [[system_design_interview_prep/data engineering/AWS/Security /Security]]
 - [Microservices](basic\prep\Microservices.md)
 
-- Applications:
+Applications:
 - [[Apache Kafka]]
 
-- basic / Databases:
+basic / Databases:
 - [SQL](basic\prep\SQL or NoSQL.md)
 - [NoSQL](basic\prep\SQL or NoSQL.md)
 
