@@ -12,7 +12,7 @@ I am learning and making study materials for preparation.
 - [[#repository structure]]
 - [[#topics covered]]
 - [[#how to use this repository]]
-- ## Contributing
+- ##Contributing
 ---
 ## Resources
 
