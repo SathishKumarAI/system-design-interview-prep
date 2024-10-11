@@ -15,35 +15,35 @@ common terms in design
 
 [[Medical-Research/README|README]]
 [[CAP theorem]]
-[[DNS]]
-[[CDN]]
+[DNS](basic\prep\DNS.md)
+[CDN](basic\prep\CDN.md)
 [[Load Balancer]]
 [[scala]]
 
 [[Reverse proxy (web server)]]
 [[Application Layer]]
-[[Database]]
-[[Federation]]
-[[Sharding]]
-[[Denormalization]]
+[Database](basic\prep\Graph Database.md)
+[Federation](basic\prep\Federation.md)
+[Sharding](basic\prep\Sharding.md)
+[Denormalization](basic\prep\Denormalization.md)
 [[SQL tuning]]
-[[NoSQL]]
+[NoSQL](basic\prep\SQL or NoSQL.md)
 [[Document store]]
 [[Wide column store]]
 [[Graph Database]]
 [[SQL or NoSQL]]
-[[Cache]]
-[[Asynchronism]]
-[[Communication]]
+[Cache](basic\prep\Cache.md)
+[Asynchronism](basic\prep\Asynchronism.md)
+[Communication](basic\prep\Communication.md)
 [[TCP UDP]]
-[[RPC]]
+[RPC](basic\prep\RPC.md)
 [[system_design_interview_prep/data engineering/AWS/Security /Security]]
-[[Microservices]]
+[Microservices](basic\prep\Microservices.md)
 
 Applications:
 [[Apache Kafka]]
 
 basic / Databases:
-[[SQL]]
-[[NoSQL]]
+[SQL](basic\prep\SQL or NoSQL.md)
+[NoSQL](basic\prep\SQL or NoSQL.md)
 

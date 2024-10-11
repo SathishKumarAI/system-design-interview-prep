@@ -4,7 +4,7 @@ _[Source: Intro to architecting systems for scale](http://lethain.com/introducti
 Separating out the web layer from the application layer (also known as platform layer) allows you to scale and configure both layers independently. Adding a new API results in adding application servers without necessarily adding additional web servers. The **single responsibility principle** advocates for small and autonomous services that work together. Small teams with small services can plan more aggressively for rapid growth.
 
 Workers in the application layer also help enable [asynchronism](https://github.com/donnemartin/system-design-primer?tab=readme-ov-file#asynchronism).
-### [[Microservices]]
+### [Microservices](Microservices.md)
 Related to this discussion are [microservices](https://en.wikipedia.org/wiki/Microservices), which can be described as a suite of independently deployable, small, modular services. Each service runs a unique process and communicates through a well-defined, lightweight mechanism to serve a business goal. [1](https://smartbear.com/learn/api-design/what-are-microservices)
 
 Pinterest, for example, could have the following microservices: user profile, follower, feed, search, photo upload, etc.

@@ -1,6 +1,6 @@
 - [[Vertical scaling]]
 - [[Horizontal scaling]]
-- [[Caching]]
+- [Caching](Caching.md)
 - [[Load balancing]]
 - [[Database replication]]
 - [[Database partitioning]]

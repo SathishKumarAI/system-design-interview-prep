@@ -60,7 +60,7 @@ On the other hand, some services ask you to specify an Availability Zone. With t
 
 ## ****Maintaining resiliency****
 
-To keep your application available, you must maintain high availability and [[resiliency]]. A well-known best practice for cloud architecture is to use Region-scoped, managed services. These services come with availability and resiliency built in. When that is not possible, make sure your workload is replicated across multiple Availability Zones. At a minimum, you should use two Availability Zones. That way, if an Availability Zone fails, your application will have infrastructure up and running in a second Availability Zone to take over the traffic.
+To keep your application available, you must maintain high availability and [resiliency](Tags\resiliency.md). A well-known best practice for cloud architecture is to use Region-scoped, managed services. These services come with availability and resiliency built in. When that is not possible, make sure your workload is replicated across multiple Availability Zones. At a minimum, you should use two Availability Zones. That way, if an Availability Zone fails, your application will have infrastructure up and running in a second Availability Zone to take over the traffic.
 
 ![Replicate your workload across multiple Availability Zones to maintain high availability and resiliency.](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/dhozItxyf5VCYnL9_hoflaaUCH5jvaJMM.png)
 

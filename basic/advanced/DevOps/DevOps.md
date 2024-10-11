@@ -27,7 +27,7 @@ GitHub:
 	
 	
 
-[[CD]]:
+[CD](..\CI-CD\CI-CD.md):
 Microservices 
 	
 	Netflix: Docker images

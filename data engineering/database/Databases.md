@@ -1,5 +1,5 @@
 [[Indexes]]
 [[B-Trees]]
-[[Replications]]
+[Replications](Replications.md)
 
 
