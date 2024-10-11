@@ -7,12 +7,12 @@ I am learning and making study materials for preparation.
 ** Documenting my journey of continuous learning and growth through daily challenges. ** 
 ## Table of Contents
 - ## Resources
-- [[#introduction]]
+- ## Introduction
 - [[#why system design]]
 - [[#repository structure]]
 - [[#topics covered]]
 - [[#how to use this repository]]
-- [[#contributing]]
+- ## Contributing
 ---
 ## Resources
 
