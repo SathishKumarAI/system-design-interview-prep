@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 .obsidian/*
+machine_learning/*
 
 # Distribution / packaging
 .Python
