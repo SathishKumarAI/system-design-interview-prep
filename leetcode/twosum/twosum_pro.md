@@ -1,10 +1,10 @@
-# 📘 Two Sum - Complete Technical Documentation
+# 📘  [[Two Sum](https://leetcode.com/problems/two-sum/description/)](https://leetcode.com/problems/two-sum/description/) - Complete Technical Documentation
 
 ---
 
 # 1️⃣ Overview
 
-The **Two Sum** problem is a foundational algorithmic problem that evaluates:
+The **[Two Sum](https://leetcode.com/problems/two-sum/description/)** problem is a foundational algorithmic problem that evaluates:
 
 * Search space reduction
 * Hash-based lookup design
@@ -325,7 +325,7 @@ Current implementation returns first valid pair.
 
 # 7️⃣ Core Engineering Insight
 
-Two Sum teaches:
+[Two Sum](https://leetcode.com/problems/two-sum/description/) teaches:
 
 $$
 \textbf{Search → Transform → Index → Lookup}
@@ -406,7 +406,7 @@ It is:
 
 # 🎯 Final Takeaway
 
-Two Sum is not about addition.
+[Two Sum](https://leetcode.com/problems/two-sum/description/) is not about addition.
 
 It is about:
 

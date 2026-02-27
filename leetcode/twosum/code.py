@@ -1,6 +1,3 @@
-# ✅ Two Sum - Final Code Implementation
-
-```python
 from typing import List, Dict, Tuple
 
 
@@ -8,15 +5,14 @@ class Solution:
     """
     Two Sum Implementations
 
-    Includes:
-    1) Brute Force Approach        -> O(n^2) time, O(1) space
-    2) Two-Pass HashMap Approach   -> O(n) time,  O(n) space
-    3) One-Pass HashMap Approach   -> O(n) time,  O(n) space (Optimal)
+    1) Brute Force        -> O(n^2) time, O(1) space
+    2) Two-Pass HashMap   -> O(n) time,  O(n) space
+    3) One-Pass HashMap   -> O(n) time,  O(n) space (Optimal)
     """
 
-    # ------------------------------------------------------------------
-    # 1️⃣ Brute Force
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------
+    # 1️⃣ Brute Force Approach
+    # ------------------------------------------------------------
     def twoSum1(self, nums: List[int], target: int) -> List[int]:
         n = len(nums)
 
@@ -28,9 +24,9 @@ class Solution:
         return []
 
 
-    # ------------------------------------------------------------------
-    # 2️⃣ Two-Pass HashMap
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------
+    # 2️⃣ Two-Pass HashMap Approach
+    # ------------------------------------------------------------
     def twoSum2(self, nums: List[int], target: int) -> List[int]:
         hashmap: Dict[int, int] = {}
 
@@ -48,9 +44,9 @@ class Solution:
         return []
 
 
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------
     # 3️⃣ One-Pass HashMap (Optimal)
-    # ------------------------------------------------------------------
+    # ------------------------------------------------------------
     def twoSum(self, nums: List[int], target: int) -> List[int]:
         hashmap: Dict[int, int] = {}
 
@@ -65,10 +61,10 @@ class Solution:
         return []
 
 
-# ------------------------------------------------------------------
+# ------------------------------------------------------------
 # 🔍 Simple Test Runner
-# ------------------------------------------------------------------
-def run_tests():
+# ------------------------------------------------------------
+def run_tests() -> None:
     s = Solution()
 
     test_cases: List[Tuple[List[int], int]] = [
@@ -80,7 +76,8 @@ def run_tests():
     ]
 
     for nums, target in test_cases:
-        print(f"\nInput: {nums}, Target: {target}")
+        print("\n----------------------------------")
+        print(f"Input: {nums}, Target: {target}")
         print("Brute Force:", s.twoSum1(nums, target))
         print("Two-Pass HashMap:", s.twoSum2(nums, target))
         print("One-Pass HashMap:", s.twoSum(nums, target))
@@ -88,27 +85,3 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
-```
-
----
-
-# 🚀 What You Should Use
-
-For interviews or production:
-
-```python
-def twoSum(self, nums: List[int], target: int) -> List[int]:
-    hashmap = {}
-
-    for i in range(len(nums)):
-        complement = target - nums[i]
-
-        if complement in hashmap:
-            return [i, hashmap[complement]]
-
-        hashmap[nums[i]] = i
-
-    return []
-```
-
-

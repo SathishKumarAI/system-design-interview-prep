@@ -1,15 +1,15 @@
-# 🎤 Interview Master Section - Two Sum
+# 🎤 Interview Master Section - [Two Sum](https://leetcode.com/problems/two-sum/description/)
 
 This section elevates the problem from coding practice to **serious interview preparation**.
 
-After solving Two Sum, interviewers are not testing addition -
+After solving [Two Sum](https://leetcode.com/problems/two-sum/description/), interviewers are not testing addition -
 they are testing thinking depth.
 
 ---
 
-# 🧠 Why Interviewers Ask Two Sum
+# 🧠 Why Interviewers Ask [Two Sum](https://leetcode.com/problems/two-sum/description/)
 
-Two Sum is a diagnostic tool.
+[Two Sum](https://leetcode.com/problems/two-sum/description/) is a diagnostic tool.
 
 It evaluates:
 
@@ -34,7 +34,7 @@ from
 
 # 🎯 Perfect Interview Flow (Step-by-Step Strategy)
 
-When asked to solve Two Sum, follow this structure:
+When asked to solve [Two Sum](https://leetcode.com/problems/two-sum/description/), follow this structure:
 
 ### 1️⃣ Start with brute force
 
@@ -80,7 +80,7 @@ This structured explanation impresses interviewers.
 
 ---
 
-## Q1: Can you solve Two Sum?
+## Q1: Can you solve [Two Sum](https://leetcode.com/problems/two-sum/description/)?
 
 ### Ideal Answer
 
@@ -332,7 +332,7 @@ Shows maturity.
 
 # 🚀 Advanced Variations
 
-Two Sum is foundation for:
+[Two Sum](https://leetcode.com/problems/two-sum/description/) is foundation for:
 
 ### 3Sum
 
@@ -340,7 +340,7 @@ Two Sum is foundation for:
 a_i + a_j + a_k = T
 ]
 
-Reduce to Two Sum inside loop.
+Reduce to [Two Sum](https://leetcode.com/problems/two-sum/description/) inside loop.
 
 ---
 
@@ -385,7 +385,7 @@ Clean. Confident. Structured.
 
 # 🏁 Final Interview Takeaway
 
-Two Sum is not about finding two numbers.
+[Two Sum](https://leetcode.com/problems/two-sum/description/) is not about finding two numbers.
 
 It demonstrates:
 

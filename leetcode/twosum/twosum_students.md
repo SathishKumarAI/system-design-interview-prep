@@ -1,10 +1,10 @@
-# 📘 Two Sum – Complete Technical Documentation (Student-Friendly Edition)
+# 📘 [Two Sum](https://leetcode.com/problems/two-sum/description/) – Complete Technical Documentation (Student-Friendly Edition)
 
 ---
 
 # 1️⃣ Overview
 
-The **Two Sum** problem looks very simple:
+The **[Two Sum](https://leetcode.com/problems/two-sum/description/)** problem looks very simple:
 
 > Find two numbers in an array that add up to a target.
 
@@ -474,7 +474,7 @@ Because it is:
 
 # 🎯 Final Big Takeaway
 
-Two Sum is NOT about addition.
+[Two Sum](https://leetcode.com/problems/two-sum/description/) is NOT about addition.
 
 It is about:
 
