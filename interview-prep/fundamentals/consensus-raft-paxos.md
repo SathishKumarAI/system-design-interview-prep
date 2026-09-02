@@ -276,6 +276,7 @@ sensitive component you own, and observability must not sit downstream of the th
 - [Fundamentals index](README.md)
 - [Leases, locks and fencing](leases-locks-and-fencing.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)
+- [Replication topologies](replication-topologies.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

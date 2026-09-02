@@ -120,10 +120,13 @@ size for that, not for the whole dataset.
 
 ## Referenced by
 
+- [Consistent hashing](../fundamentals/consistent-hashing.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a news feed](../03-backend-cases/news-feed.md)
 - [Design a URL shortener](../03-backend-cases/url-shortener.md)
+- [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Primitives index](README.md)
+- [Replication lag and session guarantees](../fundamentals/replication-lag-and-session-guarantees.md)
 
 ## Sources & further reading
 

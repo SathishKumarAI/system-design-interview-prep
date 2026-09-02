@@ -11,6 +11,19 @@ tags: [replication, sharding, consistent-hashing, hot-shard]
 
 # Replication and partitioning
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> Five of the six topics in this file now have their own page with internals, arithmetic, cited
+> incidents and trade-offs
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
+> [partitioning-strategies](../fundamentals/partitioning-strategies.md) ·
+> [replication-topologies](../fundamentals/replication-topologies.md) ·
+> [replication-lag-and-session-guarantees](../fundamentals/replication-lag-and-session-guarantees.md) ·
+> [hot-shard-mitigation](../fundamentals/hot-shard-mitigation.md) ·
+> [consistent-hashing](../fundamentals/consistent-hashing.md).
+> Still only here: **rebalancing and resharding** — this file stays until
+> `rebalancing-and-resharding.md` exists.
+> Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
+
 Two different problems that candidates constantly merge:
 
 - **Replication** = the same data on several nodes. Buys availability + read throughput.

@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/fundamentals-batch-1` · **PR #1** open on `main`, not merged.
+**Branch:** `docs/fundamentals-batch-2` · **PRs #1, #2, #3** open, none merged.
 
 ---
 
@@ -20,39 +20,42 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batch 1 is written and verified** — the five consistency-cluster pages exist
-under `interview-prep/fundamentals/` with cited incidents, real arithmetic and two diagram types
-each. 5 of 123 done. Nothing is half-applied: the primitive file they split from is still present,
-banner-marked, and stays until its last two topics land.
+five per branch. **Batches 1 and 2 are written and verified** — ten pages under
+`interview-prep/fundamentals/`, each with a cited production incident, real arithmetic and two
+diagram types. 10 of 123 done. Nothing is half-applied: both primitive files they split from are
+still present and banner-marked, and each stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge PR #1** — `docs/staff-level-restructure` → `main`, squash. It carries only the plan and
-   conventions. The session could not merge it (permission classifier blocked `gh pr merge`), so:
-   `gh pr merge 1 --squash --delete-branch`. Then rebase `docs/fundamentals-batch-1` on `main` and
-   open its own PR.
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 (batch 1) → #3 (batch 2); each
+   retargets to `main` as the one below it lands. The session could not merge them (permission
+   classifier blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2, then 3.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1089 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1186 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 2 — the replication cluster
+## 3. Batch 3 — storage engines and caching
 
-Five files, all `split ←` `02-primitives/replication-and-partitioning.md`. Chosen next because
-every case study leans on them and they pair directly with batch 1.
+Five files from **two** source primitives. First batch that splits more than one file, so both
+need pointer banners and neither is deleted.
 
-| File | Must carry |
-|---|---|
-| `partitioning-strategies.md` | Range/hash/directory/geo; the three tests a partition key must pass; cross-partition query cost |
-| `replication-topologies.md` | Single/multi-leader/leaderless; sync vs semi-sync vs async; RPO arithmetic; failover mechanics |
-| `replication-lag-and-session-guarantees.md` | The three anomalies, LSN-aware routing, why "just read from a replica" quietly breaks products |
-| `hot-shard-mitigation.md` | Salting, splitting, dedicated shards, read-path caching; detection *before* it pages you |
-| `consistent-hashing.md` | Ring mechanics, virtual nodes, bounded loads, rendezvous hashing as the alternative |
+| File | Source | Must carry |
+|---|---|---|
+| `storage-engines.md` | `storage-and-databases.md` | B-tree vs LSM internals; write/read/space amplification; compaction debt and the latency cliff it causes |
+| `indexing-and-query-planning.md` | `storage-and-databases.md` | Composite order, covering, partial indexes; cardinality estimation; **why the planner ignores your index** |
+| `caching-strategies.md` | `caching.md` | Aside/through/behind/refresh-ahead; layer placement economics; hit-rate arithmetic |
+| `cache-invalidation.md` | `caching.md` | TTL vs versioned keys vs CDC-driven; **the delete-on-write race, shown as an interleaving** |
+| `cache-failure-modes.md` | `caching.md` | Stampede, hot key, penetration, cold start; single-flight and probabilistic early expiry |
 
-Do **not** delete `replication-and-partitioning.md` at the end of batch 2 — it also carries
-`rebalancing-and-resharding` (P1, later batch).
+Neither source file is deleted at the end: `caching.md` still owns `redis-internals`,
+`storage-and-databases.md` still owns object-storage internals and expand-contract migration.
+
+Incident candidates worth verifying before writing: RocksDB/Cassandra compaction stalls, the
+Facebook memcache stampede work (already cited in batch 2), and any public write-up of a cache
+cold-start after a flush — the "we restarted the cache tier and took the database down" shape.
 
 ## 4. What "done" means for one page
 
@@ -60,7 +63,9 @@ Copy the shape of `fundamentals/consistency-models.md`. The bar, in order of wha
 separates a good page from a passable one:
 
 1. **A cited production incident** in Failure modes — a public postmortem beats any tutorial.
-   Batch 1 used GitHub 2018, Jepsen PostgreSQL 12.3, Roblox 2021, the Raft membership bug.
+   Batch 1 used GitHub 2018, Jepsen PostgreSQL 12.3, Roblox 2021 and the Raft membership bug;
+   batch 2 used GitLab 2017, Discord's Cassandra hot partitions, DynamoDB's per-partition
+   ceilings and Facebook's remote markers. Do not reuse one across batches — find a new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
 3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node

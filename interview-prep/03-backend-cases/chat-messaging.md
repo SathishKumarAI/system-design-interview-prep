@@ -210,6 +210,7 @@ ranking, and spam classification. That trade — not the crypto — is the inter
 - [Design a collaborative editor (Google Docs / Figma)](../04-frontend-cases/collaborative-editor.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Meta interview style](../09-company-styles/meta.md)
+- [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 

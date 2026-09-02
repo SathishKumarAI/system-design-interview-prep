@@ -28,6 +28,11 @@ deleted only once every topic it carries has a page here.
 | How does a group agree despite failures? Raft internals, membership-change bugs, quorum placement across regions | [consensus-raft-paxos.md](consensus-raft-paxos.md) |
 | Why is my distributed lock not mutual exclusion? Leases, the zombie holder, fencing tokens, Redlock | [leases-locks-and-fencing.md](leases-locks-and-fencing.md) |
 | What does `R + W > N` really promise? Sloppy quorums, read repair, Merkle repair, tombstone resurrection | [quorums-and-anti-entropy.md](quorums-and-anti-entropy.md) |
+| Which key do I shard on, and which query did I just make expensive? Scatter-gather maths, secondary indexes | [partitioning-strategies.md](partitioning-strategies.md) |
+| How much data does a failover lose? Sync/semi-sync/async dial, RPO and RTO arithmetic, multi-leader conflicts | [replication-topologies.md](replication-topologies.md) |
+| Why did the user's own comment disappear? The three anomalies, position-token routing, remote markers | [replication-lag-and-session-guarantees.md](replication-lag-and-session-guarantees.md) |
+| One shard is at 100% and the cluster is at 20% | [hot-shard-mitigation.md](hot-shard-mitigation.md) |
+| Ring, virtual nodes, bounded loads, rendezvous vs Maglev vs jump hash | [consistent-hashing.md](consistent-hashing.md) |
 
 ## Written / planned
 
@@ -38,8 +43,12 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | Batch | Files | State |
 |---|---|---|
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | **done** |
-| 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | next |
-| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | planned |
+| 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | **done** |
+| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | next |
+| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | planned |
+
+**10 of 47 fundamentals written.** The two batches pair deliberately: batch 1 is what correctness
+costs, batch 2 is what happens when you split and copy data to avoid paying it.
 
 ## How to use these
 

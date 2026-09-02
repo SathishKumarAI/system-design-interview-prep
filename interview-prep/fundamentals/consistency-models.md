@@ -264,6 +264,8 @@ The `E` half is the one you live with 99.99% of the time.
 - [Fundamentals index](README.md)
 - [Leases, locks and fencing](leases-locks-and-fencing.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)
+- [Replication lag and session guarantees](replication-lag-and-session-guarantees.md)
+- [Replication topologies](replication-topologies.md)
 - [Topic manifest](../topics/manifest.md)
 - [Transaction isolation levels](transaction-isolation-levels.md)
 

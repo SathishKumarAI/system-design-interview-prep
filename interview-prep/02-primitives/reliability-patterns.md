@@ -145,8 +145,11 @@ and regular region evacuation drills are the answer.
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)
+- [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
+- [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Primitives index](README.md)
+- [Replication topologies](../fundamentals/replication-topologies.md)
 
 ## Sources & further reading
 

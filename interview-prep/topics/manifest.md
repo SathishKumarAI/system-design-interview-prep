@@ -107,12 +107,12 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `replication-topologies.md` | P0 | replication.md, leader-follower.md, multi-leader.md | Single/multi-leader/leaderless, sync vs semi-sync vs async, RPO arithmetic | split ← replication-and-partitioning |
-| `replication-lag-and-session-guarantees.md` | P0 | read-your-writes.md, monotonic-reads.md, stale-reads.md | The three anomalies, LSN-aware routing, why "read from replica" quietly breaks products | split ← replication-and-partitioning |
-| `partitioning-strategies.md` | P0 | sharding.md, partitioning.md, shard-key.md | Range/hash/directory/geo; the three tests a partition key must pass | split ← replication-and-partitioning |
-| `consistent-hashing.md` | P1 | hash-ring.md, vnodes.md, rendezvous-hashing.md | Ring mechanics, virtual nodes, bounded loads, rendezvous as the alternative | split ← replication-and-partitioning |
+| [`replication-topologies.md`](../fundamentals/replication-topologies.md) ✅ | P0 | replication.md, leader-follower.md, multi-leader.md | Single/multi-leader/leaderless, sync vs semi-sync vs async, RPO arithmetic | **written** ← replication-and-partitioning |
+| [`replication-lag-and-session-guarantees.md`](../fundamentals/replication-lag-and-session-guarantees.md) ✅ | P0 | read-your-writes.md, monotonic-reads.md, stale-reads.md | The three anomalies, LSN-aware routing, why "read from replica" quietly breaks products | **written** ← replication-and-partitioning |
+| [`partitioning-strategies.md`](../fundamentals/partitioning-strategies.md) ✅ | P0 | sharding.md, partitioning.md, shard-key.md | Range/hash/directory/geo; the three tests a partition key must pass | **written** ← replication-and-partitioning |
+| [`consistent-hashing.md`](../fundamentals/consistent-hashing.md) ✅ | P1 | hash-ring.md, vnodes.md, rendezvous-hashing.md | Ring mechanics, virtual nodes, bounded loads, rendezvous as the alternative | **written** ← replication-and-partitioning |
 | `rebalancing-and-resharding.md` | P1 | resharding.md, rebalance.md | Fixed-partition vs dynamic splitting, rate limiting, rebalance storms, online resharding | split ← replication-and-partitioning |
-| `hot-shard-mitigation.md` | P0 | hot-partition.md, celebrity-problem.md, key-salting.md | Salting, splitting, dedicated shards, read-path caching; detection before it pages you | split ← replication-and-partitioning |
+| [`hot-shard-mitigation.md`](../fundamentals/hot-shard-mitigation.md) ✅ | P0 | hot-partition.md, celebrity-problem.md, key-salting.md | Salting, splitting, dedicated shards, read-path caching; detection before it pages you | **written** ← replication-and-partitioning |
 
 ### 1.6 Consistency, coordination, time
 
@@ -378,10 +378,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | Batch | Files | State |
 |---|---|---|
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | ✅ written, link-checked, `docs/fundamentals-batch-1` |
-| 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | next |
-| 3–13 | see §6 batch order | planned |
+| 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | ✅ written, link-checked, `docs/fundamentals-batch-2` |
+| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | next |
+| 4–13 | see §6 batch order | planned |
 
-**5 / 123 written.** Fundamentals 5/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**10 / 123 written.** Fundamentals 10/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 

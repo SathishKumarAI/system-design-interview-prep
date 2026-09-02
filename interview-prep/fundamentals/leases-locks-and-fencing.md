@@ -233,6 +233,7 @@ trading availability against a correctness bug they never fixed.
 - [Consistency models](consistency-models.md)
 - [Fundamentals index](README.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)
+- [Replication topologies](replication-topologies.md)
 - [Topic manifest](../topics/manifest.md)
 - [Transaction isolation levels](transaction-isolation-levels.md)
 

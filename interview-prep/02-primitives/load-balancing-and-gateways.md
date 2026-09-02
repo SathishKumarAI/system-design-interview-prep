@@ -129,6 +129,7 @@ into infrastructure.
 
 ## Referenced by
 
+- [Consistent hashing](../fundamentals/consistent-hashing.md)
 - [Primitives index](README.md)
 
 ## Sources & further reading

@@ -120,6 +120,7 @@ written first and lists a canonical path plus forbidden aliases for every topic.
 - [Fundamentals index](../../interview-prep/fundamentals/README.md)
 - [Next session — start here](../NEXT-SESSION.md)
 - [Primitives index](../../interview-prep/02-primitives/README.md)
+- [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
 - [STATUS](../../STATUS.md)
 - [Topic manifest](../../interview-prep/topics/manifest.md)
 - [Worklog](../WORKLOG.md)

@@ -124,6 +124,7 @@ and OLAP tables alike. See [messaging-and-streams.md](messaging-and-streams.md).
 - [Design a URL shortener](../03-backend-cases/url-shortener.md)
 - [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
 - [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Primitives index](README.md)
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 

@@ -190,8 +190,10 @@ fresh ones. Details in [../06-ml-cases/feed-ranking.md](../06-ml-cases/feed-rank
 - [Backend cases index](README.md)
 - [Design an infinite feed (frontend)](../04-frontend-cases/infinite-feed.md)
 - [Design feed ranking (engagement prediction)](../06-ml-cases/feed-ranking.md)
+- [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Meta interview style](../09-company-styles/meta.md)
 - [Question bank](../07-drills/question-bank.md)
+- [Replication lag and session guarantees](../fundamentals/replication-lag-and-session-guarantees.md)
 - [Repo index](../../INDEX.md)
 
 ## Sources & further reading

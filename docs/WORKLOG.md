@@ -13,6 +13,68 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 2: the replication cluster
+
+Branch: `docs/fundamentals-batch-2` · PRs open: #1 (plan), #2 (batch 1), #3 (this)
+
+### What
+
+Five pages split from `02-primitives/replication-and-partitioning.md`:
+`partitioning-strategies`, `replication-topologies`, `replication-lag-and-session-guarantees`,
+`hot-shard-mitigation`, `consistent-hashing`. Fundamentals is now 10 of 47; the manifest total is
+10 of 123.
+
+### Incidents and primary sources used
+
+| Page | Anchor |
+|---|---|
+| replication-topologies | GitLab 2017-01-31 — lag treated as a nuisance, `rm -rf` on the primary, **five backup mechanisms all failed for five different reasons**; ~18 h down, permanent loss of 6 h of writes |
+| partitioning-strategies · hot-shard-mitigation | Discord 2023 — hot partitions cascading latency on Cassandra; `(channel_id, bucket)` composite key; request coalescing in a Rust data-services tier; migration stalled at 99.9999% on tombstone-dense token ranges |
+| hot-shard-mitigation | DynamoDB hard per-partition ceilings (3 000 RCU / 1 000 WCU), split-for-heat, and the fact that an **LSI blocks splitting** |
+| replication-lag-and-session-guarantees | Facebook memcache (NSDI 2013) remote markers — mark the known-stale keys and redirect only those reads to the master region |
+| consistent-hashing | Consistent Hashing with Bounded Loads (Google/Thorup); Vimeo runs it in HAProxy at `c = 1.25`; Cassandra's vnode default dropped 256 → 16 |
+
+### Why this framing
+
+Three arguments in these pages are the ones that change behaviour, and none of them are the
+textbook version of the topic:
+
+- **RPO is not a setting, it is `lag × write rate`.** At 5 000 writes/s and 800 ms p99 lag, an
+  async failover loses ~4 000 committed writes. Teams can quote replica counts and cannot quote
+  this.
+- **Sharding fixes volume; it does nothing for skew.** A hot *key* hashes to one partition no
+  matter how many partitions exist. Separating "hot key" from "hot partition" is the whole of
+  `hot-shard-mitigation`, because the standard reflex (salting) is correct for write-hot keys and
+  actively harmful for read-hot ones.
+- **Consistent hashing bounds movement, not load.** Balance comes from vnodes; *load* balance
+  needs bounded loads. The page also argues the unpopular position that a fixed logical-partition
+  map beats a ring wherever membership changes under human control — which is what Redis, Kafka
+  and Elasticsearch all chose.
+
+### Trade-offs
+
+- `replication-and-partitioning.md` kept and banner-marked: it still uniquely holds
+  `rebalancing-and-resharding` (P1, later batch). Same staging rule as batch 1.
+- Semi-sync's silent 10 s fallback to async and MySQL's `Seconds_Behind_Master` reporting 0 on a
+  stalled IO thread are both documented as failure modes rather than footnotes — they are the
+  reason "we have replication" and "we have durability" are different claims.
+- `consistent-hashing` is P1 but was written in this batch because the other four pages reference
+  it constantly; deferring it would have left four dangling explanations.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1186 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+192 files scanned, 563 inbound links mapped, 0 changed
+```
+
+All five pages carry two Mermaid diagram types. The `lint_docs.py --contract` "missing: Follow-up
+questions" line is the known naming mismatch recorded in STATUS.md, not a gap.
+
+---
+
 ## 2026-09-02 — Batch 1: the consistency cluster, and the decisions that unblocked it
 
 Branch: `docs/fundamentals-batch-1` · PR for the plan branch: #1
