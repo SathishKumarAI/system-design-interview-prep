@@ -14,6 +14,6 @@ challenges:
 in mid 2007 
 like client server model
 
-![](Pasted%20image%2020240930234135.png)
+![](../../../../assets/images/Pasted%20image%2020240930234135.png)
 
-![](Pasted%20image%2020240930234259.png)
+![](../../../../assets/images/Pasted%20image%2020240930234259.png)
