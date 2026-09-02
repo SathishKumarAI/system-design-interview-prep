@@ -25,7 +25,8 @@ sources.
 |---|---|---|
 | **Framework** | [00-interview-playbook.md](interview-prep/00-interview-playbook.md) | How to run the 45 minutes; what's scored |
 | **Numbers** | [01-numbers.md](interview-prep/01-numbers.md) | Latency, capacity, availability, cost |
-| **Primitives** | [02-primitives/](interview-prep/02-primitives/README.md) | 12 building blocks with trade-offs and failure modes |
+| **Fundamentals** | [fundamentals/](interview-prep/fundamentals/README.md) | One mechanism per page, staff depth: internals, arithmetic, cited failure modes. Replacing `02-primitives/` file by file |
+| **Primitives** (legacy) | [02-primitives/](interview-prep/02-primitives/README.md) | 12 bundled building blocks; the fast revision layer, being split into `fundamentals/` |
 | **Backend cases** | [03-backend-cases/](interview-prep/03-backend-cases/README.md) | 11 worked designs |
 | **Frontend cases** | [04-frontend-cases/](interview-prep/04-frontend-cases/README.md) | RADIO + 4 worked designs |
 | **Data cases** | [05-data-cases/](interview-prep/05-data-cases/README.md) | Playbook + 4 worked designs |
@@ -155,3 +156,10 @@ see [interview-prep/10-resources/books-on-this-machine.md](interview-prep/10-res
 | Forgot a term | [glossary.md](interview-prep/08-reference/glossary.md) |
 | Choosing a technology | [tech-selection.md](interview-prep/08-reference/tech-selection.md) |
 | Company-specific prep | [09-company-styles/](interview-prep/09-company-styles/README.md) |
+
+## Referenced by
+
+- [CLAUDE.md — system-design-prep](CLAUDE.md)
+- [Interview prep index](interview-prep/README.md)
+- [STATUS](STATUS.md)
+- [System Design Interview Preparation](README.md)

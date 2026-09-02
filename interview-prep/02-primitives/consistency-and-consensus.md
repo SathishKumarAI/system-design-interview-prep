@@ -11,6 +11,20 @@ tags: [cap, pacelc, isolation, raft, clocks]
 
 # Consistency and consensus
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> This file bundles seven topics at ~20 lines each. Each is being replaced by its own page with
+> internals, arithmetic, cited failure modes and trade-offs
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)).
+> Already written:
+> [consistency-models](../fundamentals/consistency-models.md) ·
+> [transaction-isolation-levels](../fundamentals/transaction-isolation-levels.md) ·
+> [consensus-raft-paxos](../fundamentals/consensus-raft-paxos.md) ·
+> [leases-locks-and-fencing](../fundamentals/leases-locks-and-fencing.md) ·
+> [quorums-and-anti-entropy](../fundamentals/quorums-and-anti-entropy.md).
+> Still only here: **clocks** and **conflict resolution / CRDTs** — this file stays until
+> `clocks-and-ordering.md` and `crdts-and-conflict-resolution.md` exist.
+> Use this page as the fast revision sheet; use `fundamentals/` to actually learn the mechanism.
+
 The part candidates quote and don't understand. Get precise here and you separate yourself
 immediately.
 
@@ -157,6 +171,14 @@ See [../04-frontend-cases/collaborative-editor.md](../04-frontend-cases/collabor
 | etcd write throughput | ~10k/s — metadata scale, not data scale |
 | Typical NTP drift | ms; can be seconds when broken |
 | Spanner commit wait | ~single-digit ms |
+
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Design a collaborative editor (Google Docs / Figma)](../04-frontend-cases/collaborative-editor.md)
+- [Design a payments system / ledger](../03-backend-cases/payments-ledger.md)
+- [Primitives index](README.md)
+- [Transactions, sagas and idempotency](transactions-and-idempotency.md)
 
 ## Sources & further reading
 

@@ -12,6 +12,13 @@ tags: [index]
 Twelve files. Each one answers: *what is it, when do I reach for it, what does it cost me,
 how does it fail, what do I say about it in an interview.*
 
+> [!info] Being split into [../fundamentals/](../fundamentals/README.md)
+> Each file here bundles 3–6 topics, which caps how deep any of them goes. They are being
+> replaced by one page per mechanism, written to the staff contract
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). A file here is
+> deleted only when every topic it carries has a successor page. Split so far:
+> `consistency-and-consensus.md` → five pages in `fundamentals/`.
+
 ## Where to look
 
 | Question | File |
@@ -21,7 +28,7 @@ how does it fail, what do I say about it in an interview.*
 | Where to cache, eviction, invalidation, stampedes, hot keys | [caching.md](caching.md) |
 | SQL vs NoSQL, B-tree vs LSM, which store for which access pattern | [storage-and-databases.md](storage-and-databases.md) |
 | Leader/follower, quorums, sharding, consistent hashing, rebalancing | [replication-and-partitioning.md](replication-and-partitioning.md) |
-| CAP/PACELC, isolation levels, Raft, leases, clocks | [consistency-and-consensus.md](consistency-and-consensus.md) |
+| CAP/PACELC, isolation levels, Raft, leases, clocks | [consistency-and-consensus.md](consistency-and-consensus.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | Queues vs logs, Kafka, delivery semantics, ordering, backpressure | [messaging-and-streams.md](messaging-and-streams.md) |
 | Idempotency, sagas, outbox, exactly-once *effects*, ledgers | [transactions-and-idempotency.md](transactions-and-idempotency.md) |
 | Timeouts, retries, circuit breakers, bulkheads, load shedding, DR | [reliability-patterns.md](reliability-patterns.md) |
@@ -57,3 +64,9 @@ you place a box:
 | Microservice | Team autonomy, scaling in isolation | Network hops, partial failure, ops surface |
 
 If you can't say what a box pays with, you don't yet understand why it's there.
+
+## Referenced by
+
+- [Fundamentals index](../fundamentals/README.md)
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)

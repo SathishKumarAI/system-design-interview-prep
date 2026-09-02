@@ -18,7 +18,7 @@ answer is without reading the whole thing. Templates live in
 ```yaml
 ---
 title: Design a news feed          # human title, no "the"
-type: case                         # index | playbook | primitive | case | drill | resource
+type: case                         # index | topic | case | comparison | playbook | drill | reference | resource | adr | primitive (legacy)
 track: backend                     # universal | backend | frontend | data | ml
 difficulty: core                   # intro | core | advanced
 status: seed                       # seed | drafted | drilled | mastered
@@ -44,29 +44,45 @@ Query the board in Obsidian search with `status: drilled` — that's your revisi
 **`case`** (backend / frontend / data / ml design problem) — always these eight, in
 this order, even if a section is one line:
 
-```
-## 1. Clarify
-## 2. Requirements
-## 3. Estimates
-## 4. API / contract
-## 5. Data model
-## 6. Architecture
-## 7. Scale & failure
-## 8. Ops & cost
-## Sources & further reading
-```
+`1. Clarify` · `2. Requirements` · `3. Estimates` · `4. API / contract` · `5. Data model` ·
+`6. Architecture` · `7. Scale & failure` · `8. Ops & cost` · `Sources & further reading`
 
-**`primitive`** (a building block: cache, queue, consensus…):
+Case files being rewritten to the staff contract keep this skeleton **inside**
+`Mechanics & internals` and `Numbers that matter` — see the `topic` contract below.
 
-```
-## What it is (3 lines)
-## When to reach for it
-## Options & trade-offs      ← table, always
-## Failure modes
-## Interview lines           ← sentences to say out loud
-## Numbers
-## Sources & further reading
-```
+**`topic`** (one mechanism, staff-level — everything new in `fundamentals/`, `patterns/`,
+`comparisons/`). This is the current contract; the full description of what each section must
+carry is in [../CLAUDE.md](../CLAUDE.md) → *Section contract*:
+
+| # | Heading | Carries |
+|---|---|---|
+| 1 | `Core concept` | 3–6 lines, no 101 |
+| 2 | `Mechanics & internals` | The actual protocol / algorithm / data structure |
+| 3 | `Numbers that matter` | Real arithmetic, sourced or marked order-of-magnitude |
+| 4 | `Failure modes` | What breaks at scale, with cited incidents |
+| 5 | `Trade-offs vs alternatives` | X vs Y vs Z, and where staff engineers get it wrong |
+| 6 | `Real-world examples` | Cited, specific systems and versions |
+| 7 | `Staff-level follow-ups` | 3–5 multi-part probes, never definitional |
+| 8 | `See also` | Hand-written |
+| 9 | `Referenced by` | **Generated** by `gen_backlinks.py`. Never hand-edited |
+| 10 | `Sources` | |
+
+> [!warning] Trap
+> Do not put a literal `## Referenced by` line inside a code fence anywhere in this repo.
+> `gen_backlinks.py` matches the heading textually and will inject a backlink list **into your
+> example block**. That is why the contract above is a table, not a fenced snippet.
+
+Frontmatter for `topic`/`case` uses `tier: P0|P1|P2` and `status: seed|drafted|reviewed|mastered`
+(no `difficulty`). Diagrams: ≥ 2 types per page, reusing
+[diagrams/components.md](diagrams/components.md).
+
+**`primitive`** (legacy — the 12 files in `02-primitives/`, being split into `fundamentals/`
+per [ADR-0001](../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). Do not create new
+files in this format:
+
+`What it is (3 lines)` · `When to reach for it` · `Options & trade-offs` (table, always) ·
+`Failure modes` · `Interview lines` (sentences to say out loud) · `Numbers` ·
+`Sources & further reading`
 
 **`index`** (any folder README): first section after the title is a **change → file**
 table, so a reader picks the file without opening any other.
@@ -130,3 +146,14 @@ No source, no claim. If it's your own reasoning, say `(own analysis)`.
 4. If it's a case, add it to [07-drills/question-bank.md](07-drills/question-bank.md).
 
 That's the whole ritual. Three steps, or the index rots and the repo becomes a pile.
+
+## Referenced by
+
+- [ADR-0001: Split bundled primitives into atomic fundamentals pages](../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
+- [CLAUDE.md — system-design-prep](../CLAUDE.md)
+- [Diagram component library](diagrams/components.md)
+- [Fundamentals index](fundamentals/README.md)
+- [Interview prep index](README.md)
+- [Repo index](../INDEX.md)
+- [System Design Interview Preparation](../README.md)
+- [Topic manifest](topics/manifest.md)

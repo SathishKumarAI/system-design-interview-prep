@@ -8,113 +8,106 @@ tags: [handoff, resume]
 
 # Next session — start here
 
-Written to make the first ten minutes of the next session productive instead of archaeological.
-If you read one file, read this one.
+Written to make the first ten minutes productive instead of archaeological. If you read one file,
+read this one.
 
-**Branch:** `docs/staff-level-restructure` — 2 commits ahead of `main`, clean tree, no PR.
+**Branch:** `docs/fundamentals-batch-1` · **PR #1** open on `main`, not merged.
 
 ---
 
 ## 1. The state in one paragraph
 
-The prep set exists and is verified: 75 files under `interview-prep/`, every link resolving. The
-*plan* to raise it from prep-grade to staff-grade also exists and is reviewed:
-`interview-prep/topics/manifest.md` lists 123 canonical topics with aliases, tiers and split
-provenance. **None of that plan has been executed.** The 63 P0 pages are unwritten. Execution is
-blocked on one decision that takes about two minutes to make.
+The restructure decision is made and recorded
+([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
+split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
+five per branch. **Batch 1 is written and verified** — the five consistency-cluster pages exist
+under `interview-prep/fundamentals/` with cited incidents, real arithmetic and two diagram types
+each. 5 of 123 done. Nothing is half-applied: the primitive file they split from is still present,
+banner-marked, and stays until its last two topics land.
 
-## 2. The blocking decision
+## 2. Two housekeeping items before writing
 
-Answer **D1–D4** in [`../interview-prep/topics/manifest.md`](../interview-prep/topics/manifest.md) §7.
-Recommendations are already written; *"go with the recommendations"* is a complete answer.
+1. **Merge PR #1** — `docs/staff-level-restructure` → `main`, squash. It carries only the plan and
+   conventions. The session could not merge it (permission classifier blocked `gh pr merge`), so:
+   `gh pr merge 1 --squash --delete-branch`. Then rebase `docs/fundamentals-batch-1` on `main` and
+   open its own PR.
+2. **Baseline the repo** before touching anything:
+   ```bash
+   cd ~/Documents/coding/learn/system-design-prep
+   python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+   # expect: checked 1089 relative links; broken: 4   (the {rel_path} placeholders)
+   ```
 
-| | Decision | Recommendation | If yes, what happens |
-|---|---|---|---|
-| D1 | Rename `02-primitives/` → `fundamentals/`, split 12 files into ~47 | **Yes** | The structural change that makes the set staff-level rather than a glossary |
-| D2 | Add `patterns/` and `comparisons/`; retire `08-reference/tech-selection.md` into the latter | **Yes** | Cross-topic trade-off matrices get a home |
-| D3 | Write all 123 topics, or P0 only (63) | **P0 only** | ~13 batches of 5 |
-| D4 | Rewrite case files in place, or move to `case-studies/` | **In place** | Moving breaks every inbound link in `INDEX.md` and the legacy notes |
+## 3. Batch 2 — the replication cluster
 
-## 3. First commands
+Five files, all `split ←` `02-primitives/replication-and-partitioning.md`. Chosen next because
+every case study leans on them and they pair directly with batch 1.
 
-```bash
-cd ~/Documents/coding/learn/system-design-prep
-git checkout docs/staff-level-restructure
-cat STATUS.md                                    # traps and stop-point
-sed -n '/## 7. Decisions/,$p' interview-prep/topics/manifest.md    # the four decisions
-
-# baseline the repo before touching anything — expect 485 checked, 4 broken (placeholders)
-python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-```
-
-## 4. Batch 1 — the consistency cluster
-
-Five files, all `split ←` from today's `02-primitives/consistency-and-consensus.md`. Chosen first
-because they're the highest-value pages in the set and they exercise every part of the section
-contract, so problems with the approach surface on batch 1 rather than batch 9.
-
-| File | Carries |
+| File | Must carry |
 |---|---|
-| `consistency-models.md` | The ladder, CAP stated correctly, PACELC, per-database placement |
-| `transaction-isolation-levels.md` | MVCC mechanics, write skew shown as an interleaving, SSI aborts |
-| `consensus-raft-paxos.md` | Election, log replication, membership change, cost per write |
-| `leases-locks-and-fencing.md` | The GC-pause zombie holder, fencing tokens, why a TTL lock isn't mutual exclusion |
-| `quorums-and-anti-entropy.md` | R+W>N, sloppy quorums, read repair, Merkle trees, gossip |
+| `partitioning-strategies.md` | Range/hash/directory/geo; the three tests a partition key must pass; cross-partition query cost |
+| `replication-topologies.md` | Single/multi-leader/leaderless; sync vs semi-sync vs async; RPO arithmetic; failover mechanics |
+| `replication-lag-and-session-guarantees.md` | The three anomalies, LSN-aware routing, why "just read from a replica" quietly breaks products |
+| `hot-shard-mitigation.md` | Salting, splitting, dedicated shards, read-path caching; detection *before* it pages you |
+| `consistent-hashing.md` | Ring mechanics, virtual nodes, bounded loads, rendezvous hashing as the alternative |
 
-**Do not delete `02-primitives/consistency-and-consensus.md` until all five exist** and its
-content has a destination. The manifest records the split; the source file is the safety net.
+Do **not** delete `replication-and-partitioning.md` at the end of batch 2 — it also carries
+`rebalancing-and-resharding` (P1, later batch).
 
-## 5. What "done" means for one page
+## 4. What "done" means for one page
 
-The `staff-technical-docs` skill is installed and will trigger on this work. Its contract:
+Copy the shape of `fundamentals/consistency-models.md`. The bar, in order of what actually
+separates a good page from a passable one:
 
-```
-## Core concept · Mechanics & internals · Numbers that matter · Failure modes
-## Trade-offs vs alternatives · Real-world examples · Follow-up questions
-## See also · Referenced by · Sources
-```
-
-Plus: 2–3 sources cross-checked, numbers sourced or marked order-of-magnitude, ≥2 Mermaid
-diagram types reusing `interview-prep/diagrams/components.md`, and the link check quoted.
+1. **A cited production incident** in Failure modes — a public postmortem beats any tutorial.
+   Batch 1 used GitHub 2018, Jepsen PostgreSQL 12.3, Roblox 2021, the Raft membership bug.
+2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
+   "order of magnitude".
+3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node
+   naming in [../interview-prep/diagrams/components.md](../interview-prep/diagrams/components.md).
+4. **A "where staff engineers get this wrong" list** inside Trade-offs — the section that makes
+   the page worth reading for someone who already knows the topic.
+5. Section order per [CLAUDE.md](../CLAUDE.md) → *Section contract*. Frontmatter complete,
+   `updated` bumped, manifest row marked ✅ and §8 progress count raised.
 
 Then, from the **repository root**:
 
 ```bash
-python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep --contract
-python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .
-python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .    # re-run: backlinks are links
+python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # twice — second run must print "0 changed"
+python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # backlinks are links too
+python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-## 6. Traps that will cost you an hour
+Quote the counts in the commit or PR body. "Links verified" is an assertion; the count is evidence.
+
+## 5. Traps that will cost you an hour
+
+Full list in [../STATUS.md](../STATUS.md). The three that are new since last session:
 
 | Trap | Rule |
 |---|---|
-| **Never rename a legacy file to tidy it up** | Inbound links are relative and break silently. This caused 5 broken links this session. Percent-encode the link target instead |
-| Legacy names contain spaces and parens | `%20` `%28` `%29`. An unescaped `(` truncates the target and breaks on GitHub while rendering fine locally |
-| Run doc scripts from the **repo root** | `gen_backlinks.py` scoped to a subfolder can't see inbound links from outside it and strips them as though gone |
-| `markdown files/md_blacklinks.md` | Reports 4 broken links forever — `{rel_path}` placeholders in a script's own docs. Expected noise, not a regression |
-| Wikilinks are disabled in this vault | Markdown links only |
-| `interview-prep/10-resources/vendor/` | ~100 MB of upstream clones, gitignored, read-only. Refresh with `fetch-references.sh` |
-| Windows + skill-creator viewer | Server mode crashes on cp1252. Prefix `PYTHONIOENCODING=utf-8 PYTHONUTF8=1`, or use `--static` |
-| Quoted heredocs in the Bash tool | `<<'EOF'` leaks apostrophes into the parser. Use the Write tool for file content |
+| **`gen_backlinks.py` writes inside code fences** | It matches `## Referenced by` / `## Sources` textually. It injected backlink lists into the contract examples in `CLAUDE.md` and `CONVENTIONS.md`; both are tables now. Never put those headings inside a fence |
+| **`lint_docs.py --contract` always reports "missing: Follow-up questions"** | Skill-generic name vs this repo's `Staff-level follow-ups`. Expected noise; do not rename the section |
+| **A primitive file is deleted only when empty of unique topics** | Not when "most of it" has moved |
 
-## 7. Also open, lower priority
+Unchanged and still true: never rename a legacy file to fix a link (percent-encode instead), run
+scripts from the repo root, wikilinks stay disabled, `vendor/` is read-only.
 
-**In this repo**
-- No PR opened. Branch is 2 commits ahead of `main`.
-- 4 raw-space link targets in `main.md` resolve locally but break on GitHub.
+## 6. Also open, lower priority
+
+**This repo**
+- `patterns/` and `comparisons/` do not exist yet — created with batches 6–8, by design.
+- 26 case files still carry the old eight-heading skeleton; they are rewritten in place, batch 9+.
 
 **In `~/.claude/skills/staff-technical-docs/`**
-- `evals/evals.json` v2 is written but **never run**. Iteration 2 needs 8 subagent runs.
-- eval-3's fixture (`fixtures/existing-set/`) is specified but **not built** — a 5-page set with a
-  manifest, a components library, and one topic hidden under a non-obvious alias.
-- **No human ever reviewed the iteration-1 outputs.** `review.html` in
-  `~/.claude/skills/staff-technical-docs-workspace/iteration-1/` opens standalone, no server.
-  This is the weakest evidence in the whole effort — the skill was graded by its own author
-  against assertions that author wrote.
+- `evals/evals.json` v2 written but never run; eval-3's fixture not built.
+- `gen_backlinks.py` should skip fenced code blocks. This repo hit that bug and worked around it in
+  the docs; the script itself is still wrong.
+- No human ever reviewed the iteration-1 outputs — still the weakest evidence in the effort.
 
-## 8. If you'd rather not resume this
+## Referenced by
 
-Everything is committed and self-describing. The manifest stands alone as a plan, the skill works
-independently of this repo, and `STATUS.md` plus `docs/WORKLOG.md` explain the reasoning. Nothing
-is half-applied or hidden behind a flag.
+- [Docs index](README.md)
+- [Repo index](../INDEX.md)
+- [STATUS](../STATUS.md)
+- [Worklog](WORKLOG.md)

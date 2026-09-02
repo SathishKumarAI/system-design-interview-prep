@@ -13,6 +13,75 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 1: the consistency cluster, and the decisions that unblocked it
+
+Branch: `docs/fundamentals-batch-1` · PR for the plan branch: #1
+
+### What
+
+D1–D4 answered (all four recommendations approved; scope set to **all 123 topics**, not the
+recommended 63 P0), recorded as
+[ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md). Then batch 1 written:
+`interview-prep/fundamentals/` with five pages, ~250–280 lines each —
+`consistency-models`, `transaction-isolation-levels`, `consensus-raft-paxos`,
+`leases-locks-and-fencing`, `quorums-and-anti-entropy` — plus a folder README, manifest progress
+section, and pointer banners on the primitive file being split.
+
+### How
+
+Each page was researched against 2–3 independent sources before assertion, and each carries a
+**documented production incident** rather than a generic failure list:
+
+| Page | Incident / primary finding |
+|---|---|
+| consistency-models | GitHub 2018-10-21 — 43 s partition, 24 h 11 m degradation; Orchestrator held quorum, async MySQL replication did not |
+| transaction-isolation-levels | Jepsen PostgreSQL 12.3 — real G2-item under `SERIALIZABLE`; XID misattribution in conflict detection; present since SSI shipped in 2011, fixed Aug 2020 |
+| consensus-raft-paxos | Raft single-server membership-change safety bug (2015); Roblox 2021 — 73 h outage from Consul streaming + BoltDB freelist pathology |
+| leases-locks-and-fencing | Kleppmann vs antirez on Redlock; Chubby sequencers and `lock-delay`; GFS chunk leases + version numbers |
+| quorums-and-anti-entropy | Tombstone resurrection when repair misses `gc_grace_seconds`; Cassandra Merkle depth 2^15 causing overstreaming; DynamoDB's move *away* from leaderless |
+
+### Why these five first
+
+They are the highest-value pages in the set and they exercise every part of the section contract —
+so if the contract were wrong, it would show on batch 1 rather than batch 9. They also all split
+from one source file, which meant the split mechanics got tested end to end immediately.
+
+### Trade-offs and things worth knowing
+
+- **`02-primitives/consistency-and-consensus.md` was kept, not deleted.** It still uniquely holds
+  clocks and CRDTs (both P1, batches later). It now carries a banner naming its successor pages.
+  The cost is a transitional period where two files discuss the same subject at different depths —
+  accepted knowingly and recorded in ADR-0001.
+- **Scope decision went against the written recommendation.** The manifest recommends stopping at
+  63 P0 files; all 123 were chosen. Batch order still runs P0 first, so stopping early stays
+  available at any batch boundary.
+- **Found and fixed a real tooling trap.** `gen_backlinks.py` matches `## Referenced by` and
+  `## Sources` **textually, including inside code fences** — it injected generated backlink lists
+  into the section-contract examples in `CLAUDE.md` and `CONVENTIONS.md`. Both were converted from
+  fenced snippets to tables, and the trap is now documented in each file. Second and third runs of
+  the script report `0 changed`, so the pass is idempotent again.
+- **Fixed 4 pre-existing links** in `main.md` that used raw spaces and backslashes
+  (`basic\prep\SQL or NoSQL.md`). Percent-encoded with forward slashes — the files were **not**
+  renamed, per the standing rule.
+- **Known lint false positive:** `lint_docs.py --contract` reports "missing: Follow-up questions"
+  for all five pages. The skill's generic contract names that section `Follow-up questions`; this
+  repo's contract (CLAUDE.md) names it `Staff-level follow-ups`. Repo convention wins; expect this
+  line on every future page.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1089 relative links; broken: 4          # the 4 {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+187 files scanned, 519 inbound links mapped, 0 changed
+```
+
+Before this session the same check reported 501 links; the growth is the new pages plus the
+regenerated backlink sections. No raw-space GitHub warnings remain.
+
+---
+
 ## 2026-09-02 — Staff-level restructure groundwork + `staff-technical-docs` skill
 
 Branch: `docs/staff-level-restructure` (not merged)
@@ -143,3 +212,11 @@ assertions, which is the weakest evidence produced this session.
 - [NEXT-SESSION.md](NEXT-SESSION.md) — the handoff: blocking decision, first commands, batch 1
 - [sessions/2026-09-02-staff-restructure-and-skill.md](sessions/2026-09-02-staff-restructure-and-skill.md) — the full narrative, including what went wrong
 - [../STATUS.md](../STATUS.md) — stop point and traps
+
+## Referenced by
+
+- [ADR-0001: Split bundled primitives into atomic fundamentals pages](adr/0001-split-primitives-into-atomic-fundamentals.md)
+- [CLAUDE.md — system-design-prep](../CLAUDE.md)
+- [Docs index](README.md)
+- [Repo index](../INDEX.md)
+- [STATUS](../STATUS.md)

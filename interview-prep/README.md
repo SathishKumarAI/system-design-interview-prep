@@ -22,7 +22,8 @@ This folder is the **interview layer** on top: framework, numbers, worked cases,
 |---|---|
 | How do I run the 45 minutes? What is scored? | [00-interview-playbook.md](00-interview-playbook.md) |
 | How many servers / how much storage / what does it cost? | [01-numbers.md](01-numbers.md) |
-| What is the building block and when do I reach for it? | [02-primitives/](02-primitives/README.md) |
+| How does this mechanism actually work, what does it cost, how does it break? | [fundamentals/](fundamentals/README.md) |
+| What is the building block and when do I reach for it? (fast revision layer) | [02-primitives/](02-primitives/README.md) |
 | Worked backend designs (feed, chat, payments, …) | [03-backend-cases/](03-backend-cases/README.md) |
 | Worked frontend designs (editor, feed, dashboard) | [04-frontend-cases/](04-frontend-cases/README.md) |
 | Worked data-platform designs (lakehouse, CDC, realtime) | [05-data-cases/](05-data-cases/README.md) |
@@ -73,3 +74,9 @@ Same eight headings everywhere. Learn the shape once; it becomes your speaking o
 Latency and hardware numbers are 2026 figures (see sources in `01-numbers.md`). Cloud
 prices are **order-of-magnitude anchors for interview arithmetic**, not quotes — check
 the vendor calculator before putting any of them in a real design doc.
+
+## Referenced by
+
+- [CLAUDE.md — system-design-prep](../CLAUDE.md)
+- [Repo index](../INDEX.md)
+- [System Design Interview Preparation](../README.md)

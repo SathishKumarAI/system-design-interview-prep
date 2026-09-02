@@ -52,7 +52,9 @@ interview-prep/
 `02-primitives/` becomes `fundamentals/`. Existing primitive files are **not deleted** until
 their content has landed in the split pages — each row below names its source.
 
-> **Decision needed from you (D1–D4 at the bottom).** Sizes below assume you approve all four.
+> **Decided 2026-09-02 — D1–D4 approved, scope set to all 123 topics.**
+> Recorded in [ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md).
+> `patterns/` and `comparisons/` are created when their first batch is written, not before.
 
 ---
 
@@ -116,13 +118,13 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `consistency-models.md` | P0 | cap.md, cap-theorem.md, pacelc.md, eventual-consistency.md, linearizability.md | The ladder, CAP stated correctly, PACELC as the everyday trade, per-database placement | split ← consistency-and-consensus |
-| `transaction-isolation-levels.md` | P0 | isolation.md, acid.md, write-skew.md, mvcc.md | MVCC mechanics, write skew proven, SSI abort behaviour, lost update | split ← consistency-and-consensus |
-| `consensus-raft-paxos.md` | P0 | raft.md, paxos.md, zab.md, consensus.md | Election, log replication, membership change, why 3/5 not 4, cost per write | split ← consistency-and-consensus |
-| `leases-locks-and-fencing.md` | P0 | distributed-lock.md, redlock.md, fencing-token.md | The GC-pause zombie holder, fencing tokens, why a TTL lock is not mutual exclusion | split ← consistency-and-consensus |
+| [`consistency-models.md`](../fundamentals/consistency-models.md) ✅ | P0 | cap.md, cap-theorem.md, pacelc.md, eventual-consistency.md, linearizability.md | The ladder, CAP stated correctly, PACELC as the everyday trade, per-database placement | **written** ← consistency-and-consensus |
+| [`transaction-isolation-levels.md`](../fundamentals/transaction-isolation-levels.md) ✅ | P0 | isolation.md, acid.md, write-skew.md, mvcc.md | MVCC mechanics, write skew proven, SSI abort behaviour, lost update | **written** ← consistency-and-consensus |
+| [`consensus-raft-paxos.md`](../fundamentals/consensus-raft-paxos.md) ✅ | P0 | raft.md, paxos.md, zab.md, consensus.md | Election, log replication, membership change, why 3/5 not 4, cost per write | **written** ← consistency-and-consensus |
+| [`leases-locks-and-fencing.md`](../fundamentals/leases-locks-and-fencing.md) ✅ | P0 | distributed-lock.md, redlock.md, fencing-token.md | The GC-pause zombie holder, fencing tokens, why a TTL lock is not mutual exclusion | **written** ← consistency-and-consensus |
 | `clocks-and-ordering.md` | P1 | lamport-clock.md, vector-clocks.md, hlc.md, truetime.md | Logical vs vector vs hybrid, TrueTime commit wait, NTP failure modes | split ← consistency-and-consensus |
 | `crdts-and-conflict-resolution.md` | P1 | crdt.md, lww.md, conflict-resolution.md | G/PN-counter, OR-set, RGA; tombstone growth; what CRDTs do *not* solve | split ← consistency-and-consensus |
-| `quorums-and-anti-entropy.md` | P1 | quorum.md, read-repair.md, hinted-handoff.md, merkle-tree.md, gossip.md | R+W>N, sloppy quorums, read repair, Merkle-tree anti-entropy, gossip convergence | new |
+| [`quorums-and-anti-entropy.md`](../fundamentals/quorums-and-anti-entropy.md) ✅ | P1 | quorum.md, read-repair.md, hinted-handoff.md, merkle-tree.md, gossip.md | R+W>N, sloppy quorums, read repair, Merkle-tree anti-entropy, gossip convergence | **written** |
 
 ### 1.7 Messaging and streams
 
@@ -359,16 +361,27 @@ At batches of 5 with a spot-check between, P0 is ~13 batches.
 
 ---
 
-## 7. Decisions needed before Step 2
+## 7. Decisions — settled 2026-09-02
 
-| # | Decision | My recommendation |
+Recorded in [ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md).
+This section is history now; do not re-litigate it here — supersede the ADR instead.
+
+| # | Decision | Outcome |
 |---|---|---|
-| **D1** | Rename `02-primitives/` → `fundamentals/` and split its 12 files into ~47 atomic pages? | **Yes.** This is the structural change that makes the set staff-level rather than a glossary. The 12 current files each bundle 3–6 topics |
-| **D2** | Add `patterns/` and `comparisons/` as new folders, retiring `08-reference/tech-selection.md` into the latter? | **Yes.** Trade-off matrices that span topics have no correct home inside a single topic file |
-| **D3** | Scope: write all 123, or P0 only (63)? | **P0 only.** Revisit after drilling against them |
-| **D4** | Existing case files: rewrite in place (git history preserved, `interview-prep/03-…` paths stay) or move under `case-studies/`? | **Rewrite in place.** Moving breaks every inbound link in `INDEX.md` and the legacy notes for no reader benefit |
+| **D1** | Rename `02-primitives/` → `fundamentals/` and split its 12 files into ~47 atomic pages? | **Approved.** Split is staged: a primitive file survives until every topic it carries has a successor page |
+| **D2** | Add `patterns/` and `comparisons/`, retiring `08-reference/tech-selection.md` into the latter? | **Approved.** Folders are created with their first batch (6–8), not in advance; `tech-selection.md` is retired only once `comparisons/` exists |
+| **D3** | Scope: write all 123, or P0 only (63)? | **All 123**, P0-first batch order retained. Reassess at the end of P0 (batch 13) |
+| **D4** | Rewrite case files in place, or move under `case-studies/`? | **In place.** No renames, no moves — that is how the inbound links broke last time |
 
-Answer D1–D4 (or just say "go with your recommendations") and I'll start Batch 1.
+## 8. Progress
+
+| Batch | Files | State |
+|---|---|---|
+| 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | ✅ written, link-checked, `docs/fundamentals-batch-1` |
+| 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | next |
+| 3–13 | see §6 batch order | planned |
+
+**5 / 123 written.** Fundamentals 5/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 
@@ -378,8 +391,12 @@ Answer D1–D4 (or just say "go with your recommendations") and I'll start Batch
 
 ## Referenced by
 
-- [../../CLAUDE.md](../../CLAUDE.md)
-- [../diagrams/components.md](../diagrams/components.md)
+- [ADR-0001: Split bundled primitives into atomic fundamentals pages](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
+- [CLAUDE.md — system-design-prep](../../CLAUDE.md)
+- [Diagram component library](../diagrams/components.md)
+- [Docs index](../../docs/README.md)
+- [Fundamentals index](../fundamentals/README.md)
+- [STATUS](../../STATUS.md)
 
 ## Sources
 
