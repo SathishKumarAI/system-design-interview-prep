@@ -26,7 +26,7 @@ The restructure is decided, recorded, and **executing**. Batches 1–5 are writt
 | `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (breakers, bulkheads, degradation, DR) |
 | Manifest | §7 records the decisions, §8 tracks progress: **25 / 123** |
 | `patterns/`, `comparisons/` | Not created yet — **`patterns/` is created by batch 6**, `comparisons/` by batch 8 |
-| Links / backlinks | 1485 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| Links / backlinks | 1489 links checked, 4 broken (known placeholders), backlink pass idempotent |
 
 ## The next action
 
@@ -74,7 +74,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1485 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1489 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 ## Related work outside this repo

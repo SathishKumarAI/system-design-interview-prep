@@ -34,7 +34,7 @@ are still present and banner-marked, and each stays until its remaining topics l
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1485 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1489 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
 ## 3. Batch 6 — patterns (creates a new folder)

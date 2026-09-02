@@ -74,7 +74,7 @@ the same arithmetic rather than restating it.
 
 ```
 $ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-checked 1485 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+checked 1489 relative links; broken: 4          # the {rel_path} placeholders, unchanged
 $ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
 207 files scanned, 697 inbound links mapped, 0 changed
 ```
