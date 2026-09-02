@@ -141,6 +141,16 @@ change; a relay (or CDC on that table) publishes it. At-least-once, no lost even
 | SQS | Effectively unlimited, ~10–100 ms, 256 KB max message |
 | Typical retention | 7 days (replay window = how long you can be wrong for) |
 
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Data engineering design playbook](../05-data-cases/data-playbook.md)
+- [Design a news feed](../03-backend-cases/news-feed.md)
+- [Design a notification system](../03-backend-cases/notification-system.md)
+- [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Primitives index](README.md)
+- [Storage and databases](storage-and-databases.md)
+
 ## Sources & further reading
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.11 (stream processing), ch.10 (batch)

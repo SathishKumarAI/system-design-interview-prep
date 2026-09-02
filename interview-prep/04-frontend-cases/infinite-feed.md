@@ -190,6 +190,12 @@ still be semantically a list, with `aria-setsize`/`aria-posinset` where the DOM 
 incomplete); infinite scroll needs a keyboard-reachable "Load more" alternative; new items
 announced via `aria-live="polite"`; focus must never be stolen by loading content.
 
+## Referenced by
+
+- [Frontend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [web.dev — optimize INP](https://web.dev/articles/optimize-inp), [optimize LCP](https://web.dev/articles/optimize-lcp), [optimize CLS](https://web.dev/articles/optimize-cls)

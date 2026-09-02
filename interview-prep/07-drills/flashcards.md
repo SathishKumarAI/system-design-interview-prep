@@ -128,3 +128,8 @@ blind once a week and only revisit what you miss.
 - "The SLO is X, which gives us an error budget of Y minutes a month — that's what justifies Z."
 - "Egress dominates the bill, so the CDN is the first thing I'd build, not the last."
 - "I'd start with the boring version and add complexity only where a requirement forces it."
+
+## Referenced by
+
+- [Drills index](README.md)
+- [Reference index](../08-reference/README.md)

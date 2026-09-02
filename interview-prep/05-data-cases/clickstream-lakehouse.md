@@ -203,6 +203,12 @@ engine.
 - **First thing I'd cut:** raw retention 90 → 30 days for high-volume, low-value events, and
   the real-time path for metrics nobody watches live.
 
+## Referenced by
+
+- [Data platform cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [Apache Iceberg — maintenance and compaction](https://iceberg.apache.org/docs/latest/maintenance/)

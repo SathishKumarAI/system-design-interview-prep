@@ -118,6 +118,15 @@ and OLAP tables alike. See [messaging-and-streams.md](messaging-and-streams.md).
 | Object store first byte | ~100 ms; throughput ~GB/s parallel |
 | Practical single-node relational dataset | Low TB before sharding hurts |
 
+## Referenced by
+
+- [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
+- [Design a URL shortener](../03-backend-cases/url-shortener.md)
+- [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
+- [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Primitives index](README.md)
+- [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
+
 ## Sources & further reading
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.2 (data models), ch.3 (storage engines), ch.4 (encoding)

@@ -57,3 +57,7 @@ career content is heavily selected for drama.
 Writing a post-interview report (anonymised, no NDA breaches) forces you to articulate what you
 did well and badly. It's a better retrospective than most people ever do — and it's the reason
 these subs are useful to everyone else.
+
+## Referenced by
+
+- [Resources index](README.md)

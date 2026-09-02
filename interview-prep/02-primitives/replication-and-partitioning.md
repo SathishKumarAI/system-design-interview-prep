@@ -131,6 +131,19 @@ Fixes, cheapest first:
 | Quorum | R + W > N; typical N=3, W=2, R=2 |
 | Typical async replication lag | ms–seconds; minutes under load or long transactions |
 
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Consistency models](../fundamentals/consistency-models.md)
+- [Design a chat / messaging system](../03-backend-cases/chat-messaging.md)
+- [Design a news feed](../03-backend-cases/news-feed.md)
+- [Design ride-hailing / proximity matching (Uber)](../03-backend-cases/ride-hailing.md)
+- [Drills index](../07-drills/README.md)
+- [Messaging and streams](messaging-and-streams.md)
+- [Primitives index](README.md)
+- [Quorums and anti-entropy](../fundamentals/quorums-and-anti-entropy.md)
+- [Storage and databases](storage-and-databases.md)
+
 ## Sources & further reading
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.5 (replication), ch.6 (partitioning)

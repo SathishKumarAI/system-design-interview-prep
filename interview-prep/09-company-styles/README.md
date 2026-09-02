@@ -46,6 +46,13 @@ Whatever the badge on the door:
 5. **Level calibration is real.** The same answer that is a strong L4/E4 performance is a
    down-level for L6/E6 — because the expectation is scope and judgement, not correctness.
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)
+- [System Design Interview Preparation](../../README.md)
+
 ## Sources
 
 - [DesignGurus — System design interviews at Google, Amazon and Meta (2026)](https://www.designgurus.io/blog/system-design-interviews-at-google-meta-amazon)

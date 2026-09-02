@@ -183,6 +183,12 @@ that a chart has an a11y story.
   fan-out by more than half.
 - **First thing I'd cut:** update resolution (1 s → 5 s) for widgets that aren't focused.
 
+## Referenced by
+
+- [Frontend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [web.dev — optimize long tasks](https://web.dev/articles/optimize-long-tasks), [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)

@@ -111,6 +111,12 @@ requires it in the same release.
 | Log volume | 1–10 KB/request — price it, it surprises people |
 | Canary bake time | 15 min – 1 h per step |
 
+## Referenced by
+
+- [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
+- [Design ML monitoring, evaluation and retraining](../06-ml-cases/ml-monitoring-and-eval.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - [Google SRE Book — SLOs, monitoring, releases](https://sre.google/sre-book/table-of-contents/)

@@ -17,3 +17,7 @@ Load balancing is the practice of distributing incoming network traffic across m
 
 - **Complexity in Session Management**: Maintaining user sessions across multiple servers can be tricky. Solutions include sticky sessions or centralized session storage.
 - **Single Point of Failure**: The load balancer itself can become a single point of failure if it’s not properly replicated or redundant.
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

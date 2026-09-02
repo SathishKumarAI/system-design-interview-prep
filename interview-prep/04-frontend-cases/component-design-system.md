@@ -168,6 +168,12 @@ component versions.
 - **First thing I'd cut:** the number of components. A 40-component library nobody maintains
   is worse than 15 excellent ones.
 
+## Referenced by
+
+- [Frontend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) — the reference for every interactive pattern

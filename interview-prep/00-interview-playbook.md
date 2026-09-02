@@ -223,3 +223,12 @@ here is X." Cost reasoning is explicitly in the senior rubric now.
 - [Prepfully — Software Engineer Interview Rubric 2026](https://prepfully.com/interview-guides/software-engineer-interview-rubric-2026)
 - [Grokking — System Design Interview Framework 2026](https://www.grokkingsystemdesign.com/system-design-interview-guide)
 - [AssessAI — Rubric-based evaluation of system design answers](https://getassessai.com/blog/how-to-evaluate-system-design)
+
+## Referenced by
+
+- [8-week study plan](07-drills/8-week-plan.md)
+- [Company interview styles](09-company-styles/README.md)
+- [Interview prep index](README.md)
+- [Repo index](../INDEX.md)
+- [Resources index](10-resources/README.md)
+- [System Design Interview Preparation](../README.md)

@@ -38,3 +38,9 @@ Graphs databases offer high performance for data models with complex relationshi
 - [Scalability](http://www.lecloud.net/post/7994751381/scalability-for-dummies-part-2-database)
 - [Introduction to NoSQL](https://www.youtube.com/watch?v=qI_g07C_Q5I)
 - [NoSQL patterns](http://horicky.blogspot.com/2009/11/nosql-patterns.html)
+
+## Referenced by
+
+- [main](../../main.md)
+- [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
+- [Repo index](../../INDEX.md)

@@ -128,6 +128,14 @@ never trust client-side validation as an authorisation boundary.
 > URL, and gate merges on a Lighthouse CI check for LCP and INP — because a design that
 > can't be *kept* fast will not stay fast."
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Design an infinite feed (frontend)](infinite-feed.md)
+- [Frontend cases index](README.md)
+- [Interview playbook](../00-interview-playbook.md)
+- [Load balancing and gateways](../02-primitives/load-balancing-and-gateways.md)
+
 ## Sources & further reading
 
 - Vendor: `10-resources/vendor/front-end-interview-handbook/` — the front-end system design section

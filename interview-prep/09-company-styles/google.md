@@ -85,6 +85,10 @@ API.
   reward exactly this kind of depth.
 - Practise being interrupted: have a friend ask "why?" three times in a row on any component.
 
+## Referenced by
+
+- [Company interview styles](README.md)
+
 ## Sources
 
 - [Prepfully — Google SWE system design interview](https://prepfully.com/interview-guides/google-software-engineer-system-design-interview)

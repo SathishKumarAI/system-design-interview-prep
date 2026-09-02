@@ -203,6 +203,12 @@ The technical part is a week; this is the system.
 - **First thing I'd cut:** distribution checks on tier-3 tables, and full-table checks in
   favour of partition-scoped ones.
 
+## Referenced by
+
+- [Data platform cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: `DE/Fundamentals/Practical Data Quality ... Robert Hawker, Nicola Askham.pdf`

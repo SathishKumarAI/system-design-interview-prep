@@ -20,3 +20,8 @@ Lookup material. Not for reading front to back.
 
 Older long-form concept notes live in [../../basic/prep/](../../basic/prep/) (sourced from
 system-design-primer) and [../../data%20engineering/](../../data%20engineering/).
+
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)

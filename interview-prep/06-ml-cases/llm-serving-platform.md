@@ -203,6 +203,18 @@ Mostly stateless per request, but three pieces of state matter:
 - **First thing I'd cut:** max context length per tier, and interactive capacity reserved for
   overnight troughs (fill it with batch).
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Design a RAG assistant over company documents](rag-assistant.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [ML and GenAI cases index](README.md)
+- [ML system design playbook](ml-playbook.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [Inside vLLM: anatomy of a high-throughput inference system](https://vllm.ai/blog/2025-09-05-anatomy-of-vllm)

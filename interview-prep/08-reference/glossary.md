@@ -150,3 +150,8 @@ you look these up by topic.
 | **Speculative decoding** | Small draft model proposes tokens; large model verifies several at once |
 | **Quantisation** | Lower-precision weights/activations (fp8/int8/int4) for memory and speed |
 | **LLM-as-judge** | Using a model to score outputs; watch position/verbosity/self-preference bias |
+
+## Referenced by
+
+- [Reference index](README.md)
+- [Repo index](../../INDEX.md)

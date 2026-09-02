@@ -143,6 +143,14 @@ alert on and what the alert's action is.
 6. Is there an existing system, and what's wrong with it? (This question alone often reveals
    the whole intended answer.)
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Design a feature store](feature-store.md)
+- [Interview playbook](../00-interview-playbook.md)
+- [ML and GenAI cases index](README.md)
+
 ## Sources & further reading
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — **the single

@@ -93,3 +93,8 @@ _[Source: Do you really know why you prefer REST over RPC](https://apihandyman.i
 - [Crack the system design interview](http://www.puncsky.com/blog/2016-02-13-crack-the-system-design-interview)
 - [Thrift](https://code.facebook.com/posts/1468950976659943/)
 - [Why REST for internal use and not RPC](http://arstechnica.com/civis/viewtopic.php?t=1190508)
+
+## Referenced by
+
+- [main](../../main.md)
+- [Repo index](../../INDEX.md)

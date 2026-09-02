@@ -206,6 +206,12 @@ CDC that silently drifts is worse than no CDC, because people trust it.
 - **First thing I'd cut:** history (SCD2) for tables where nobody has ever queried it —
   measure before assuming.
 
+## Referenced by
+
+- [Data platform cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [Debezium — incremental snapshots (DDD-3)](https://debezium.io/documentation/reference/stable/connectors/postgresql.html)

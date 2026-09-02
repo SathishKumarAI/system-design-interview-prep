@@ -113,3 +113,8 @@ interview answer; the "avoid when" column is what earns the points.
 And the rule underneath that one: **boring, well-understood technology, plus one deliberate
 exotic choice where a requirement forces it.** A design with five novel components has five
 things nobody on the team can debug at 3am.
+
+## Referenced by
+
+- [Reference index](README.md)
+- [Repo index](../../INDEX.md)

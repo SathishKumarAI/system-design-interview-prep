@@ -140,6 +140,14 @@ and regular region evacuation drills are the answer.
 | Health check | Every 1–5 s, eject after 2–3 failures |
 | Deploy canary | 1% → 10% → 50% → 100%, with bake time at each |
 
+## Referenced by
+
+- [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
+- [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
+- [Design a notification system](../03-backend-cases/notification-system.md)
+- [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - [AWS Builders' Library — Timeouts, retries and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)

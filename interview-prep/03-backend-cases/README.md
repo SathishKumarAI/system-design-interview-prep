@@ -48,3 +48,11 @@ Most cases are a recombination of six moves. Learn the moves and new problems st
 | Put the big bytes in an object store, the small facts in a database | video, file sync, chat attachments |
 | Make the mutating operation idempotent and retryable | payments, notifications, uploads |
 | Degrade instead of failing | every single one |
+
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Fundamentals index](../fundamentals/README.md)
+- [Interview prep index](../README.md)
+- [Primitives index](../02-primitives/README.md)
+- [Repo index](../../INDEX.md)

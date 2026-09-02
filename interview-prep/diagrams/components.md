@@ -385,6 +385,14 @@ erDiagram
 - [../CONVENTIONS.md](../CONVENTIONS.md) — file format contract
 - [topics manifest](../topics/manifest.md) — the canonical topic list
 
+## Referenced by
+
+- [CLAUDE.md — system-design-prep](../../CLAUDE.md)
+- [File conventions](../CONVENTIONS.md)
+- [Fundamentals index](../fundamentals/README.md)
+- [Next session — start here](../../docs/NEXT-SESSION.md)
+- [Topic manifest](../topics/manifest.md)
+
 ## Sources
 
 - [Mermaid documentation](https://mermaid.js.org/intro/)

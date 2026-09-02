@@ -197,6 +197,17 @@ Rules to state:
 - **First thing I'd cut:** raw retention 15 → 7 days, and default scrape interval 10 s → 30 s
   (3x saving across the board, and almost nobody needs 10-second resolution beyond a day).
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
+- [Design a real-time dashboard (frontend)](../04-frontend-cases/realtime-dashboard.md)
+- [Design real-time analytics (ad click aggregation)](../05-data-cases/realtime-analytics.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Google interview style](../09-company-styles/google.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 2 — metrics monitoring and alerting chapter (`AI/ML-Foundations/`)

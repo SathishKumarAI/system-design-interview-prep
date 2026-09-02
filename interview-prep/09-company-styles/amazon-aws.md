@@ -112,6 +112,11 @@ inventory reservation · Prime Video streaming · a recommendation system · S3 
 a rate limiter for an API gateway · a notification service · warehouse robot coordination ·
 a deployment/CI system.
 
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Company interview styles](README.md)
+
 ## Sources
 
 - [Exponent — Amazon system design interview (2026)](https://www.tryexponent.com/blog/amazon-system-design-interview)

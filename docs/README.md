@@ -42,3 +42,7 @@ being readable at the moment you most need it.
   anti-patterns table in [../CLAUDE.md](../CLAUDE.md)
 - Dates absolute, never "last week"
 - Every claim of completion carries the command output that proves it
+
+## Referenced by
+
+- [Repo index](../INDEX.md)

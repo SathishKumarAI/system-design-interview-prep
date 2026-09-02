@@ -203,6 +203,16 @@ server can be down for a minute without the user noticing (offline queue drains 
   Compaction cadence is the main cost knob.
 - **First thing I'd cut:** history retention depth and presence update frequency.
 
+## Referenced by
+
+- [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
+- [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Frontend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Quorums and anti-entropy](../fundamentals/quorums-and-anti-entropy.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - [Figma — How Figma's multiplayer technology works](https://www.figma.com/blog/how-figmas-multiplayer-technology-works/)

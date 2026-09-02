@@ -185,6 +185,15 @@ fail closed. Paying customer's normal traffic: fail open. Say that you'd tag eac
   abusive load before it reaches expensive services.
 - **First thing I'd cut:** central sync frequency (1 s → 5 s), which trades accuracy for cost.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Design a notification system](notification-system.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Reliability patterns](../02-primitives/reliability-patterns.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.4 (rate limiter)

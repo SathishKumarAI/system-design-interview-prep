@@ -180,6 +180,14 @@ helping?" and it answers a question interviewers love to ask.
 - **First thing I'd cut:** candidate count and the number of features (feature importance is
   extremely long-tailed — half of them usually earn nothing).
 
+## Referenced by
+
+- [Design a news feed](../03-backend-cases/news-feed.md)
+- [Design a recommender system](recommender.md)
+- [ML and GenAI cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Vendor: `10-resources/vendor/applied-ml/README.md` — ranking/feed case studies

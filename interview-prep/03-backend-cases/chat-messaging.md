@@ -204,6 +204,15 @@ is recoverable from the log; a lost message is not.
 encrypted copy per recipient device (fanout cost × devices), and you lose server-side search,
 ranking, and spam classification. That trade — not the crypto — is the interview answer.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Design a collaborative editor (Google Docs / Figma)](../04-frontend-cases/collaborative-editor.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Meta interview style](../09-company-styles/meta.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.12 (chat system)

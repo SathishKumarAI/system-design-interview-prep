@@ -127,6 +127,10 @@ into infrastructure.
 | Added latency, mesh sidecar (both sides) | 0.5–2 ms |
 | Safe health check interval | 1–5 s, 2–3 failures to eject |
 
+## Referenced by
+
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - Repo notes: [../../basic/prep/Load%20Balancer.md](../../basic/prep/Load%20Balancer.md), [../../basic/prep/Reverse%20proxy%20%28web%20server%29.md](../../basic/prep/Reverse%20proxy%20%28web%20server%29.md)

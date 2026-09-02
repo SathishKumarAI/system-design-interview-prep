@@ -179,6 +179,12 @@ everywhere without a consistency story.
 (410), a malware/phishing check on creation (async, with a quarantine state), and rate limits
 per account. Interviewers notice when you bring this up unasked.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu, *System Design Interview* vol. 1 ch.8 (not in the local library — vol. 2 is at `AI/ML-Foundations/`)

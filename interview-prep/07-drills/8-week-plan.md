@@ -65,3 +65,9 @@ Use frontmatter `status` on case files: `seed → drafted → drilled → master
 `status: drilled` in Obsidian to get your revision list. Log every session to
 [../_templates/drill-log-template.md](../_templates/drill-log-template.md), and log the week's
 learning in [../../Track your learning.md](../../Track%20your%20learning.md).
+
+## Referenced by
+
+- [Drills index](README.md)
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)

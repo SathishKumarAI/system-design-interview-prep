@@ -105,6 +105,11 @@ Every enterprise design needs it and almost no candidate mentions it.
 | Per-IP login limit | ~5/min, exponential backoff |
 | Audit log retention | 1–7 years (regulated) |
 
+## Referenced by
+
+- [ML system design playbook](../06-ml-cases/ml-playbook.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)

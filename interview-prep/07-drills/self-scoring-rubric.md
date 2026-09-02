@@ -76,3 +76,9 @@ training–serving skew*; *specified the evaluation and rollout plan*; *gave $/p
 - Did I say a single number, or only adjectives?
 - Did I mention failure before minute 40?
 - Would I have hired me?
+
+## Referenced by
+
+- [Drill — <problem> — <YYYY-MM-DD>](../_templates/drill-log-template.md)
+- [Drills index](README.md)
+- [Interview prep index](../README.md)

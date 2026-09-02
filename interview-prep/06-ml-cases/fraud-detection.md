@@ -194,6 +194,12 @@ labels (chargebacks, review outcomes) → label store → training pipeline → 
 segments, avoid proxies for protected attributes, keep reason codes explainable (SHAP or a
 monotonic model where regulation requires it), and retain decisions for audit.
 
+## Referenced by
+
+- [ML and GenAI cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — imbalance, delayed labels, drift

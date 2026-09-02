@@ -129,6 +129,14 @@ back to origin is standard.
 | CDN hit ratio, well-designed static site | 95%+ |
 | CDN egress vs origin egress | ~2–5x cheaper |
 
+## Referenced by
+
+- [Design a chat / messaging system](../03-backend-cases/chat-messaging.md)
+- [Design a collaborative editor (Google Docs / Figma)](../04-frontend-cases/collaborative-editor.md)
+- [Design a URL shortener](../03-backend-cases/url-shortener.md)
+- [Design video streaming (YouTube / Netflix)](../03-backend-cases/video-streaming.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - Vendor: `10-resources/vendor/system-design-primer/README.md` — DNS, CDN sections

@@ -91,3 +91,7 @@ The company-specific differences are real but smaller than the internet suggests
 
 Spend your time in that proportion. Candidates who read ten company guides and never run a timed
 drill do worse than candidates who ran twenty drills and read none.
+
+## Referenced by
+
+- [Company interview styles](README.md)

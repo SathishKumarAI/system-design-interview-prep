@@ -62,3 +62,8 @@ reading material than you can finish.
 
 **Never buy a second course before finishing the first.** The failure mode in this space is
 always collection, never scarcity.
+
+## Referenced by
+
+- [Drills index](../07-drills/README.md)
+- [Resources index](README.md)

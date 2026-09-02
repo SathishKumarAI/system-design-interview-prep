@@ -181,6 +181,14 @@ to [../06-ml-cases/rag-assistant.md](../06-ml-cases/rag-assistant.md).
 - **First thing I'd cut:** replica count on the cold index tier, and the re-rank candidate
   set (200 → 100).
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Design a RAG assistant over company documents](../06-ml-cases/rag-assistant.md)
+- [Google interview style](../09-company-styles/google.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.13 (search autocomplete)

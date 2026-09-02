@@ -190,6 +190,13 @@ windows. Say those four differences and you've covered it.
 - **First thing I'd cut:** the highest rendition for content nobody watches at 4K, and
   renditions for the cold tail generated on demand instead of eagerly.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.14 (YouTube)

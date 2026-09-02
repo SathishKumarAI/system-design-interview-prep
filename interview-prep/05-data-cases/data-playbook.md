@@ -128,6 +128,13 @@ compression (zstd), materialising expensive repeated queries, separating compute
 so idle warehouses cost nothing, and killing the dashboards nobody opens (measure query usage
 per table — typically a large fraction of pipelines feed nothing).
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Data platform cases index](README.md)
+- [Design a feature store](../06-ml-cases/feature-store.md)
+- [Interview playbook](../00-interview-playbook.md)
+
 ## Sources & further reading
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.10 (batch), ch.11 (streaming)

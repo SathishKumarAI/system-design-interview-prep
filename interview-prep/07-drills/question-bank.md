@@ -84,3 +84,10 @@ Interviewers usually pick something adjacent to their product. Prepare the row t
 - "The product manager wants this feature next week — what would you cut?"
 - "What's the worst thing about your design?" (Answer honestly and specifically. Deflecting here
   costs more than the flaw itself.)
+
+## Referenced by
+
+- [Drills index](README.md)
+- [File conventions](../CONVENTIONS.md)
+- [Repo index](../../INDEX.md)
+- [Resources index](../10-resources/README.md)

@@ -86,6 +86,10 @@ service · Facebook Live · a privacy/consent system · a metrics pipeline.
 - For product architecture, rehearse going from a product requirement to entities to API to data
   model in ten minutes.
 
+## Referenced by
+
+- [Company interview styles](README.md)
+
 ## Sources
 
 - [Exponent — Meta system design interview (2026)](https://www.tryexponent.com/blog/meta-system-design-interview)

@@ -197,6 +197,12 @@ Layered, because one layer is not enough:
   saves more than any infrastructure change.
 - **First thing I'd cut:** open/click event retention, and SMS as a default channel.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.10 (notification system)

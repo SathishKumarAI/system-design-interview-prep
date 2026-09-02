@@ -187,6 +187,13 @@ client ──chunk PUT/GET (presigned)──→ blob storage (erasure-coded, mul
 - **First thing I'd cut:** version history 30 → 7 days for free tiers; cold-tier anything
   untouched for 90 days.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.15 (Google Drive); vol. 2 has the S3-like object storage

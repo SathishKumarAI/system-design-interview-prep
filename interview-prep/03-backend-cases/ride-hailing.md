@@ -188,6 +188,14 @@ stream the trail to Kafka for anything that needs history.
   save driver phone battery — a rare win-win worth naming.
 - **First thing I'd cut:** location trail retention, and update frequency for idle drivers.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 2 — proximity service, nearby friends chapters

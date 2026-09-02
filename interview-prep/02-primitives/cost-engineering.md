@@ -103,6 +103,16 @@ Graph it. A regression in cost per request is a bug, exactly like a latency regr
 
 See the cost anchors table in [../01-numbers.md](../01-numbers.md#6-cost-anchors).
 
+## Referenced by
+
+- [Design an infinite feed (frontend)](../04-frontend-cases/infinite-feed.md)
+- [Design an LLM serving platform](../06-ml-cases/llm-serving-platform.md)
+- [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
+- [Design video streaming (YouTube / Netflix)](../03-backend-cases/video-streaming.md)
+- [ML system design playbook](../06-ml-cases/ml-playbook.md)
+- [Networking and the edge](networking-and-edge.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - [AWS Well-Architected — Cost Optimization Pillar](https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html)

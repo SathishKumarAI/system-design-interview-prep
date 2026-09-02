@@ -58,3 +58,8 @@ rendering, `scheduler.yield()`, web workers for heavy computation — not a conf
 | Time to interactive on mid-range Android / 4G | < 3.5 s |
 | Long task threshold | 50 ms — anything longer blocks input |
 | Image: use AVIF/WebP, responsive `srcset`, lazy below the fold, `fetchpriority=high` on the LCP image |
+
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)

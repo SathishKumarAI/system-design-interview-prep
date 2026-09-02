@@ -57,3 +57,7 @@ Together, these summaries provide a comprehensive understanding of the design co
 
 Reference:
 [Design Youtube - System Design Interview Link](https://youtu.be/jPKTo1iGQiE?si=tfF61UlqL78lUSp8)
+
+## Referenced by
+
+- [Repo index](../../../../INDEX.md)

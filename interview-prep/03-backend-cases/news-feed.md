@@ -185,6 +185,15 @@ fresh ones. Details in [../06-ml-cases/feed-ranking.md](../06-ml-cases/feed-rank
   post storage is noise. Active-user-only fanout is the biggest single saving.
 - **First thing I'd cut:** feed depth 800 → 300 (most users never scroll past 50).
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Design an infinite feed (frontend)](../04-frontend-cases/infinite-feed.md)
+- [Design feed ranking (engagement prediction)](../06-ml-cases/feed-ranking.md)
+- [Meta interview style](../09-company-styles/meta.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 1 ch.11 (news feed)

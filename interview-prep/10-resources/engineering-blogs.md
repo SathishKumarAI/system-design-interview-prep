@@ -80,3 +80,9 @@ company actually has, and their public writing is the answer key.
 4. Write one line in your drill log.
 
 Ten posts read this way are worth a hundred read passively.
+
+## Referenced by
+
+- [Courses and mock interviews](courses-and-mocks.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Resources index](README.md)

@@ -62,3 +62,9 @@ Solo practice plateaus. Get real mocks:
 - Paid platforms (Exponent, Pramp, interviewing.io, Hello Interview) — see
   [../10-resources/courses-and-mocks.md](../10-resources/courses-and-mocks.md).
 - Your own recording, watched a day later, is the cheapest and works better than people expect.
+
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)
+- [System Design Interview Preparation](../../README.md)

@@ -48,3 +48,9 @@ See [../07-drills/self-scoring-rubric.md](../07-drills/self-scoring-rubric.md).
 ## Study list this produced
 
 - [ ] read <file/book chapter>
+
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Backend cases index](../03-backend-cases/README.md)
+- [Drills index](../07-drills/README.md)

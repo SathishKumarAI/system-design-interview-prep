@@ -212,6 +212,18 @@ serving app, once in the training notebook). The definition must own them too.
 - **First thing I'd cut:** unused feature views, and the freshness tier of features whose models
   don't actually need seconds.
 
+## Referenced by
+
+- [Data engineering design playbook](../05-data-cases/data-playbook.md)
+- [Design a recommender system](recommender.md)
+- [Design ML monitoring, evaluation and retraining](ml-monitoring-and-eval.md)
+- [Design real-time fraud detection](fraud-detection.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [ML and GenAI cases index](README.md)
+- [ML system design playbook](ml-playbook.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — features and skew

@@ -59,3 +59,7 @@ Subscribe to **three at most**. A full inbox is a to-do list you never finish; t
 3. **Turn one issue a month into a drill** — read the requirements, close the tab, design it,
    then diff. That single habit is worth more than the other 51 issues.
 4. **Archive aggressively.** Unread newsletters generate guilt, not skill.
+
+## Referenced by
+
+- [Resources index](README.md)

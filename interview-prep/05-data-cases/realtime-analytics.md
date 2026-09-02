@@ -205,6 +205,12 @@ for dashboard queries (which repeat constantly).
 - **First thing I'd cut:** materialised cuboids nobody queries (measure with query logs), and
   minute-granularity retention 30 → 7 days.
 
+## Referenced by
+
+- [Data platform cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: Alex Xu vol. 2 — ad click event aggregation chapter (`AI/ML-Foundations/`)

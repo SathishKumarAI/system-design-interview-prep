@@ -63,3 +63,11 @@ like reading the same tables.
 - **Time zones and event time vs ingest time** — one of the top causes of wrong numbers.
 - **Silent failure** — a pipeline that produces *zero* rows usually looks green. Alert on
   row-count anomalies, not just on job failures.
+
+## Referenced by
+
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Interview prep index](../README.md)
+- [Messaging and streams](../02-primitives/messaging-and-streams.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [Repo index](../../INDEX.md)

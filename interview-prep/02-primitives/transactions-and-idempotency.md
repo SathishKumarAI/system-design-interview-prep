@@ -135,6 +135,19 @@ transitions, and reconciliation against the provider's daily file.
 | 2PC latency penalty | 2+ extra round trips per participant |
 | Optimistic retry conflict rate, healthy | < 1% |
 
+## Referenced by
+
+- [Design a chat / messaging system](../03-backend-cases/chat-messaging.md)
+- [Design a notification system](../03-backend-cases/notification-system.md)
+- [Design a payments system / ledger](../03-backend-cases/payments-ledger.md)
+- [Design ride-hailing / proximity matching (Uber)](../03-backend-cases/ride-hailing.md)
+- [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
+- [Messaging and streams](messaging-and-streams.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [Primitives index](README.md)
+- [Replication and partitioning](replication-and-partitioning.md)
+- [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
+
 ## Sources & further reading
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.7 (transactions), ch.9 (distributed)

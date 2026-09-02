@@ -89,3 +89,7 @@ Good questions here double as signal that you think about systems in context:
 - What's the monthly infrastructure bill, and what dominates it?
 - What decision from a year ago do you most regret?
 - What would you rebuild if you had a free month?
+
+## Referenced by
+
+- [Company interview styles](README.md)

@@ -233,6 +233,18 @@ instructions, and never let retrieved text trigger tool calls in v1), PII redact
 out-of-scope questions, and output filtering. Say prompt injection unprompted — retrieved content
 is attacker-controllable in any system where users can create documents.
 
+## Referenced by
+
+- [8-week study plan](../07-drills/8-week-plan.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
+- [Design an LLM serving platform](llm-serving-platform.md)
+- [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [ML and GenAI cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+- [Storage and databases](../02-primitives/storage-and-databases.md)
+
 ## Sources & further reading
 
 - Local book: `AI/LLM-Apps/AI Engineering — Chip Huyen (2025).pdf` — **the best single reference for this case**

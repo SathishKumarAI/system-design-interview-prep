@@ -60,3 +60,7 @@ bash interview-prep/10-resources/fetch-references.sh --clean  # delete and re-cl
 
 `vendor/` is gitignored and must never be edited — treat it as read-only upstream, per the
 `vendor/` rule in [../../CLAUDE.md](../../CLAUDE.md).
+
+## Referenced by
+
+- [Resources index](README.md)

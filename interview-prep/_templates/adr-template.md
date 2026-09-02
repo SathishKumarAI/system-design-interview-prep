@@ -79,3 +79,8 @@ Rules (see ../../CLAUDE.md → Architecture Decision Records):
 - Write it while the context is fresh; if reconstructed later, say so here.
 - Get it reviewed by a human before status becomes Accepted.
 -->
+
+## Referenced by
+
+- [CLAUDE.md — system-design-prep](../../CLAUDE.md)
+- [Docs index](../../docs/README.md)

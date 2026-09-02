@@ -64,3 +64,8 @@ Nearly every ML design is the same five stages. Learn the stages and new problem
 > [!tip] Opening line for any ML round
 > "Before choosing a model: what business metric are we moving, what's the latency budget, and
 > where do the labels come from? Those three answers determine most of the design."
+
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)

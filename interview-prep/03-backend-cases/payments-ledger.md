@@ -210,6 +210,20 @@ idempotent.
   shows you understand what the system is *for*.
 - **First thing I'd cut:** nothing on the correctness path. Cut analytics retention instead.
 
+## Referenced by
+
+- [Backend cases index](README.md)
+- [Consistency models](../fundamentals/consistency-models.md)
+- [Design real-time fraud detection](../06-ml-cases/fraud-detection.md)
+- [Design ride-hailing / proximity matching (Uber)](ride-hailing.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
+- [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+- [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
+- [Transactions, sagas and idempotency](../02-primitives/transactions-and-idempotency.md)
+
 ## Sources & further reading
 
 - [Stripe — Designing robust and predictable APIs with idempotency](https://stripe.com/blog/idempotency)

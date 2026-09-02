@@ -111,3 +111,9 @@ until these are read.
 - *Database Internals* (Petrov) — deeper on storage engines than DDIA
 - *Site Reliability Engineering* (Google) — [free online](https://sre.google/books/)
 - *Understanding Distributed Systems* (Vitillo)
+
+## Referenced by
+
+- [File conventions](../CONVENTIONS.md)
+- [Repo index](../../INDEX.md)
+- [Resources index](README.md)

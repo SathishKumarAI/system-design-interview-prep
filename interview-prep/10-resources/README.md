@@ -61,3 +61,9 @@ Currently vendored:
 3. DDIA chapters 5–9 (you own it — see [books-on-this-machine.md](books-on-this-machine.md))
 4. Your target company's engineering blog
 5. Everything else
+
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [Repo index](../../INDEX.md)
+- [System Design Interview Preparation](../../README.md)

@@ -118,6 +118,13 @@ size for that, not for the whole dataset.
 | Memory for 100M small objects (200 B) | ~20 GB + overhead (~1.5x) |
 | HyperLogLog | ~12 KB, 0.81% error |
 
+## Referenced by
+
+- [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
+- [Design a news feed](../03-backend-cases/news-feed.md)
+- [Design a URL shortener](../03-backend-cases/url-shortener.md)
+- [Primitives index](README.md)
+
 ## Sources & further reading
 
 - Repo notes: [../../basic/prep/Cache.md](../../basic/prep/Cache.md), [../../basic/prep/Caching.md](../../basic/prep/Caching.md)

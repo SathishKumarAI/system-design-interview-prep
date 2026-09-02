@@ -205,6 +205,12 @@ unbiased sample to train and evaluate on.
 - **First thing I'd cut:** full feature logging for non-critical models (metadata only), and raw
   prediction retention 90 → 30 days.
 
+## Referenced by
+
+- [ML and GenAI cases index](README.md)
+- [Question bank](../07-drills/question-bank.md)
+- [Repo index](../../INDEX.md)
+
 ## Sources & further reading
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — the monitoring and continual-learning chapters

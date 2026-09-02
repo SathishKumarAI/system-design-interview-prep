@@ -218,6 +218,18 @@ vCPU ≈ $30/month            Egress ≈ $0.05–0.09/GB
 
 ---
 
+## Referenced by
+
+- [8-week study plan](07-drills/8-week-plan.md)
+- [Cost engineering](02-primitives/cost-engineering.md)
+- [Drills index](07-drills/README.md)
+- [Interview playbook](00-interview-playbook.md)
+- [Interview prep index](README.md)
+- [Reference index](08-reference/README.md)
+- [Repo index](../INDEX.md)
+- [Resources index](10-resources/README.md)
+- [System Design Interview Preparation](../README.md)
+
 ## Sources & further reading
 
 - [Latency numbers every programmer should know — 2026 edition (gist)](https://gist.github.com/andreasbros/87fec32cf97aa41a1cbb64cc4dbdcd43)

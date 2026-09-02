@@ -143,3 +143,7 @@ That became a promoted section in the skill: *fix the link, not the filename.*
 `docs/NEXT-SESSION.md` · `docs/sessions/2026-09-02-*.md` ·
 `~/.claude/skills/staff-technical-docs/**` (13) ·
 `~/.claude/skills/staff-technical-docs-workspace/**` (benchmark, graded runs, review.html)
+
+## Referenced by
+
+- [Worklog](../WORKLOG.md)
