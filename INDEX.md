@@ -129,6 +129,8 @@ see [interview-prep/10-resources/books-on-this-machine.md](interview-prep/10-res
 
 | File | What |
 |---|---|
+| [STATUS.md](STATUS.md) | **Read first on return** — where work stopped, the next action, the traps |
+| [docs/WORKLOG.md](docs/WORKLOG.md) | Dated entries: what changed, how, why, and the trade-offs found |
 | [README.md](README.md) | Repo front page |
 | [CLAUDE.md](CLAUDE.md) | Rules for agents working here, incl. ADR conventions |
 | [main.md](main.md) | Original hand-made map of content (legacy; this INDEX supersedes it) |

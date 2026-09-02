@@ -12,6 +12,8 @@ reasoning, and where experienced engineers get the choice wrong — not definiti
 
 | Question | File |
 |---|---|
+| **Where did work stop? What's next?** | [STATUS.md](STATUS.md) |
+| Why was a past change made? | [docs/WORKLOG.md](docs/WORKLOG.md) |
 | **Canonical topic list — check before creating ANY file** | [interview-prep/topics/manifest.md](interview-prep/topics/manifest.md) |
 | Reusable Mermaid building blocks + diagram rules | [interview-prep/diagrams/components.md](interview-prep/diagrams/components.md) |
 | File format contract | [interview-prep/CONVENTIONS.md](interview-prep/CONVENTIONS.md) |
