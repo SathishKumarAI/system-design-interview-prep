@@ -276,6 +276,7 @@ sensitive component you own, and observability must not sit downstream of the th
 - [Consistency models](consistency-models.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
+- [Graceful degradation](../patterns/graceful-degradation.md)
 - [Leases, locks and fencing](leases-locks-and-fencing.md)
 - [Log vs queue](log-vs-queue.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)

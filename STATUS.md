@@ -4,7 +4,7 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 
 | You want | Read |
 |---|---|
-| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 7 |
+| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 8 |
 | The stop point and the traps | This file |
 | Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
 | What happened last session, mistakes included | [docs/sessions/2026-09-02-fundamentals-batches-1-5.md](docs/sessions/2026-09-02-fundamentals-batches-1-5.md) |
@@ -12,42 +12,42 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 | The repo map | [INDEX.md](INDEX.md) |
 
 **Last updated:** 2026-09-02
-**Branch:** `docs/patterns-batch-6` · **PRs #1–#7** open, none merged
+**Branch:** `docs/patterns-batch-7` · **PRs #1–#8** open, none merged
 
 ---
 
 ## Where things stopped
 
-The restructure is decided, recorded, and **executing**. Batches 1–6 are written and verified.
+The restructure is decided, recorded, and **executing**. Batches 1–7 are written and verified.
 
 | Layer | State |
 |---|---|
 | D1–D4 decisions | Answered — all approved, scope = **all 123 topics**. [ADR-0001](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | `interview-prep/fundamentals/` | **25 pages** (consistency · replication · storage+caching · messaging · reliability) + README |
-| `interview-prep/patterns/` | **5 pages** (outbox · saga · 2PC · derived data · expand–contract) + README. **Folder created in batch 6** |
-| `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (breakers, bulkheads, degradation, DR). `transactions-and-idempotency` is down to **ledgers only** and is retired when `ledgers-and-double-entry.md` lands |
-| Manifest | §7 records the decisions, §8 tracks progress: **30 / 123** |
+| `interview-prep/patterns/` | **10 pages** — atomicity (outbox · saga · 2PC · derived data · expand–contract) and blast radius (fanout · cells · degradation · breakers · backfill) + README |
+| `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (**down to bulkheads and DR**). `transactions-and-idempotency` is down to **ledgers only** and is retired when `ledgers-and-double-entry.md` lands |
+| Manifest | §7 records the decisions, §8 tracks progress: **35 / 123** |
 | `comparisons/` | Not created yet — batch 8 creates it and retires `08-reference/tech-selection.md` into it |
-| Links / backlinks | 1630 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| Links / backlinks | 1725 links checked, 4 broken (known placeholders), backlink pass idempotent |
 
 ## The next action
 
 Two things, in this order:
 
-1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → … → #7. They are stacked, so each
+1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → … → #8. They are stacked, so each
    retargets to `main` as the one below it lands. The session could not merge them (`gh pr merge`
-   blocked by the permission classifier): `gh pr merge 1 --squash --delete-branch`, then 2–7.
-2. **Batch 7 — the rest of the P0 patterns.** Five files in the existing `patterns/` folder:
-   `fanout-write-vs-read` (split ← 03/news-feed) · `cell-based-architecture` (new) ·
-   `graceful-degradation` and `circuit-breaker` (split ← reliability-patterns) ·
-   `backfill-and-reprocessing` (split ← 05/clickstream-lakehouse).
-   Batch order is in [manifest §6](interview-prep/topics/manifest.md).
+   blocked by the permission classifier): `gh pr merge 1 --squash --delete-branch`, then 2–8.
+2. **Batch 8 — comparisons.** This batch **creates `interview-prep/comparisons/`**, the second and
+   last new folder, and needs the same wiring batch 6 needed (folder README, root `INDEX.md` row,
+   `interview-prep/README.md` row, cross-links):
+   `sql-vs-nosql-vs-newsql` · `oltp-database-matrix` · `messaging-matrix` ·
+   `consistency-model-matrix` · `batch-vs-streaming`.
+   `08-reference/tech-selection.md` is **retired into this folder** once they exist — replaced by a
+   stub pointing there, not deleted.
 
-Follow the shape of batches 1–6: research 2–3 sources first, one cited production incident per
-page, ≥ 2 Mermaid diagram *types*, real arithmetic in "Numbers that matter", then the three
-scripts. Patterns pages carry the extra bar the folder README states — **when the pattern earns its
-complexity, and what applying it too early costs**. After batch 7, `reliability-patterns.md` holds
-only bulkheads and multi-region DR.
+Comparison pages differ again: they are **cross-cutting matrices that reference topic pages rather
+than re-explaining them**, and each row needs a real axis (write path, consistency, ops cost),
+not a feature checklist. Follow the shape of batches 1–7 for everything else.
 
 ## Traps — things that will bite on re-entry
 
@@ -74,7 +74,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1630 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1725 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 ## Related work outside this repo

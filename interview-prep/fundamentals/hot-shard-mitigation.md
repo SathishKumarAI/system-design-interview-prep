@@ -258,7 +258,9 @@ C++ engine to remove GC from the tail-latency equation.
 ## Referenced by
 
 - [Cache failure modes](cache-failure-modes.md)
+- [Cell-based architecture](../patterns/cell-based-architecture.md)
 - [Consistent hashing](consistent-hashing.md)
+- [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
 - [Partitioning strategies](partitioning-strategies.md)

@@ -243,6 +243,7 @@ failure domain with a much larger blast radius than the data it coordinates.**
 
 ## Referenced by
 
+- [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)

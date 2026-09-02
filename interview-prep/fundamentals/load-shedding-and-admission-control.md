@@ -251,7 +251,9 @@ anyone.*
 ## Referenced by
 
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
+- [Circuit breaker](../patterns/circuit-breaker.md)
 - [Fundamentals index](README.md)
+- [Graceful degradation](../patterns/graceful-degradation.md)
 - [Queueing theory basics](queueing-theory-basics.md)
 - [Reliability patterns](../02-primitives/reliability-patterns.md)
 - [Tail latency](tail-latency.md)

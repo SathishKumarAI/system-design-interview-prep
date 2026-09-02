@@ -248,6 +248,7 @@ restarting fast makes it worse, which is exactly the situation retries create at
 ## Referenced by
 
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
+- [Circuit breaker](../patterns/circuit-breaker.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Queueing theory basics](queueing-theory-basics.md)

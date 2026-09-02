@@ -267,6 +267,8 @@ so the switch was made on measured evidence rather than confidence.
 
 ## Referenced by
 
+- [Backfill and reprocessing](backfill-and-reprocessing.md)
+- [Cell-based architecture](cell-based-architecture.md)
 - [Materialized views and derived data](materialized-views-and-derived-data.md)
 - [Patterns index](README.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)

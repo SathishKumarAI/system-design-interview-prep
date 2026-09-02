@@ -79,5 +79,6 @@ the vendor calculator before putting any of them in a real design doc.
 ## Referenced by
 
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
+- [Next session — start here](../docs/NEXT-SESSION.md)
 - [Repo index](../INDEX.md)
 - [System Design Interview Preparation](../README.md)

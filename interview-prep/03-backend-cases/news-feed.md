@@ -11,6 +11,11 @@ tags: [fanout, feed, cache, ranking, celebrity-problem]
 
 # Design a news feed
 
+> [!info] The fan-out decision now has its own page
+> [patterns/fanout-write-vs-read.md](../patterns/fanout-write-vs-read.md) carries the three
+> thresholds, the storage arithmetic and Twitter's published numbers. This case study keeps the
+> end-to-end design; go there for the mechanism.
+
 > Twitter/Instagram/LinkedIn home timeline: posts from people you follow, ranked, paginated,
 > fresh.
 > **The hard part:** fanout-on-write vs fanout-on-read, and the celebrity account that breaks
@@ -190,6 +195,7 @@ fresh ones. Details in [../06-ml-cases/feed-ranking.md](../06-ml-cases/feed-rank
 - [Backend cases index](README.md)
 - [Design an infinite feed (frontend)](../04-frontend-cases/infinite-feed.md)
 - [Design feed ranking (engagement prediction)](../06-ml-cases/feed-ranking.md)
+- [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Materialized views and derived data](../patterns/materialized-views-and-derived-data.md)
 - [Meta interview style](../09-company-styles/meta.md)

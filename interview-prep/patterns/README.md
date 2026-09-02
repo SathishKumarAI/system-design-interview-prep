@@ -30,6 +30,11 @@ database.
 | When is 2PC actually the right answer, and where does it block? | [distributed-transactions.md](distributed-transactions.md) |
 | Which of my stores can I safely delete and rebuild? | [materialized-views-and-derived-data.md](materialized-views-and-derived-data.md) |
 | How do I change a schema or move a store with no downtime and a revert at every step? | [expand-contract-migration.md](expand-contract-migration.md) |
+| Precompute timelines or merge at read? Where does the celebrity threshold sit? | [fanout-write-vs-read.md](fanout-write-vs-read.md) |
+| How do I stop one tenant, or one bad deploy, from affecting everyone? | [cell-based-architecture.md](cell-based-architecture.md) |
+| What does my product do when a dependency is down? | [graceful-degradation.md](graceful-degradation.md) |
+| How do I stop spending threads on a dependency that is already failing? | [circuit-breaker.md](circuit-breaker.md) |
+| I have to recompute six weeks of wrong data. How, without breaking production? | [backfill-and-reprocessing.md](backfill-and-reprocessing.md) |
 
 ## The through-line
 
@@ -60,10 +65,12 @@ here.**
 | Batch | Files | State |
 |---|---|---|
 | 6 | outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | **done** |
-| 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | next |
-| 8+ | cqrs · event-sourcing · change-data-capture · bulkhead · leader-election · scatter-gather · strangler-fig · write-audit-publish · pagination-patterns · api-versioning | planned |
+| 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | **done** |
+| 8 | **comparisons/** (new folder): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | next |
+| 9+ | cqrs · event-sourcing · change-data-capture · bulkhead · leader-election · scatter-gather · strangler-fig · write-audit-publish · pagination-patterns · api-versioning | planned |
 
-**5 of 20 patterns written.**
+**10 of 20 patterns written.** Batch 6 covered atomicity you cannot have; batch 7 covers **blast
+radius** — who is affected, for how long, and what they see while it lasts.
 
 ## How to use these
 
@@ -85,6 +92,5 @@ Each page ends with **Staff-level follow-ups**: multi-part questions with no def
 
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
-- [Next session — start here](../../docs/NEXT-SESSION.md)
 - [Primitives index](../02-primitives/README.md)
 - [Repo index](../../INDEX.md)

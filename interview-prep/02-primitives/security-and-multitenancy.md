@@ -107,6 +107,7 @@ Every enterprise design needs it and almost no candidate mentions it.
 
 ## Referenced by
 
+- [Cell-based architecture](../patterns/cell-based-architecture.md)
 - [ML system design playbook](../06-ml-cases/ml-playbook.md)
 - [Primitives index](README.md)
 

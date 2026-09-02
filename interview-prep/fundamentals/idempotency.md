@@ -238,8 +238,10 @@ reconciler resolves the unknowns using the provider as the arbiter. The generali
 
 ## Referenced by
 
+- [Circuit breaker](../patterns/circuit-breaker.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Expand–contract migration](../patterns/expand-contract-migration.md)
+- [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)
 - [Outbox pattern](../patterns/outbox-pattern.md)

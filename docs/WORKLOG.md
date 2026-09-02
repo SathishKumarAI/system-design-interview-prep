@@ -13,6 +13,76 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 7: blast radius
+
+Branch: `docs/patterns-batch-7` · PRs open: #1 (plan), #2–#8 (batches 1–7)
+
+### What
+
+Five more `patterns/` pages: `fanout-write-vs-read`, `cell-based-architecture`,
+`graceful-degradation`, `circuit-breaker`, `backfill-and-reprocessing`. Patterns is now 10 of 20;
+the manifest total is **35 of 123**.
+
+Batch 6 was about atomicity you cannot have. Batch 7 is about **blast radius** — who is affected
+when something fails, for how long, and what they see while it lasts.
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| graceful-degradation | **AWS S3, 28 Feb 2017** — a mistyped playbook input removed capacity supporting the index and placement subsystems; ~3 hours in us-east-1, recovery bounded by a full subsystem restart that had not been exercised at that scale for years. **The Service Health Dashboard could not be updated because it was hosted on S3**, so status moved to Twitter |
+| cell-based-architecture | **AWS Route 53** — 2 048 virtual name servers, 4 per customer domain, **≈ 730 billion shuffle shards**; routing pushed to DNS so there is no request-path router to fail |
+| fanout-write-vs-read | **Krikorian, Timelines at Scale** — Redis-materialised timelines capped at ~800 entries, celebrity accounts excluded from fanout and merged at read, ~300 k deliveries/s |
+| circuit-breaker | Hystrix's defaults (20 requests / 10 s, 50%, 5 s sleep) and resilience4j's (100-call window, 60 s wait); Envoy outlier detection as the fleet-scale alternative |
+| backfill-and-reprocessing | **Kreps, Questioning the Lambda Architecture** — second job from the start of retained history, new output table, higher parallelism, switch when caught up |
+
+### The arguments worth keeping
+
+- **Fan-out on write is the read-optimised one, not "the scalable one".** Its cost is unbounded on
+  the follower distribution's tail. And the threshold everyone names (celebrity follower count) is
+  usually *less* valuable than the one nobody does — **fan out only to recently active followers**,
+  which on a mature graph removes most of the work.
+- **Store ids, not posts.** 16 B vs 1–2 KB is ~100× the memory, and with ids a deleted or edited
+  post is corrected everywhere at read time for free.
+- **A cell that shares a database is not a cell.** The architecture's real blast radius is its
+  most-shared component, so the exercise that matters is enumerating every dependency and asking
+  "if this fails, how many cells go down?"
+- **Shuffle sharding requires client retry across the assigned shard.** Without it, partial overlap
+  becomes full impact and the combinatorics buy far less than the arithmetic suggests.
+- **A breaker converts a slow failure into a fast one** — an improvement only if there is a
+  fallback. And the fallback must be *strictly more local* than the primary, or it fails in the
+  incident it exists for.
+- **Successful degradation is invisible.** The request returns 200, latency is fine, error rate is
+  zero — and a dependency has been dead for a week. Every fallback must emit a metric.
+- **Availability arithmetic justifies the work**: six required 99.9% dependencies give ~99.4%
+  (~3.6 h/month); making four optional gives ~99.8% (~86 min).
+- **A backfill must run the production code path, write to a new output, be idempotent per
+  partition, and be throttled** — and silent restatement destroys trust far longer than the
+  original bug did.
+
+### Trade-offs
+
+- `reliability-patterns.md` is down to **bulkheads and multi-region DR**; it retires when
+  `bulkhead.md` and `multi-region-and-dr.md` land.
+- Two case files gained pointer banners rather than edits: `03-backend-cases/news-feed.md` →
+  `fanout-write-vs-read`, `05-data-cases/clickstream-lakehouse.md` → `backfill-and-reprocessing`.
+  The cases are rewritten in place in a later batch; a banner is the cheap correct move until then.
+- Batch 8 creates `comparisons/` and retires `08-reference/tech-selection.md` into it — the second
+  and last new folder, and the worklog entry for batch 6 records what folder creation costs.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1725 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+219 files scanned, 803 inbound links mapped, 0 changed
+```
+
+All 35 topic pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 6: patterns, and the first new folder
 
 Branch: `docs/patterns-batch-6` · PRs open: #1 (plan), #2–#7 (batches 1–6)

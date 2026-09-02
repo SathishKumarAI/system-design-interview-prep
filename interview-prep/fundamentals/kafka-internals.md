@@ -261,6 +261,7 @@ happening.
 
 ## Referenced by
 
+- [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)

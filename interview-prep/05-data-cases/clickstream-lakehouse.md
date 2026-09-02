@@ -9,6 +9,11 @@ updated: 2026-09-02
 tags: [kafka, flink, iceberg, compaction, late-data]
 ---
 
+> [!info] Reprocessing now has its own page
+> [patterns/backfill-and-reprocessing.md](../patterns/backfill-and-reprocessing.md) carries the
+> replay recipe, idempotent partitions, restatement policy and throttling. This case study keeps
+> the end-to-end pipeline.
+
 # Design a clickstream pipeline into a lakehouse
 
 > Every page view, click and impression from web and mobile, landing in queryable tables for
@@ -205,6 +210,7 @@ engine.
 
 ## Referenced by
 
+- [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

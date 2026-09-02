@@ -197,17 +197,17 @@ complexity, and the failure mode of applying it too early.
 | `event-sourcing.md` | P1 | event-store.md | Append-only truth, projections, snapshotting, schema evolution over years of events | new |
 | `change-data-capture.md` | P0 | cdc.md, debezium.md, binlog.md | Log-based capture, snapshot→stream handover, WAL-retention cliff | split ← 05/cdc-pipeline |
 | [`materialized-views-and-derived-data.md`](../patterns/materialized-views-and-derived-data.md) ✅ | P0 | derived-data.md, read-models.md | Rebuildable derived stores as the core scaling idea; staleness contracts | **written** |
-| `fanout-write-vs-read.md` | P0 | fanout.md, timeline-fanout.md, push-vs-pull-feed.md | The hybrid threshold, active-user-only fanout, cost arithmetic both ways | split ← 03/news-feed |
+| [`fanout-write-vs-read.md`](../patterns/fanout-write-vs-read.md) ✅ | P0 | fanout.md, timeline-fanout.md, push-vs-pull-feed.md | The hybrid threshold, active-user-only fanout, cost arithmetic both ways | **written** |
 | `two-stage-retrieval-and-ranking.md` | P0 | candidate-generation.md, retrieve-and-rank.md | Recall/precision split, candidate budget vs latency, where it's wrongly skipped | split ← 06/recommender |
-| `circuit-breaker.md` | P0 | breaker.md | State machine, threshold tuning, the missing-fallback anti-pattern | split ← reliability-patterns |
+| [`circuit-breaker.md`](../patterns/circuit-breaker.md) ✅ | P0 | breaker.md | State machine, threshold tuning, the missing-fallback anti-pattern | **written** |
 | `bulkhead.md` | P1 | resource-isolation.md, thread-pool-isolation.md | Pool-per-dependency, priority tiers, sizing under partial failure | split ← reliability-patterns |
-| `graceful-degradation.md` | P0 | fallback.md, degraded-mode.md | Naming a degraded mode per dependency; when fallbacks make outages worse | split ← reliability-patterns |
-| `cell-based-architecture.md` | P0 | cells.md, shuffle-sharding.md, blast-radius.md | Cells, shuffle sharding, per-cell deploys, the router as the new SPOF | new |
+| [`graceful-degradation.md`](../patterns/graceful-degradation.md) ✅ | P0 | fallback.md, degraded-mode.md | Naming a degraded mode per dependency; when fallbacks make outages worse | **written** |
+| [`cell-based-architecture.md`](../patterns/cell-based-architecture.md) ✅ | P0 | cells.md, shuffle-sharding.md, blast-radius.md | Cells, shuffle sharding, per-cell deploys, the router as the new SPOF | **written** |
 | `leader-election.md` | P1 | leader-lease.md | Election on top of consensus, lease renewal, split-brain prevention | new |
 | `scatter-gather.md` | P1 | fan-out-fan-in.md | Latency = slowest shard, partial results, hedging, fan-out caps | new |
 | [`expand-contract-migration.md`](../patterns/expand-contract-migration.md) ✅ | P0 | schema-migration.md, online-migration.md, dual-write-migration.md | Add-nullable → backfill → dual-write → switch → drop; revertible at every step | **written** |
 | `strangler-fig-migration.md` | P1 | strangler.md, legacy-migration.md | Routing façade, per-endpoint cutover, verification by shadow comparison | new |
-| `backfill-and-reprocessing.md` | P0 | backfill.md, replay.md, restatement.md | Same code path as live, idempotent partitions, restatement policy | split ← 05/clickstream-lakehouse |
+| [`backfill-and-reprocessing.md`](../patterns/backfill-and-reprocessing.md) ✅ | P0 | backfill.md, replay.md, restatement.md | Same code path as live, idempotent partitions, restatement policy | **written** |
 | `write-audit-publish.md` | P0 | wap.md, data-gating.md | Write to a branch, validate, atomic publish; stale beats wrong | split ← 05/data-quality-and-contracts |
 | `pagination-patterns.md` | P1 | cursor-pagination.md, keyset-pagination.md, offset.md | Cursor vs keyset vs offset, stability under mutation, deep-page cost | new |
 | `api-versioning.md` | P2 | versioning.md, backward-compatibility.md | Compatibility rules, sunset policy, client-version skew during rollout | new |
@@ -383,10 +383,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | ✅ written, link-checked, `docs/fundamentals-batch-4` |
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | ✅ written, link-checked, `docs/fundamentals-batch-5` |
 | 6 | **patterns/** (folder created): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | ✅ written, link-checked, `docs/patterns-batch-6` |
-| 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | next |
-| 8–13 | see §6 batch order | planned |
+| 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | ✅ written, link-checked, `docs/patterns-batch-7` |
+| 8 | **comparisons/** (folder created here): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | next |
+| 9–13 | see §6 batch order | planned |
 
-**30 / 123 written.** Fundamentals 25/47 · Patterns 5/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**35 / 123 written.** Fundamentals 25/47 · Patterns 10/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 
@@ -402,7 +403,6 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 - [Docs index](../../docs/README.md)
 - [Fundamentals index](../fundamentals/README.md)
 - [Patterns index](../patterns/README.md)
-- [STATUS](../../STATUS.md)
 
 ## Sources
 

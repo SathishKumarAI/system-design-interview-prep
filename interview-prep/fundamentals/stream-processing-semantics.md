@@ -246,6 +246,7 @@ producing results.
 
 ## Referenced by
 
+- [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
 - [Log vs queue](log-vs-queue.md)

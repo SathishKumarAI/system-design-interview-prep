@@ -18,9 +18,11 @@ tags: [timeouts, retries, circuit-breaker, load-shedding, dr]
 > [load-shedding-and-admission-control](../fundamentals/load-shedding-and-admission-control.md) ·
 > [cascading-and-metastable-failures](../fundamentals/cascading-and-metastable-failures.md) ·
 > [tail-latency](../fundamentals/tail-latency.md) ·
-> [queueing-theory-basics](../fundamentals/queueing-theory-basics.md).
-> Still only here: **circuit breakers**, **bulkheads**, **graceful degradation** and
-> **multi-region DR** — the first three become `patterns/` pages in batch 7, so this file stays.
+> [queueing-theory-basics](../fundamentals/queueing-theory-basics.md) ·
+> [circuit-breaker](../patterns/circuit-breaker.md) ·
+> [graceful-degradation](../patterns/graceful-degradation.md).
+> Still only here: **bulkheads** and **multi-region DR** — this file stays until
+> `bulkhead.md` and `multi-region-and-dr.md` exist, then it is retired.
 > Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
 
 The section that 2026 rubrics score explicitly as "operational maturity". Bring it up
@@ -160,6 +162,7 @@ and regular region evacuation drills are the answer.
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)
+- [Graceful degradation](../patterns/graceful-degradation.md)
 - [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
 - [Load shedding and admission control](../fundamentals/load-shedding-and-admission-control.md)

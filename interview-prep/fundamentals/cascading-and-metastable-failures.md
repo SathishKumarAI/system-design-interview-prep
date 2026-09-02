@@ -245,6 +245,7 @@ not by fixing the bug**.
 
 ## Referenced by
 
+- [Cell-based architecture](../patterns/cell-based-architecture.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Queueing theory basics](queueing-theory-basics.md)
