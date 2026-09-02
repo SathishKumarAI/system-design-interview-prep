@@ -35,7 +35,7 @@ how does it fail, what do I say about it in an interview.*
 | Leader/follower, quorums, sharding, consistent hashing, rebalancing | [replication-and-partitioning.md](replication-and-partitioning.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | CAP/PACELC, isolation levels, Raft, leases, clocks | [consistency-and-consensus.md](consistency-and-consensus.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | Queues vs logs, Kafka, delivery semantics, ordering, backpressure | [messaging-and-streams.md](messaging-and-streams.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
-| Idempotency, sagas, outbox, exactly-once *effects*, ledgers | [transactions-and-idempotency.md](transactions-and-idempotency.md) — **partly split**, see [../fundamentals/](../fundamentals/README.md) |
+| Idempotency, sagas, outbox, exactly-once *effects*, ledgers | [transactions-and-idempotency.md](transactions-and-idempotency.md) — **nearly fully split**, see [../patterns/](../patterns/README.md) |
 | Timeouts, retries, circuit breakers, bulkheads, load shedding, DR | [reliability-patterns.md](reliability-patterns.md) — **partly split**, see [../fundamentals/](../fundamentals/README.md) |
 | SLOs, RED/USE, tracing, canary, feature flags, on-call | [observability-and-delivery.md](observability-and-delivery.md) |
 | AuthN/AuthZ, secrets, tenancy isolation, abuse, privacy | [security-and-multitenancy.md](security-and-multitenancy.md) |

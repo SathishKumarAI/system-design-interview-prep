@@ -62,7 +62,7 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | **done** |
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | **done** |
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | **done** |
-| 6 | patterns/: outbox · saga · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | next — **creates `patterns/`** |
+| 6 | [patterns/](../patterns/README.md): outbox · saga · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | **done** |
 
 **25 of 47 fundamentals written.** The batches build on each other: batch 1 is what correctness
 costs, batch 2 is what splitting and copying data costs instead, batch 3 is the single node
@@ -86,10 +86,12 @@ If you cannot answer them out loud in two minutes, the page is not finished with
 - [../topics/manifest.md](../topics/manifest.md) — canonical topic list; check before creating a file
 - [../diagrams/components.md](../diagrams/components.md) — shared Mermaid vocabulary
 - [../CONVENTIONS.md](../CONVENTIONS.md) — file format contract
+- [../patterns/README.md](../patterns/README.md) — composed solutions built from these mechanisms
 - [../02-primitives/README.md](../02-primitives/README.md) — the bundled notes being split
 
 ## Referenced by
 
 - [Interview prep index](../README.md)
+- [Patterns index](../patterns/README.md)
 - [Primitives index](../02-primitives/README.md)
 - [Repo index](../../INDEX.md)

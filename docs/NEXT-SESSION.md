@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/fundamentals-batch-5` · **PRs #1–#6** open, none merged.
+**Branch:** `docs/patterns-batch-6` · **PRs #1–#7** open, none merged.
 
 ---
 
@@ -20,48 +20,48 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batches 1–5 are written and verified** — twenty-five pages under
-`interview-prep/fundamentals/`, each with a cited production incident, real arithmetic and two
-diagram types. 25 of 123 done. Nothing is half-applied: all seven primitive files they split from
-are still present and banner-marked, and each stays until its remaining topics land.
+five per branch. **Batches 1–6 are written and verified** — 25 pages in
+`interview-prep/fundamentals/` and 5 in the new `interview-prep/patterns/`, each with a cited
+production incident, real arithmetic and two diagram types. **30 of 123** done. Nothing is
+half-applied: every primitive file they split from is still present and banner-marked, and each
+stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → #3 → #4 → #5 → #6; each retargets
-   to `main` as the one below it lands. The session could not merge them (permission classifier
-   blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2–6.
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → … → #7; each retargets to `main`
+   as the one below it lands. The session could not merge them (permission classifier blocked
+   `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2–7.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1511 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1630 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 6 — patterns (creates a new folder)
+## 3. Batch 7 — the rest of the P0 patterns
 
-**This batch creates `interview-prep/patterns/`** — the first new folder since the restructure
-began. That means three extra chores beyond the five pages: a folder `README.md` in the same shape
-as `fundamentals/README.md`, a row in the root [`INDEX.md`](../INDEX.md), and a row in
-[`interview-prep/README.md`](../interview-prep/README.md).
+Five files in the existing [`patterns/`](../interview-prep/patterns/README.md) folder. No new
+folder this time, so no index chores beyond the usual manifest and README rows.
 
 | File | Source | Must carry |
 |---|---|---|
-| `outbox-pattern.md` | `transactions-and-idempotency.md` | The dual-write problem; relay vs CDC; ordering and dedup downstream; outbox table growth and cleanup |
-| `saga-pattern.md` | `transactions-and-idempotency.md` | Choreography vs orchestration; **compensation ≠ rollback**; stuck-workflow detection; the visibility of intermediate states |
-| `distributed-transactions.md` | `transactions-and-idempotency.md` | 2PC's blocking window shown as an interleaving; TCC reservations; **single-partition avoidance as the real answer** |
-| `materialized-views-and-derived-data.md` | **new** | Rebuildable derived stores as the core scaling idea; staleness contracts; the rebuild as a first-class operation |
-| `expand-contract-migration.md` | `storage-and-databases.md` | Add-nullable → backfill → dual-write → switch → drop; **revertible at every step**; how to verify each one |
+| `fanout-write-vs-read.md` | `03-backend-cases/news-feed.md` | The hybrid threshold with arithmetic both ways; active-user-only fanout; why the celebrity case decides the architecture |
+| `cell-based-architecture.md` | **new** | Cells, shuffle sharding, per-cell deploys, **the router as the new SPOF**; blast-radius arithmetic |
+| `graceful-degradation.md` | `reliability-patterns.md` | Naming a degraded mode per dependency; when a fallback makes the outage worse |
+| `circuit-breaker.md` | `reliability-patterns.md` | State machine, threshold tuning, half-open probes, **the missing-fallback anti-pattern** |
+| `backfill-and-reprocessing.md` | `05-data-cases/clickstream-lakehouse.md` | Same code path as live; idempotent partitions; restatement policy; throttling against the live workload |
 
-A patterns page differs from a fundamentals page in one way the manifest is explicit about: it must
-state **when the pattern earns its complexity, and what applying it too early costs.** That
-sentence is the reason the folder exists — do not let these become mechanism pages.
+Patterns pages carry the extra bar stated in
+[`patterns/README.md`](../interview-prep/patterns/README.md): **when does this earn its complexity,
+and what does applying it too early cost?** Do not let them become mechanism pages.
 
-After this batch, `transactions-and-idempotency.md` holds only ledgers/double-entry; it can be
-retired once `ledgers-and-double-entry.md` (P1) lands.
+After this batch `reliability-patterns.md` holds only bulkheads and multi-region DR, and
+`transactions-and-idempotency.md` is already down to ledgers alone — both are close to retirement.
 
-Incident candidates worth verifying: any public write-up of an outbox relay falling behind, a saga
-stuck mid-flight with no compensation path, or a schema migration that could not be reverted —
-Shopify, Stripe and GitHub have all published on online migrations.
+Incident candidates worth verifying: AWS's shuffle-sharding write-ups and the cell-based
+architecture guidance in the Builders' Library, any public postmortem where a circuit breaker with
+no fallback converted a slow dependency into a hard outage, and a backfill that took out the live
+pipeline it shared a cluster with.
 
 ## 4. What "done" means for one page
 
@@ -76,7 +76,8 @@ separates a good page from a passable one:
    Polaris consistency work; batch 4 used Vanlightly's Kafka message-loss analysis, Jepsen
    Redpanda 21.10.1, Pinterest's watermark starvation and the Stripe/Brandur idempotency design;
    batch 5 used AWS Kinesis 2020, Dean & Barroso's hedging measurements, Facebook's Fail at Scale
-   and the HotOS 2021 metastability paper. Do not reuse one across batches — find a new one.
+   and the HotOS 2021 metastability paper; batch 6 used Jepsen MongoDB 4.2.6, Stripe's online
+   migrations and the Noria paper. Do not reuse one across batches — find a new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
 3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node
@@ -112,7 +113,8 @@ scripts from the repo root, wikilinks stay disabled, `vendor/` is read-only.
 ## 6. Also open, lower priority
 
 **This repo**
-- `patterns/` and `comparisons/` do not exist yet — created with batches 6–8, by design.
+- `patterns/` exists (5 of 20 pages). `comparisons/` does not — batch 8 creates it and retires
+  `08-reference/tech-selection.md` into it.
 - 26 case files still carry the old eight-heading skeleton; they are rewritten in place, batch 9+.
 
 **In `~/.claude/skills/staff-technical-docs/`**

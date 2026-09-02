@@ -141,7 +141,7 @@ their content has landed in the split pages — each row below names its source.
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
 | [`idempotency.md`](../fundamentals/idempotency.md) ✅ | P0 | idempotency-keys.md, dedup.md, retry-safety.md | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence | **written** ← transactions-and-idempotency |
-| `distributed-transactions.md` | P0 | 2pc.md, two-phase-commit.md, tcc.md, xa.md | 2PC blocking window, TCC reservations, single-partition avoidance as the real answer | split ← transactions-and-idempotency |
+| [`distributed-transactions.md`](../patterns/distributed-transactions.md) ✅ | P0 | 2pc.md, two-phase-commit.md, tcc.md, xa.md | 2PC blocking window, TCC reservations, single-partition avoidance as the real answer | **written** |
 | `ledgers-and-double-entry.md` | P1 | ledger.md, double-entry.md, accounting.md | Append-only entries, balance materialisation, continuous invariant checking | split ← transactions-and-idempotency |
 
 ### 1.9 Reliability
@@ -191,12 +191,12 @@ complexity, and the failure mode of applying it too early.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `outbox-pattern.md` | P0 | dual-write.md, transactional-outbox.md | The dual-write problem; relay vs CDC; ordering and dedup downstream | split ← transactions-and-idempotency |
-| `saga-pattern.md` | P0 | saga.md, compensating-transaction.md | Choreography vs orchestration, compensation ≠ rollback, stuck-workflow detection | split ← transactions-and-idempotency |
+| [`outbox-pattern.md`](../patterns/outbox-pattern.md) ✅ | P0 | dual-write.md, transactional-outbox.md | The dual-write problem; relay vs CDC; ordering and dedup downstream | **written** |
+| [`saga-pattern.md`](../patterns/saga-pattern.md) ✅ | P0 | saga.md, compensating-transaction.md | Choreography vs orchestration, compensation ≠ rollback, stuck-workflow detection | **written** |
 | `cqrs.md` | P1 | command-query-separation.md | Read/write model split, when it's over-engineering, sync lag as product behaviour | new |
 | `event-sourcing.md` | P1 | event-store.md | Append-only truth, projections, snapshotting, schema evolution over years of events | new |
 | `change-data-capture.md` | P0 | cdc.md, debezium.md, binlog.md | Log-based capture, snapshot→stream handover, WAL-retention cliff | split ← 05/cdc-pipeline |
-| `materialized-views-and-derived-data.md` | P0 | derived-data.md, read-models.md | Rebuildable derived stores as the core scaling idea; staleness contracts | new |
+| [`materialized-views-and-derived-data.md`](../patterns/materialized-views-and-derived-data.md) ✅ | P0 | derived-data.md, read-models.md | Rebuildable derived stores as the core scaling idea; staleness contracts | **written** |
 | `fanout-write-vs-read.md` | P0 | fanout.md, timeline-fanout.md, push-vs-pull-feed.md | The hybrid threshold, active-user-only fanout, cost arithmetic both ways | split ← 03/news-feed |
 | `two-stage-retrieval-and-ranking.md` | P0 | candidate-generation.md, retrieve-and-rank.md | Recall/precision split, candidate budget vs latency, where it's wrongly skipped | split ← 06/recommender |
 | `circuit-breaker.md` | P0 | breaker.md | State machine, threshold tuning, the missing-fallback anti-pattern | split ← reliability-patterns |
@@ -205,7 +205,7 @@ complexity, and the failure mode of applying it too early.
 | `cell-based-architecture.md` | P0 | cells.md, shuffle-sharding.md, blast-radius.md | Cells, shuffle sharding, per-cell deploys, the router as the new SPOF | new |
 | `leader-election.md` | P1 | leader-lease.md | Election on top of consensus, lease renewal, split-brain prevention | new |
 | `scatter-gather.md` | P1 | fan-out-fan-in.md | Latency = slowest shard, partial results, hedging, fan-out caps | new |
-| `expand-contract-migration.md` | P0 | schema-migration.md, online-migration.md, dual-write-migration.md | Add-nullable → backfill → dual-write → switch → drop; revertible at every step | split ← storage-and-databases |
+| [`expand-contract-migration.md`](../patterns/expand-contract-migration.md) ✅ | P0 | schema-migration.md, online-migration.md, dual-write-migration.md | Add-nullable → backfill → dual-write → switch → drop; revertible at every step | **written** |
 | `strangler-fig-migration.md` | P1 | strangler.md, legacy-migration.md | Routing façade, per-endpoint cutover, verification by shadow comparison | new |
 | `backfill-and-reprocessing.md` | P0 | backfill.md, replay.md, restatement.md | Same code path as live, idempotent partitions, restatement policy | split ← 05/clickstream-lakehouse |
 | `write-audit-publish.md` | P0 | wap.md, data-gating.md | Write to a branch, validate, atomic publish; stale beats wrong | split ← 05/data-quality-and-contracts |
@@ -382,10 +382,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | ✅ written, link-checked, `docs/fundamentals-batch-3` |
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | ✅ written, link-checked, `docs/fundamentals-batch-4` |
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | ✅ written, link-checked, `docs/fundamentals-batch-5` |
-| 6 | **patterns/** (folder created here): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | next |
-| 7–13 | see §6 batch order | planned |
+| 6 | **patterns/** (folder created): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | ✅ written, link-checked, `docs/patterns-batch-6` |
+| 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | next |
+| 8–13 | see §6 batch order | planned |
 
-**25 / 123 written.** Fundamentals 25/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**30 / 123 written.** Fundamentals 25/47 · Patterns 5/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 
@@ -400,6 +401,7 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 - [Diagram component library](../diagrams/components.md)
 - [Docs index](../../docs/README.md)
 - [Fundamentals index](../fundamentals/README.md)
+- [Patterns index](../patterns/README.md)
 - [STATUS](../../STATUS.md)
 
 ## Sources

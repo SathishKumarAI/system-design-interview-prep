@@ -252,6 +252,7 @@ restarting fast makes it worse, which is exactly the situation retries create at
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Queueing theory basics](queueing-theory-basics.md)
 - [Reliability patterns](../02-primitives/reliability-patterns.md)
+- [Saga pattern](../patterns/saga-pattern.md)
 - [Tail latency](tail-latency.md)
 - [Topic manifest](../topics/manifest.md)
 

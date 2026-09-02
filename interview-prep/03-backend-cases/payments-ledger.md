@@ -222,6 +222,7 @@ idempotent.
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
+- [Saga pattern](../patterns/saga-pattern.md)
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 - [Transactions, sagas and idempotency](../02-primitives/transactions-and-idempotency.md)
 

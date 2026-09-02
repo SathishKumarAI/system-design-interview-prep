@@ -235,7 +235,9 @@ the incident by itself; it is the condition that produces the incident.
 
 - [Cache invalidation](cache-invalidation.md)
 - [Caching strategies](caching-strategies.md)
+- [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Fundamentals index](README.md)
+- [Materialized views and derived data](../patterns/materialized-views-and-derived-data.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication topologies](replication-topologies.md)
 - [Topic manifest](../topics/manifest.md)

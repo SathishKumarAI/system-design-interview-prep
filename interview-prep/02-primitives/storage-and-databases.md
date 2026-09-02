@@ -16,8 +16,10 @@ tags: [sql, nosql, lsm, btree, indexes]
 > cited incidents ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
 > [storage-engines](../fundamentals/storage-engines.md) ·
 > [indexing-and-query-planning](../fundamentals/indexing-and-query-planning.md).
-> Still only here: **store selection**, **object-storage internals**, **normalisation** and
-> **schema evolution / expand-contract migration** — this file stays until those land.
+> Schema evolution also has a home now:
+> [expand-contract-migration](../patterns/expand-contract-migration.md).
+> Still only here: **store selection**, **object-storage internals** and **normalisation** —
+> this file stays until those land.
 > Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
 
 ## What it is
@@ -133,6 +135,7 @@ and OLAP tables alike. See [messaging-and-streams.md](messaging-and-streams.md).
 - [Design a URL shortener](../03-backend-cases/url-shortener.md)
 - [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
 - [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Indexing and query planning](../fundamentals/indexing-and-query-planning.md)
 - [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Primitives index](README.md)

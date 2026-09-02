@@ -276,9 +276,11 @@ consistency checker surfaced it in days.
 - [Cache invalidation](cache-invalidation.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
+- [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Idempotency](idempotency.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [Saga pattern](../patterns/saga-pattern.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

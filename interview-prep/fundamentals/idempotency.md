@@ -239,8 +239,11 @@ reconciler resolves the unknowns using the provider as the arbiter. The generali
 ## Referenced by
 
 - [Delivery semantics](delivery-semantics.md)
+- [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)
+- [Outbox pattern](../patterns/outbox-pattern.md)
+- [Saga pattern](../patterns/saga-pattern.md)
 - [Timeouts, retries and backoff](timeouts-retries-backoff.md)
 - [Topic manifest](../topics/manifest.md)
 - [Transactions, sagas and idempotency](../02-primitives/transactions-and-idempotency.md)

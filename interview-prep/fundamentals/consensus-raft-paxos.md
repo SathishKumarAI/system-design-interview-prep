@@ -274,6 +274,7 @@ sensitive component you own, and observability must not sit downstream of the th
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
+- [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Leases, locks and fencing](leases-locks-and-fencing.md)
 - [Log vs queue](log-vs-queue.md)

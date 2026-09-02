@@ -13,6 +13,85 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 6: patterns, and the first new folder
+
+Branch: `docs/patterns-batch-6` · PRs open: #1 (plan), #2–#7 (batches 1–6)
+
+### What
+
+`interview-prep/patterns/` created — the first new folder since the restructure began — with five
+pages: `outbox-pattern`, `saga-pattern`, `distributed-transactions`,
+`materialized-views-and-derived-data`, `expand-contract-migration`. **30 of 123** written
+(fundamentals 25/47, patterns 5/20).
+
+### The bar that makes a patterns page different
+
+A fundamentals page explains how a mechanism works. A patterns page must additionally answer
+**"when does this earn its complexity, and what does applying it too early cost?"** — stated as a
+rule in the folder README and enforced in every page's Core concept.
+
+The reason is that this category's failure mode is adoption without justification: a workflow
+engine coordinating two tables in one database, an outbox for a consumer that lives in the same
+schema. Every page therefore names the smaller answer explicitly, and all five converge on the same
+one: **a single-partition design beats every distributed-atomicity pattern**, because the cheapest
+distributed transaction is the one the data model made unnecessary.
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| distributed-transactions | **Jepsen: MongoDB 4.2.6** — snapshot-isolation violations *at the strongest read and write concerns*, plus "retrocausal" transactions; Jepsen's recommendation to say "snapshot isolated" rather than "ACID" |
+| expand-contract-migration | **Stripe, Online migrations at scale (2017)** — ~100 M subscription objects; dual-write → backfill → move reads → stop old writes, with the transformation run **offline in Hadoop** and **dual reads comparing old vs new on every request** before the switch |
+| materialized-views-and-derived-data | **Noria (OSDI 2018)** — partially-stateful dataflow: views that evict like caches and *discard writes to evicted state*, scaling to tens of millions of reads/s |
+| outbox-pattern | Debezium's outbox router; Postgres logical decoding and the replication-slot behaviour |
+| saga-pattern | Garcia-Molina & Salem (1987) — written about long-lived transactions in *one* database, decades before microservices |
+
+### The arguments worth keeping
+
+- **The outbox's real trap is the polling relay's id gap.** `bigserial` is allocated at INSERT, not
+  at commit, so a relay ordering by id can advance past a row whose transaction commits a moment
+  later — the event is never published, nothing errors. Fix by marking on ack, re-scanning a
+  trailing window, or using CDC (commit-ordered by construction). This is the strongest argument
+  for CDC over a hand-rolled relay and it is missing from most write-ups.
+- **A stopped CDC connector fills the producer's disk.** Postgres retains WAL until every
+  replication slot consumes it, so adopting CDC as a "read-only integration" acquires a new way to
+  take down the primary.
+- **Compensation is not rollback.** A refund appears on the statement next to the charge; an email
+  cannot be unsent. That forces two design moves people skip: reorder sagas so irreversible steps
+  are **last**, and build the *failed-compensation* state with an alert, a queue and a human owner.
+- **2PC-over-consensus and XA-over-two-databases are not the same story.** Same protocol, entirely
+  different availability. "Spanner uses 2PC" is not an argument for XA between your database and
+  your broker.
+- **Naming which stores are derived is worth more than the view pattern itself.** It decides backup
+  policy, incident severity, and whether a corrupted index is a rebuild or a disaster — and the
+  rebuild is only a real capability if it has been run recently.
+- **Migrations are 5–7 revertible deploys.** Dual-write must precede backfill (or rows written
+  during the copy are lost) and must outlive the read switch (or the switch has no revert).
+
+### Trade-offs
+
+- `transactions-and-idempotency.md` is now **nearly empty**: only ledgers/double-entry remains
+  unique to it. It is retired the moment `ledgers-and-double-entry.md` (P1) lands. Its banner says
+  so.
+- `storage-and-databases.md` loses schema evolution to `expand-contract-migration`; it still holds
+  store selection, object-storage internals and normalisation.
+- Creating a folder costs more than five pages: a folder README, a root `INDEX.md` row, an
+  `interview-prep/README.md` row, and a cross-link from `fundamentals/README.md`. Recorded here so
+  batch 8 (`comparisons/`) budgets for it.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1630 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+214 files scanned, 758 inbound links mapped, 0 changed
+```
+
+All 30 topic pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 5: reliability under overload
 
 Branch: `docs/fundamentals-batch-5` · PRs open: #1 (plan), #2–#6 (batches 1–5)

@@ -257,6 +257,7 @@ a new class of incident. The order of escalation:
 ## Referenced by
 
 - [Consistent hashing](consistent-hashing.md)
+- [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Hot shard mitigation](hot-shard-mitigation.md)
 - [Indexing and query planning](indexing-and-query-planning.md)

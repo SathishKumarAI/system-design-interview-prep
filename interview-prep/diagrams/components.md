@@ -391,6 +391,7 @@ erDiagram
 - [File conventions](../CONVENTIONS.md)
 - [Fundamentals index](../fundamentals/README.md)
 - [Next session — start here](../../docs/NEXT-SESSION.md)
+- [Patterns index](../patterns/README.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

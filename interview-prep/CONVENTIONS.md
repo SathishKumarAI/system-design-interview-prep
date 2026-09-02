@@ -154,6 +154,7 @@ That's the whole ritual. Three steps, or the index rots and the repo becomes a p
 - [Diagram component library](diagrams/components.md)
 - [Fundamentals index](fundamentals/README.md)
 - [Interview prep index](README.md)
+- [Patterns index](patterns/README.md)
 - [Repo index](../INDEX.md)
 - [System Design Interview Preparation](../README.md)
 - [Topic manifest](topics/manifest.md)

@@ -248,6 +248,7 @@ work in order for someone who left.**
 ## Referenced by
 
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
+- [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Reliability patterns](../02-primitives/reliability-patterns.md)

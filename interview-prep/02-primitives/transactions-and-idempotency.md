@@ -11,12 +11,15 @@ tags: [idempotency, saga, outbox, ledger, 2pc]
 
 # Transactions, sagas and idempotency
 
-> [!info] Partly split — the staff-level version of idempotency lives in `fundamentals/`
-> [idempotency.md](../fundamentals/idempotency.md) carries key scope, the in-flight collision,
-> stored responses, the **unknown-outcome** state and foreign state mutations
-> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)).
-> Still only here: **2PC / distributed transactions**, **outbox**, **sagas** and **ledgers** —
-> those become `patterns/` pages in a later batch, and this file stays until they do.
+> [!info] Nearly fully split — staff-level versions live in `fundamentals/` and `patterns/`
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md))
+> [idempotency](../fundamentals/idempotency.md) ·
+> [outbox-pattern](../patterns/outbox-pattern.md) ·
+> [saga-pattern](../patterns/saga-pattern.md) ·
+> [distributed-transactions](../patterns/distributed-transactions.md).
+> Still only here: **ledgers and double-entry** — this file stays until
+> `ledgers-and-double-entry.md` exists, then it is retired.
+> Use this page as the fast revision sheet; use the split pages to learn the mechanism.
 
 The primitive that decides whether your system can charge a card twice. Any design touching
 money, inventory, bookings or notifications needs this section explicitly.
