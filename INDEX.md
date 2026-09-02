@@ -129,8 +129,11 @@ see [interview-prep/10-resources/books-on-this-machine.md](interview-prep/10-res
 
 | File | What |
 |---|---|
-| [STATUS.md](STATUS.md) | **Read first on return** — where work stopped, the next action, the traps |
+| [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) | **Read first on return** — blocking decision, first commands, batch 1 |
+| [STATUS.md](STATUS.md) | Where work stopped and the traps that will bite |
 | [docs/WORKLOG.md](docs/WORKLOG.md) | Dated entries: what changed, how, why, and the trade-offs found |
+| [docs/README.md](docs/README.md) | Index of the reasoning docs, and why the split isn't redundant |
+| [docs/sessions/](docs/sessions/) | One immutable record per session, dead ends included |
 | [README.md](README.md) | Repo front page |
 | [CLAUDE.md](CLAUDE.md) | Rules for agents working here, incl. ADR conventions |
 | [main.md](main.md) | Original hand-made map of content (legacy; this INDEX supersedes it) |

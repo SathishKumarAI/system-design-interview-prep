@@ -1,8 +1,14 @@
 # STATUS
 
-Written when work stopped. **Read this first when returning** — it exists to kill the re-entry
-cost, not to summarise the repo. For the repo map see [INDEX.md](INDEX.md); for the reasoning
-behind past changes see [docs/WORKLOG.md](docs/WORKLOG.md).
+Written when work stopped. Kills the re-entry cost; does not summarise the repo.
+
+| You want | Read |
+|---|---|
+| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — decision, commands, batch 1 |
+| The stop point and the traps | This file |
+| Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
+| What happened last session, dead ends included | [docs/sessions/](docs/sessions/) |
+| The repo map | [INDEX.md](INDEX.md) |
 
 **Last updated:** 2026-09-02
 **Branch:** `docs/staff-level-restructure` — committed, **not merged, no PR opened**

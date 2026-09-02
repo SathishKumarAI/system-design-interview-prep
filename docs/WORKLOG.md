@@ -1,3 +1,11 @@
+---
+title: Worklog
+type: worklog
+status: current
+updated: 2026-09-02
+tags: [history, decisions]
+---
+
 # Worklog
 
 Dated entries. Newest first. Each entry records **what changed, how, why, and the trade-off** —
@@ -103,9 +111,35 @@ Also fixed two pre-existing bugs found in passing: 5 links broken by unescaped p
 `INDEX.md` and 3 case files, and 2 image links in `how we've scaled Dropbox.md` pointing at moved
 assets.
 
+### Skill iteration, after the benchmark
+
+Every change below traces to something the runs surfaced, not to a hunch:
+
+| Change | Triggered by |
+|---|---|
+| `gen_backlinks.py` path canonicalisation | Silent no-op on Windows; regression-tested across forward-slash, backslash and relative roots |
+| `lint_docs.py` now prints what it did **not** check | It was reporting "no duplicate topics" over a vault that had one |
+| New **"Fix the link, not the filename"** section, promoted out of a bullet | The largest measured behavioural difference between configurations |
+| New **"When not to use this"** | 2.1× token cost; on a single page the gains were mostly stylistic. A skill that can't stand down gets switched off |
+| Manifest section: semantic duplicates can't be scripted | The eval-2 trap didn't trap — both configs caught it by reading, neither by tooling |
+| Eval set v2 | Removed the prompt leak, dropped 11 non-discriminating assertions, added harder ones plus a set-level eval |
+
+Iteration-1 caveats are recorded inside `evals/evals.json` rather than in a message, including
+that the skill's author also wrote its assertions.
+
 ### Open
 
 `D1–D4` in `interview-prep/topics/manifest.md` §7 — the structural decisions (rename
 `02-primitives/` → `fundamentals/` and split; add `patterns/` and `comparisons/`; P0-only scope;
 rewrite cases in place). Recommendations are recorded; none executed. Writing the 63 P0 pages is
 the next substantial block of work and needs a scope decision first.
+
+Also open: no PR; eval v2 written but never run; eval-3's fixture unbuilt; and **no human has
+reviewed the iteration-1 outputs** — the skill was graded by its author against that author's
+assertions, which is the weakest evidence produced this session.
+
+### See also
+
+- [NEXT-SESSION.md](NEXT-SESSION.md) — the handoff: blocking decision, first commands, batch 1
+- [sessions/2026-09-02-staff-restructure-and-skill.md](sessions/2026-09-02-staff-restructure-and-skill.md) — the full narrative, including what went wrong
+- [../STATUS.md](../STATUS.md) — stop point and traps
