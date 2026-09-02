@@ -13,6 +13,94 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 8: comparisons, and a backlog file
+
+Branch: `docs/comparisons-batch-8` · PRs open: #1 (plan), #2–#9 (batches 1–8)
+
+### What
+
+`interview-prep/comparisons/` created — the second and last new folder — with five pages:
+`sql-vs-nosql-vs-newsql`, `oltp-database-matrix`, `messaging-matrix`,
+`consistency-model-matrix`, `batch-vs-streaming`. **40 of 123** written (fundamentals 25/47,
+patterns 10/20, comparisons 5/18).
+
+Also added `docs/BACKLOG.md` for unscheduled ideas, seeded with one: an
+Excalidraw + `@excalidraw/mermaid-to-excalidraw` canvas that turns this vault's Mermaid diagrams
+into editable elements. Filed rather than started, with the two questions that decide whether it is
+worth doing at all.
+
+### The bar that makes a comparison page different
+
+Fundamentals explain a mechanism; patterns explain a shape; comparisons answer **"which do I pick,
+and what do I regret?"** The folder README states the bar: **every column is a real decision axis —
+write path, consistency, what breaks first, ops cost — not a feature checklist, and every page
+commits to a recommendation.** A page that lists capabilities without naming the choice people get
+wrong is a table, and vendors already publish tables.
+
+Every one of the five defaults to the boring option, which is the honest through-line:
+
+| Question | The answer this set commits to |
+|---|---|
+| SQL or NoSQL? | Relational until you can name the property that rules it out |
+| Which OLTP engine? | Postgres unless a named constraint rules it out; compare on *what breaks first* |
+| Which messaging system? | SQS unless you can name a second consumer or a replay requirement |
+| Which consistency setting? | Per operation, written down and tested — defaults are weaker than assumed |
+| Batch or streaming? | Batch → micro-batch → streaming, one step at a time, each justified by a decision that the freshness changes |
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| sql-vs-nosql-vs-newsql | **Notion (2021)** — sharded Postgres into **480 logical shards over 32 instances** rather than migrating to NoSQL, with "**shard earlier**" as the stated lesson |
+| sql-vs-nosql · oltp-matrix | **Figma (2024)** — ~100× growth on RDS Postgres; vertical partitioning as a deliberate **stepping stone**, then a ~9-month horizontal sharding project. Binding constraints were **RDS IOPS and vacuum on multi-TB tables**, not the query engine |
+| messaging-matrix | **Slack (2016 incident, 2017 redesign)** — a Redis-backed job queue hit its memory limit and **wedged in both directions**: new jobs could not be enqueued *and* existing jobs could not be dequeued, because dequeuing also needed memory. Fixing the original database contention did not release it. The fix was **Kafka in front of Redis**, not instead of it, at ~33 k jobs/s |
+| batch-vs-streaming | **Uber (SIGMOD 2021)** real-time platform as the case where seconds are genuinely justified; Kreps for the Kappa reprocessing recipe |
+| consistency-model-matrix | Vendor defaults themselves: MongoDB's `w: majority` with `readConcern: local`, Cassandra's `ONE`, DynamoDB's eventually-consistent reads, and **S3's move to strong read-after-write in Dec 2020** |
+
+### The arguments worth keeping
+
+- **Notion and Figma both scaled Postgres rather than leaving it.** That is the strongest available
+  counter to "we need NoSQL for scale": 100 k writes/s is ~20 shards at a conservative per-shard
+  rate, which is a tractable project, not a rewrite.
+- **Vertical partitioning is a stepping stone, not a detour.** Figma's account is explicit that it
+  bought runway cheaply *and* built the tooling and operational muscle the harder horizontal
+  project then needed.
+- **A memory-bound queue has a cliff and a metastable failure at it; a disk-backed log degrades
+  into a backlog.** Slack's wedge is the cleanest published example, and it is why "durable buffer"
+  beats "fast buffer" for anything that can fall behind.
+- **Durability is not visibility.** `w: majority` makes a write durable; a `local` read concern can
+  still return data that has not been majority-committed. The two dials are separate in every
+  system that has them.
+- **The end-to-end consistency model is the weakest link on the path** — a strictly serializable
+  database behind a 60-second cache is a 60-second-stale system.
+- **The window size dominates the streaming framework choice.** A 5-minute window with 30 s
+  lateness and 60 s checkpoints gives ~5.5-minute end-to-end latency, which a 5-minute micro-batch
+  matches with a fraction of the operational surface.
+
+### A deviation from the plan, recorded
+
+The manifest says `08-reference/tech-selection.md` is **retired into `comparisons/`** once those
+files exist. It was **not** retired: only 5 of 18 comparison pages exist, and that file still
+uniquely covers 13 decisions with no successor (columnar, table formats, protocols, transports,
+vector stores, LLM build-vs-buy, and the rest). Retiring it now would delete reachable content —
+exactly the failure the "delete only when empty of unique topics" rule exists to prevent.
+
+It gained a banner instead, naming the five successors and stating that it becomes a stub when the
+remaining 13 land. Same treatment as the seven primitive files.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1858 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+226 files scanned, 861 inbound links mapped, 0 changed
+```
+
+All 40 topic pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 7: blast radius
 
 Branch: `docs/patterns-batch-7` · PRs open: #1 (plan), #2–#8 (batches 1–7)

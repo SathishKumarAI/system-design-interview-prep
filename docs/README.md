@@ -18,6 +18,7 @@ Reasoning and history. Code holds the reasons that fit in a comment; this holds 
 | Why was a past change made? What trade-off did we accept? | [WORKLOG.md](WORKLOG.md) |
 | What happened in a given session, including the dead ends? | [sessions/](sessions/) |
 | Where did work stop, and what will bite me? | [../STATUS.md](../STATUS.md) |
+| An idea we are keeping but not scheduling | [BACKLOG.md](BACKLOG.md) |
 | What is the plan for the topic set? | [../interview-prep/topics/manifest.md](../interview-prep/topics/manifest.md) |
 | Why is the folder structure the way it is? | [adr/0001-split-primitives-into-atomic-fundamentals.md](adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | A new architecture decision | `adr/NNNN-…`; template at [../interview-prep/_templates/adr-template.md](../interview-prep/_templates/adr-template.md) |

@@ -266,6 +266,7 @@ happening.
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)
 - [Messaging and streams](../02-primitives/messaging-and-streams.md)
+- [Messaging matrix](../comparisons/messaging-matrix.md)
 - [Stream processing semantics](stream-processing-semantics.md)
 - [Topic manifest](../topics/manifest.md)
 

@@ -273,6 +273,7 @@ metastability that makes it unrecoverable.
 - [Cache failure modes](cache-failure-modes.md)
 - [Cache invalidation](cache-invalidation.md)
 - [Caching](../02-primitives/caching.md)
+- [Consistency model matrix](../comparisons/consistency-model-matrix.md)
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)
 - [Graceful degradation](../patterns/graceful-degradation.md)

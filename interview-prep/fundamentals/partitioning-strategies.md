@@ -263,6 +263,7 @@ a new class of incident. The order of escalation:
 - [Indexing and query planning](indexing-and-query-planning.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication topologies](replication-topologies.md)
+- [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)
 - [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)
 

@@ -271,6 +271,7 @@ so the switch was made on measured evidence rather than confidence.
 - [Cell-based architecture](cell-based-architecture.md)
 - [Materialized views and derived data](materialized-views-and-derived-data.md)
 - [Patterns index](README.md)
+- [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 - [Topic manifest](../topics/manifest.md)
 

@@ -234,6 +234,7 @@ process rather than code.
 
 ## Referenced by
 
+- [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Design a clickstream ingestion pipeline into a lakehouse](../05-data-cases/clickstream-lakehouse.md)
 - [Fan-out on write vs read](fanout-write-vs-read.md)
 - [Patterns index](README.md)

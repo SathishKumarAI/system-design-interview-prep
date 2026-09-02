@@ -269,6 +269,7 @@ citation from an argument.
 - [Caching strategies](caching-strategies.md)
 - [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Fundamentals index](README.md)
+- [OLTP database matrix](../comparisons/oltp-database-matrix.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 - [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)

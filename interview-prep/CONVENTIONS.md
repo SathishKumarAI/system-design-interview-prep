@@ -151,6 +151,7 @@ That's the whole ritual. Three steps, or the index rots and the repo becomes a p
 
 - [ADR-0001: Split bundled primitives into atomic fundamentals pages](../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
+- [Comparisons index](comparisons/README.md)
 - [Diagram component library](diagrams/components.md)
 - [Fundamentals index](fundamentals/README.md)
 - [Interview prep index](README.md)

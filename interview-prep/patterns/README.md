@@ -66,7 +66,7 @@ here.**
 |---|---|---|
 | 6 | outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | **done** |
 | 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | **done** |
-| 8 | **comparisons/** (new folder): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | next |
+| 8 | [comparisons/](../comparisons/README.md) (new folder): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | **done** |
 | 9+ | cqrs · event-sourcing · change-data-capture · bulkhead · leader-election · scatter-gather · strangler-fig · write-audit-publish · pagination-patterns · api-versioning | planned |
 
 **10 of 20 patterns written.** Batch 6 covered atomicity you cannot have; batch 7 covers **blast
@@ -84,12 +84,14 @@ Each page ends with **Staff-level follow-ups**: multi-part questions with no def
 ## See also
 
 - [../fundamentals/README.md](../fundamentals/README.md) — the mechanisms these patterns compose
+- [../comparisons/README.md](../comparisons/README.md) — choosing the technology underneath a pattern
 - [../topics/manifest.md](../topics/manifest.md) — canonical topic list; check before creating a file
 - [../diagrams/components.md](../diagrams/components.md) — shared Mermaid vocabulary
 - [../CONVENTIONS.md](../CONVENTIONS.md) — file format contract
 
 ## Referenced by
 
+- [Comparisons index](../comparisons/README.md)
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
 - [Primitives index](../02-primitives/README.md)

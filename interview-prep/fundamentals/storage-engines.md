@@ -268,6 +268,8 @@ amplification the storage layer creates.
 
 - [Fundamentals index](README.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [OLTP database matrix](../comparisons/oltp-database-matrix.md)
+- [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 - [Topic manifest](../topics/manifest.md)
 

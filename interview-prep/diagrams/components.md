@@ -387,6 +387,7 @@ erDiagram
 
 ## Referenced by
 
+- [Backlog — ideas not scheduled](../../docs/BACKLOG.md)
 - [CLAUDE.md — system-design-prep](../../CLAUDE.md)
 - [File conventions](../CONVENTIONS.md)
 - [Fundamentals index](../fundamentals/README.md)

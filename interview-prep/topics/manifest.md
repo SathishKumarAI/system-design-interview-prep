@@ -221,9 +221,9 @@ complexity, and the failure mode of applying it too early.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `sql-vs-nosql-vs-newsql.md` | P0 | sql-or-nosql.md, database-selection.md | Access-pattern-first selection, where NewSQL's latency cost lands | new (retires part of tech-selection) |
-| `oltp-database-matrix.md` | P0 | postgres-vs-mysql.md, dynamodb-vs-cassandra.md | Postgres/MySQL/Cassandra/Scylla/DynamoDB on write path, consistency, ops cost | new |
-| `messaging-matrix.md` | P0 | kafka-vs-rabbitmq.md, sqs-vs-kafka.md, pulsar.md | Kafka/Pulsar/SQS/RabbitMQ/Kinesis on retention, ordering, delivery, ops | new |
+| [`sql-vs-nosql-vs-newsql.md`](../comparisons/sql-vs-nosql-vs-newsql.md) ✅ | P0 | sql-or-nosql.md, database-selection.md | Access-pattern-first selection, where NewSQL's latency cost lands | **written** |
+| [`oltp-database-matrix.md`](../comparisons/oltp-database-matrix.md) ✅ | P0 | postgres-vs-mysql.md, dynamodb-vs-cassandra.md | Postgres/MySQL/Cassandra/Scylla/DynamoDB on write path, consistency, ops cost | **written** |
+| [`messaging-matrix.md`](../comparisons/messaging-matrix.md) ✅ | P0 | kafka-vs-rabbitmq.md, sqs-vs-kafka.md, pulsar.md | Kafka/Pulsar/SQS/RabbitMQ/Kinesis on retention, ordering, delivery, ops | **written** |
 | `row-vs-columnar.md` | P1 | oltp-vs-olap.md, parquet-vs-row.md | Layout, compression, predicate pushdown, why one store rarely serves both | new |
 | `lakehouse-table-formats.md` | P0 | iceberg-vs-delta.md, hudi.md | Iceberg/Delta/Hudi on MoR vs CoW, catalogs, concurrent writers, engine support | new |
 | `stream-engine-matrix.md` | P1 | flink-vs-spark.md, kafka-streams.md | Flink/Spark Structured Streaming/Kafka Streams on state, event time, exactly-once sinks | new |
@@ -231,13 +231,13 @@ complexity, and the failure mode of applying it too early.
 | `realtime-transport-matrix.md` | P1 | websocket-vs-sse.md, long-polling.md | WebSocket/SSE/long-poll/WebRTC on direction, infra cost, reconnect semantics | new |
 | `crdt-vs-ot.md` | P1 | ot-vs-crdt.md | Convergence guarantees, offline support, metadata growth, server dependence | split ← 04/collaborative-editor |
 | `erasure-coding-vs-replication.md` | P1 | ec-vs-replication.md | Durability per stored byte, reconstruction cost, hot vs cold tiering | split ← 03/object-storage-sync |
-| `consistency-model-matrix.md` | P0 | pacelc-table.md, database-consistency.md | Per-system PACELC placement and what each buys at what latency | new |
+| [`consistency-model-matrix.md`](../comparisons/consistency-model-matrix.md) ✅ | P0 | pacelc-table.md, database-consistency.md | Per-system PACELC placement and what each buys at what latency | **written** |
 | `monolith-vs-microservices.md` | P0 | microservices.md, modular-monolith.md | Team-topology-driven, not scale-driven; the distributed-monolith failure | rewrite ← 02/…, legacy basic/prep/Microservices.md |
 | `compute-platform-matrix.md` | P1 | k8s-vs-serverless.md, lambda-vs-ecs.md | K8s/managed containers/serverless/VMs on cost curve, cold start, ops surface | new |
 | `retrieval-strategy-matrix.md` | P0 | hybrid-search.md, bm25-vs-embeddings.md | Lexical vs dense vs hybrid vs reranked, with measured recall trade-offs | split ← 06/rag-assistant |
 | `vector-store-matrix.md` | P1 | pinecone-vs-qdrant.md, pgvector.md | pgvector/Qdrant/Milvus/Pinecone on filtered search, scale, ops | new |
 | `llm-build-vs-buy.md` | P0 | self-host-vs-api.md, inference-cost.md | Break-even arithmetic in tokens/month; quality, latency, data-policy axes | split ← 06/llm-serving-platform |
-| `batch-vs-streaming.md` | P0 | lambda-vs-kappa.md, kappa-architecture.md | Freshness vs complexity, when micro-batch wins, Lambda's reconciliation tax | split ← 05/data-playbook |
+| [`batch-vs-streaming.md`](../comparisons/batch-vs-streaming.md) ✅ | P0 | lambda-vs-kappa.md, kappa-architecture.md | Freshness vs complexity, when micro-batch wins, Lambda's reconciliation tax | **written** |
 | `ranking-model-matrix.md` | P2 | gbdt-vs-neural.md | GBDT vs neural rankers on tabular features, latency, iteration speed | new |
 
 ---
@@ -384,10 +384,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | ✅ written, link-checked, `docs/fundamentals-batch-5` |
 | 6 | **patterns/** (folder created): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | ✅ written, link-checked, `docs/patterns-batch-6` |
 | 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | ✅ written, link-checked, `docs/patterns-batch-7` |
-| 8 | **comparisons/** (folder created here): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | next |
-| 9–13 | see §6 batch order | planned |
+| 8 | **comparisons/** (folder created): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | ✅ written, link-checked, `docs/comparisons-batch-8` |
+| 9 | cases: news-feed · chat-messaging · ride-hailing · payments-ledger · ticket-booking | next — **first case rewrites** |
+| 10–13 | see §6 batch order | planned |
 
-**35 / 123 written.** Fundamentals 25/47 · Patterns 10/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**40 / 123 written.** Fundamentals 25/47 · Patterns 10/20 · Comparisons 5/18 · Cases 0/38 rewritten.
 
 ## See also
 
@@ -399,6 +400,7 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 
 - [ADR-0001: Split bundled primitives into atomic fundamentals pages](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
 - [CLAUDE.md — system-design-prep](../../CLAUDE.md)
+- [Comparisons index](../comparisons/README.md)
 - [Diagram component library](../diagrams/components.md)
 - [Docs index](../../docs/README.md)
 - [Fundamentals index](../fundamentals/README.md)

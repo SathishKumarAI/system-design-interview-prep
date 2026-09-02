@@ -244,10 +244,12 @@ failure domain with a much larger blast radius than the data it coordinates.**
 ## Referenced by
 
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
+- [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
 - [Messaging and streams](../02-primitives/messaging-and-streams.md)
+- [Messaging matrix](../comparisons/messaging-matrix.md)
 - [Stream processing semantics](stream-processing-semantics.md)
 - [Topic manifest](../topics/manifest.md)
 

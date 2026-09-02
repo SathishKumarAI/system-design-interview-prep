@@ -207,6 +207,7 @@ for dashboard queries (which repeat constantly).
 
 ## Referenced by
 
+- [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

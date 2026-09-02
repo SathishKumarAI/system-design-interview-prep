@@ -129,6 +129,7 @@ written first and lists a canonical path plus forbidden aliases for every topic.
 - [Session record — fundamentals batches 1–5](../sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [STATUS](../../STATUS.md)
 - [Storage and databases](../../interview-prep/02-primitives/storage-and-databases.md)
+- [Technology selection tables](../../interview-prep/08-reference/tech-selection.md)
 - [Topic manifest](../../interview-prep/topics/manifest.md)
 - [Transactions, sagas and idempotency](../../interview-prep/02-primitives/transactions-and-idempotency.md)
 - [Worklog](../WORKLOG.md)

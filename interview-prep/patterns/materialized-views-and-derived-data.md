@@ -239,6 +239,8 @@ credentials should not permit application writes.
 ## Referenced by
 
 - [Backfill and reprocessing](backfill-and-reprocessing.md)
+- [Backlog — ideas not scheduled](../../docs/BACKLOG.md)
+- [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Expand–contract migration](expand-contract-migration.md)
 - [Fan-out on write vs read](fanout-write-vs-read.md)
 - [Patterns index](README.md)

@@ -87,10 +87,12 @@ If you cannot answer them out loud in two minutes, the page is not finished with
 - [../diagrams/components.md](../diagrams/components.md) — shared Mermaid vocabulary
 - [../CONVENTIONS.md](../CONVENTIONS.md) — file format contract
 - [../patterns/README.md](../patterns/README.md) — composed solutions built from these mechanisms
+- [../comparisons/README.md](../comparisons/README.md) — which technology to pick, and what you regret
 - [../02-primitives/README.md](../02-primitives/README.md) — the bundled notes being split
 
 ## Referenced by
 
+- [Comparisons index](../comparisons/README.md)
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
 - [Primitives index](../02-primitives/README.md)

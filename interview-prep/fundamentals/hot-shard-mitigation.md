@@ -263,9 +263,11 @@ C++ engine to remove GC from the tail-latency equation.
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
+- [OLTP database matrix](../comparisons/oltp-database-matrix.md)
 - [Partitioning strategies](partitioning-strategies.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication lag and session guarantees](replication-lag-and-session-guarantees.md)
+- [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

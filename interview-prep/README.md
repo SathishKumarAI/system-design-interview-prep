@@ -24,6 +24,7 @@ This folder is the **interview layer** on top: framework, numbers, worked cases,
 | How many servers / how much storage / what does it cost? | [01-numbers.md](01-numbers.md) |
 | How does this mechanism actually work, what does it cost, how does it break? | [fundamentals/](fundamentals/README.md) |
 | Which shape do I assemble, and when does it earn its complexity? | [patterns/](patterns/README.md) |
+| Which technology do I pick, and what do I regret? | [comparisons/](comparisons/README.md) |
 | What is the building block and when do I reach for it? (fast revision layer) | [02-primitives/](02-primitives/README.md) |
 | Worked backend designs (feed, chat, payments, …) | [03-backend-cases/](03-backend-cases/README.md) |
 | Worked frontend designs (editor, feed, dashboard) | [04-frontend-cases/](04-frontend-cases/README.md) |
@@ -79,6 +80,5 @@ the vendor calculator before putting any of them in a real design doc.
 ## Referenced by
 
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
-- [Next session — start here](../docs/NEXT-SESSION.md)
 - [Repo index](../INDEX.md)
 - [System Design Interview Preparation](../README.md)

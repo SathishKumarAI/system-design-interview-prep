@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/patterns-batch-7` · **PRs #1–#8** open, none merged.
+**Branch:** `docs/comparisons-batch-8` · **PRs #1–#9** open, none merged.
 
 ---
 
@@ -20,50 +20,48 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batches 1–7 are written and verified** — 25 pages in
-`interview-prep/fundamentals/` and 10 in `interview-prep/patterns/`, each with a cited
-production incident, real arithmetic and two diagram types. **35 of 123** done. Nothing is
+five per branch. **Batches 1–8 are written and verified** — 25 pages in `fundamentals/`, 10 in
+`patterns/` and 5 in the new `comparisons/`, each with a cited production incident, real arithmetic
+and two diagram types. **40 of 123** done, and every folder the restructure needs now exists. Nothing is
 half-applied: every primitive file they split from is still present and banner-marked, and each
 stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → … → #8; each retargets to `main`
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → … → #9; each retargets to `main`
    as the one below it lands. The session could not merge them (permission classifier blocked
-   `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2–8.
+   `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2–9.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1725 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1858 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 8 — comparisons (creates the last new folder)
+## 3. Batch 9 — the first case rewrites
 
-**This batch creates `interview-prep/comparisons/`.** Same wiring chores as batch 6: a folder
-`README.md`, a row in the root [`INDEX.md`](../INDEX.md), a row in
-[`interview-prep/README.md`](../interview-prep/README.md), and cross-links from
-`fundamentals/README.md` and `patterns/README.md`.
+**A different kind of work.** Batches 1–8 wrote new pages; this rewrites five existing case files
+**in place** (no renames, no moves — inbound links live in `INDEX.md` and the legacy notes).
 
-| File | Must carry |
+| File | Note |
 |---|---|
-| `sql-vs-nosql-vs-newsql.md` | Access-pattern-first selection; where NewSQL's latency cost actually lands; the "we chose Cassandra for scale we don't have" failure |
-| `oltp-database-matrix.md` | Postgres / MySQL / Cassandra / Scylla / DynamoDB on **write path, consistency model, operational cost** — not a feature checklist |
-| `messaging-matrix.md` | Kafka / Pulsar / SQS / RabbitMQ / Kinesis on retention, ordering, delivery semantics, per-message retry, ops |
-| `consistency-model-matrix.md` | Per-system PACELC placement and what each buys at what latency; references [`consistency-models`](../interview-prep/fundamentals/consistency-models.md) rather than restating it |
-| `batch-vs-streaming.md` | Freshness vs complexity; when micro-batch wins; Lambda's reconciliation tax vs Kappa's retention requirement |
+| `03-backend-cases/news-feed.md` | Already banner-linked to `fanout-write-vs-read`; the case keeps the end-to-end design |
+| `03-backend-cases/chat-messaging.md` | Composite partition key, ordering, presence, delivery receipts |
+| `03-backend-cases/ride-hailing.md` | Geo indexing moves to `fundamentals/` later; the case keeps matching and dispatch |
+| `03-backend-cases/payments-ledger.md` | Idempotency, ledger invariants, the unknown-outcome path |
+| `03-backend-cases/ticket-booking.md` | **New file** — the case that punishes eventual consistency |
 
-**Retire `08-reference/tech-selection.md` into this folder** once the five exist — replace it with
-a stub pointing at the matrices. Do not delete it; inbound links exist.
+The case contract (from [CLAUDE.md](../CLAUDE.md)): the staff sections apply, with the design
+skeleton — Clarify · Requirements · Estimates · API · Data model · Architecture · Scale & failure ·
+Ops & cost — kept **inside** `Mechanics & internals` and `Numbers that matter`.
 
-Comparison pages differ from both earlier kinds: they are **cross-cutting matrices that reference
-topic pages instead of re-explaining them**, and every column must be a real decision axis (write
-path, consistency, failure behaviour, ops cost) rather than a feature list. The most valuable
-paragraph in each is the one naming **the choice people get wrong and why** — a comparison page
-that does not commit to a recommendation is a table, not a document.
+**This is where the 40 pages already written pay off.** A case should **link to the mechanism pages
+rather than re-explain them**, and spend its length on what is specific to this problem: the
+estimates, the key design, the failure analysis, the cost. A case that re-teaches fan-out,
+idempotency or quorums has not used the set — link and move on.
 
-Everything else follows batches 1–7: 2–3 sources, one cited incident per page, ≥ 2 Mermaid diagram
-types, real arithmetic, then the three scripts.
+Cases are expected to run long (the manifest says so), and each still needs its own cited incident,
+its own arithmetic, and ≥ 2 diagram types.
 
 ## 4. What "done" means for one page
 
@@ -80,7 +78,8 @@ separates a good page from a passable one:
    batch 5 used AWS Kinesis 2020, Dean & Barroso's hedging measurements, Facebook's Fail at Scale
    and the HotOS 2021 metastability paper; batch 6 used Jepsen MongoDB 4.2.6, Stripe's online
    migrations and the Noria paper; batch 7 used AWS S3 2017, Route 53's shuffle-sharding numbers,
-   Twitter's timeline design and Kreps on reprocessing. Do not reuse one across batches — find a
+   Twitter's timeline design and Kreps on reprocessing; batch 8 used Notion's Postgres sharding,
+   Figma's database scaling and Slack's job-queue wedge. Do not reuse one across batches — find a
    new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
@@ -129,6 +128,7 @@ scripts from the repo root, wikilinks stay disabled, `vendor/` is read-only.
 
 ## Referenced by
 
+- [Backlog — ideas not scheduled](BACKLOG.md)
 - [Docs index](README.md)
 - [Repo index](../INDEX.md)
 - [Session record — fundamentals batches 1–5](sessions/2026-09-02-fundamentals-batches-1-5.md)

@@ -4,50 +4,51 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 
 | You want | Read |
 |---|---|
-| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 8 |
+| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 9 |
 | The stop point and the traps | This file |
 | Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
+| Unscheduled ideas worth keeping | [docs/BACKLOG.md](docs/BACKLOG.md) |
 | What happened last session, mistakes included | [docs/sessions/2026-09-02-fundamentals-batches-1-5.md](docs/sessions/2026-09-02-fundamentals-batches-1-5.md) |
 | Why the structure changed | [docs/adr/0001-split-primitives-into-atomic-fundamentals.md](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | The repo map | [INDEX.md](INDEX.md) |
 
 **Last updated:** 2026-09-02
-**Branch:** `docs/patterns-batch-7` · **PRs #1–#8** open, none merged
+**Branch:** `docs/comparisons-batch-8` · **PRs #1–#9** open, none merged
 
 ---
 
 ## Where things stopped
 
-The restructure is decided, recorded, and **executing**. Batches 1–7 are written and verified.
+The restructure is decided, recorded, and **executing**. Batches 1–8 are written and verified. **All P0 fundamentals, patterns and comparisons scaffolding now exists**; batch 9 starts the case rewrites.
 
 | Layer | State |
 |---|---|
 | D1–D4 decisions | Answered — all approved, scope = **all 123 topics**. [ADR-0001](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | `interview-prep/fundamentals/` | **25 pages** (consistency · replication · storage+caching · messaging · reliability) + README |
+| `interview-prep/comparisons/` | **5 pages** (SQL vs NoSQL · OLTP engines · messaging · consistency defaults · batch vs streaming) + README. **Folder created in batch 8** |
 | `interview-prep/patterns/` | **10 pages** — atomicity (outbox · saga · 2PC · derived data · expand–contract) and blast radius (fanout · cells · degradation · breakers · backfill) + README |
 | `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (**down to bulkheads and DR**). `transactions-and-idempotency` is down to **ledgers only** and is retired when `ledgers-and-double-entry.md` lands |
-| Manifest | §7 records the decisions, §8 tracks progress: **35 / 123** |
-| `comparisons/` | Not created yet — batch 8 creates it and retires `08-reference/tech-selection.md` into it |
-| Links / backlinks | 1725 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** |
+| `08-reference/tech-selection.md` | **Not retired** — it still uniquely covers 13 decisions with no comparison page yet. Banner added; becomes a stub when they land |
+| Links / backlinks | 1858 links checked, 4 broken (known placeholders), backlink pass idempotent |
 
 ## The next action
 
 Two things, in this order:
 
-1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → … → #8. They are stacked, so each
+1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → … → #9. They are stacked, so each
    retargets to `main` as the one below it lands. The session could not merge them (`gh pr merge`
-   blocked by the permission classifier): `gh pr merge 1 --squash --delete-branch`, then 2–8.
-2. **Batch 8 — comparisons.** This batch **creates `interview-prep/comparisons/`**, the second and
-   last new folder, and needs the same wiring batch 6 needed (folder README, root `INDEX.md` row,
-   `interview-prep/README.md` row, cross-links):
-   `sql-vs-nosql-vs-newsql` · `oltp-database-matrix` · `messaging-matrix` ·
-   `consistency-model-matrix` · `batch-vs-streaming`.
-   `08-reference/tech-selection.md` is **retired into this folder** once they exist — replaced by a
-   stub pointing there, not deleted.
+   blocked by the permission classifier): `gh pr merge 1 --squash --delete-branch`, then 2–9.
+2. **Batch 9 — the first case rewrites.** A genuinely different kind of work: five existing case
+   files rewritten **in place** to the staff contract, keeping the design skeleton (Clarify ·
+   Requirements · Estimates · API · Data model · Architecture · Scale & failure · Ops & cost)
+   *inside* `Mechanics & internals` and `Numbers that matter`:
+   `news-feed` · `chat-messaging` · `ride-hailing` · `payments-ledger` · `ticket-booking` (new).
 
-Comparison pages differ again: they are **cross-cutting matrices that reference topic pages rather
-than re-explaining them**, and each row needs a real axis (write path, consistency, ops cost),
-not a feature checklist. Follow the shape of batches 1–7 for everything else.
+The case rewrites are where the 40 pages already written start paying off: a case should **link to
+the mechanism pages rather than re-explaining them**, and spend its length on the design decisions,
+the estimates and the failure analysis that are specific to *this* problem. A case that re-teaches
+fan-out or idempotency is a case that has not used the set.
 
 ## Traps — things that will bite on re-entry
 
@@ -74,7 +75,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1725 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1858 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 ## Related work outside this repo
@@ -86,6 +87,7 @@ and worked around it in the docs rather than in the script.
 
 ## Referenced by
 
+- [Backlog — ideas not scheduled](docs/BACKLOG.md)
 - [CLAUDE.md — system-design-prep](CLAUDE.md)
 - [Docs index](docs/README.md)
 - [Next session — start here](docs/NEXT-SESSION.md)

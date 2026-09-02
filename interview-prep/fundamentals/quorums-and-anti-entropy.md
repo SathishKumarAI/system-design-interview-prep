@@ -250,10 +250,12 @@ back is a privacy incident (deletion requests, right to erasure), not just a dat
 
 - [Consensus — Raft and Paxos](consensus-raft-paxos.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
+- [Consistency model matrix](../comparisons/consistency-model-matrix.md)
 - [Consistency models](consistency-models.md)
 - [Consistent hashing](consistent-hashing.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
+- [OLTP database matrix](../comparisons/oltp-database-matrix.md)
 - [Replication topologies](replication-topologies.md)
 - [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)

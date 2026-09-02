@@ -281,6 +281,7 @@ sensitive component you own, and observability must not sit downstream of the th
 - [Log vs queue](log-vs-queue.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)
 - [Replication topologies](replication-topologies.md)
+- [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

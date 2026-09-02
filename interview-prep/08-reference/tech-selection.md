@@ -9,6 +9,19 @@ tags: [reference, selection]
 
 # Technology selection
 
+> [!info] Being retired into [../comparisons/](../comparisons/README.md)
+> This single mega-table is becoming one page per decision, each with real decision axes, cited
+> numbers and a committed recommendation
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). Already written:
+> [sql-vs-nosql-vs-newsql](../comparisons/sql-vs-nosql-vs-newsql.md) ·
+> [oltp-database-matrix](../comparisons/oltp-database-matrix.md) ·
+> [messaging-matrix](../comparisons/messaging-matrix.md) ·
+> [consistency-model-matrix](../comparisons/consistency-model-matrix.md) ·
+> [batch-vs-streaming](../comparisons/batch-vs-streaming.md).
+> **This file stays as the fast lookup table** until the remaining 13 comparison pages exist
+> (columnar, table formats, protocols, transports, vector stores, LLM build-vs-buy and the rest),
+> then it becomes a stub pointing there. It is not deleted — inbound links exist.
+
 Pick by **access pattern and constraint**, never by popularity. Each row is a defensible
 interview answer; the "avoid when" column is what earns the points.
 
@@ -116,5 +129,6 @@ things nobody on the team can debug at 3am.
 
 ## Referenced by
 
+- [Comparisons index](../comparisons/README.md)
 - [Reference index](README.md)
 - [Repo index](../../INDEX.md)
