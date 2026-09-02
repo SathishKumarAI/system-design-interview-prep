@@ -13,6 +13,76 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 5: reliability under overload
+
+Branch: `docs/fundamentals-batch-5` · PRs open: #1 (plan), #2–#6 (batches 1–5)
+
+### What
+
+Five pages: `timeouts-retries-backoff` and `load-shedding-and-admission-control` split from
+`reliability-patterns.md`; `cascading-and-metastable-failures`, `tail-latency` and
+`queueing-theory-basics` **written from scratch** — the first batch that is mostly new pages
+rather than splits. Fundamentals 25 of 47; manifest total 25 of 123.
+
+### Written as one argument, not five essays
+
+This is the structural choice worth recording. The five pages interlock deliberately:
+
+1. `queueing-theory-basics` — the utilisation knee (`ρ/(1−ρ)`) and Little's law.
+2. `tail-latency` — why fan-out drags every request into the knee (`1 − 0.99^100 = 63%`).
+3. `timeouts-retries-backoff` — how retries multiply offered load past it (3 layers × 3 = **27×**).
+4. `load-shedding-and-admission-control` — the control that keeps you left of the knee.
+5. `cascading-and-metastable-failures` — what happens with no control: the system stays down after
+   the trigger is gone.
+
+Each page's "Numbers that matter" feeds the next page's argument, and all five cross-link back to
+the same arithmetic rather than restating it.
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| queueing-theory-basics · load-shedding | **Facebook, Fail at Scale (ACM Queue 2015)** — CoDel plus adaptive LIFO in HHVM: bound queue *age*, and once a backlog forms serve the **newest** request first, because the oldest one's user has already left |
+| tail-latency | **Dean & Barroso, The Tail at Scale (CACM 2013)** — hedging after a 10 ms delay cut BigTable's p99.9 from **1 800 ms to 74 ms for 2% more requests** |
+| timeouts-retries-backoff · cascading | **AWS Kinesis, 25 Nov 2020** — a routine capacity addition pushed a full-mesh front-end fleet past the OS thread limit; ~17 hours, and recovery was bounded by *staged bootstrap*, not by the fix |
+| cascading | **Bronson et al., HotOS 2021** — the vocabulary: stable, vulnerable, metastable; trigger vs sustaining effect |
+| timeouts-retries-backoff | AWS's full-jitter comparison; Google SRE's client-side adaptive throttling (`max(0, (requests − 2×accepts)/(requests+1))`) |
+
+### The arguments these pages make that the tutorials don't
+
+- **"60% CPU" is not headroom.** The binding resource is usually a pool or a dependency, and
+  utilisation targets exist because of `ρ/(1−ρ)`, not superstition. Also: targets must be set from
+  the **post-failure** state — 5 nodes at 80% become 100% when one dies.
+- **The tail is the common case.** At fan-out 100, a per-server p99 makes 63% of user requests
+  slow. You must design each backend against p99.99, or reduce fan-out.
+- **An attempt limit does not bound load; a retry budget does.** Three attempts still triples
+  offered load when everything fails. 10% budgets and client-side throttling bound the system.
+- **Shedding is not failure — goodput collapse is.** Accepting 15 k rps into a 10 k rps service
+  produces 15 k timeouts at 100% utilisation: zero goodput, full cost.
+- **If removing the trigger doesn't restore service, adding capacity won't either.** The exits are
+  reduce the input or break the loop — both must be built before the incident.
+
+### Trade-offs
+
+- `reliability-patterns.md` kept and banner-marked: it still holds circuit breakers, bulkheads,
+  graceful degradation and multi-region DR. The first three become `patterns/` pages in batch 7.
+- Facebook's *Fail at Scale* is cited on two pages (queueing and shedding) for two different
+  mechanisms; the 2010 Facebook outage from batch 3 is referenced as a cross-link, not re-told.
+- Batch 6 creates `patterns/` — the first new folder since the restructure began.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1485 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+207 files scanned, 697 inbound links mapped, 0 changed
+```
+
+All 25 fundamentals pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 4: messaging and delivery
 
 Branch: `docs/fundamentals-batch-4` · PRs open: #1 (plan), #2–#5 (batches 1–4)

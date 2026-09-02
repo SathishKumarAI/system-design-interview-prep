@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/fundamentals-batch-4` · **PRs #1–#5** open, none merged.
+**Branch:** `docs/fundamentals-batch-5` · **PRs #1–#6** open, none merged.
 
 ---
 
@@ -20,47 +20,48 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batches 1–4 are written and verified** — twenty pages under
+five per branch. **Batches 1–5 are written and verified** — twenty-five pages under
 `interview-prep/fundamentals/`, each with a cited production incident, real arithmetic and two
-diagram types. 20 of 123 done. Nothing is half-applied: all six primitive files they split from
+diagram types. 25 of 123 done. Nothing is half-applied: all seven primitive files they split from
 are still present and banner-marked, and each stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → #3 → #4 → #5; each retargets to
-   `main` as the one below it lands. The session could not merge them (permission classifier
-   blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2, 3, 4, 5.
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → #3 → #4 → #5 → #6; each retargets
+   to `main` as the one below it lands. The session could not merge them (permission classifier
+   blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2–6.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1386 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1485 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 5 — reliability
+## 3. Batch 6 — patterns (creates a new folder)
 
-Five files: three split from `02-primitives/reliability-patterns.md`, **two written from
-scratch**. First batch that is mostly new pages, so there is no source text to lean on — budget
-more research time and treat the manifest scope lines as the only brief.
+**This batch creates `interview-prep/patterns/`** — the first new folder since the restructure
+began. That means three extra chores beyond the five pages: a folder `README.md` in the same shape
+as `fundamentals/README.md`, a row in the root [`INDEX.md`](../INDEX.md), and a row in
+[`interview-prep/README.md`](../interview-prep/README.md).
 
 | File | Source | Must carry |
 |---|---|---|
-| `timeouts-retries-backoff.md` | `reliability-patterns.md` | Deadline propagation, retry budgets, **layered-retry amplification arithmetic** (3 layers × 3 retries = 27× load) |
-| `load-shedding-and-admission-control.md` | `reliability-patterns.md` | Shed early and cheap, priority classes, queue-age drop (LIFO under overload), what a 429 actually promises |
-| `cascading-and-metastable-failures.md` | **new** | Why load returning to normal does not recover the system; how to break the loop. HotOS 2021 is the primary source |
-| `tail-latency.md` | **new** | Fan-out amplification maths, hedged and tied requests, why averages lie. Dean & Barroso *The Tail at Scale* |
-| `queueing-theory-basics.md` | **new** | Little's law, the utilisation/latency knee, why ~80% utilisation is the practical ceiling |
+| `outbox-pattern.md` | `transactions-and-idempotency.md` | The dual-write problem; relay vs CDC; ordering and dedup downstream; outbox table growth and cleanup |
+| `saga-pattern.md` | `transactions-and-idempotency.md` | Choreography vs orchestration; **compensation ≠ rollback**; stuck-workflow detection; the visibility of intermediate states |
+| `distributed-transactions.md` | `transactions-and-idempotency.md` | 2PC's blocking window shown as an interleaving; TCC reservations; **single-partition avoidance as the real answer** |
+| `materialized-views-and-derived-data.md` | **new** | Rebuildable derived stores as the core scaling idea; staleness contracts; the rebuild as a first-class operation |
+| `expand-contract-migration.md` | `storage-and-databases.md` | Add-nullable → backfill → dual-write → switch → drop; **revertible at every step**; how to verify each one |
 
-`reliability-patterns.md` also owns circuit breakers, bulkheads, graceful degradation and
-multi-region DR — those go to `patterns/` in batch 7 — so it keeps its banner and stays.
+A patterns page differs from a fundamentals page in one way the manifest is explicit about: it must
+state **when the pattern earns its complexity, and what applying it too early costs.** That
+sentence is the reason the folder exists — do not let these become mechanism pages.
 
-These five interlock: queueing theory explains the knee, tail latency explains why fan-out hits it,
-retries explain how load multiplies past it, shedding is the control, and metastability is what
-happens without one. Write them as one argument, not five essays.
+After this batch, `transactions-and-idempotency.md` holds only ledgers/double-entry; it can be
+retired once `ledgers-and-double-entry.md` (P1) lands.
 
-Incident candidates worth verifying: AWS's own retry-storm write-ups, the 2021 Salesforce or
-Fastly configuration outages, Google's SRE-book overload chapter, and any postmortem where the
-service stayed down after the trigger was removed.
+Incident candidates worth verifying: any public write-up of an outbox relay falling behind, a saga
+stuck mid-flight with no compensation path, or a schema migration that could not be reverted —
+Shopify, Stripe and GitHub have all published on online migrations.
 
 ## 4. What "done" means for one page
 
@@ -73,8 +74,9 @@ separates a good page from a passable one:
    ceilings and Facebook's remote markers; batch 3 used RocksDB write stalls, Uber's 2016
    Postgres→MySQL write amplification, Facebook's 2010 four-hour cache-stampede outage and Meta's
    Polaris consistency work; batch 4 used Vanlightly's Kafka message-loss analysis, Jepsen
-   Redpanda 21.10.1, Pinterest's watermark starvation and the Stripe/Brandur idempotency design.
-   Do not reuse one across batches — find a new one.
+   Redpanda 21.10.1, Pinterest's watermark starvation and the Stripe/Brandur idempotency design;
+   batch 5 used AWS Kinesis 2020, Dean & Barroso's hedging measurements, Facebook's Fail at Scale
+   and the HotOS 2021 metastability paper. Do not reuse one across batches — find a new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
 3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node

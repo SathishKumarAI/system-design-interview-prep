@@ -275,6 +275,7 @@ metastability that makes it unrecoverable.
 - [Caching](../02-primitives/caching.md)
 - [Fundamentals index](README.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [Tail latency](tail-latency.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

@@ -116,6 +116,7 @@ requires it in the same release.
 - [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
 - [Design ML monitoring, evaluation and retraining](../06-ml-cases/ml-monitoring-and-eval.md)
 - [Primitives index](README.md)
+- [Tail latency](../fundamentals/tail-latency.md)
 
 ## Sources & further reading
 

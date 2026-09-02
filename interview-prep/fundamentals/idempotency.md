@@ -241,6 +241,7 @@ reconciler resolves the unknowns using the provider as the arbiter. The generali
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)
+- [Timeouts, retries and backoff](timeouts-retries-backoff.md)
 - [Topic manifest](../topics/manifest.md)
 - [Transactions, sagas and idempotency](../02-primitives/transactions-and-idempotency.md)
 

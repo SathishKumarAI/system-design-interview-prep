@@ -43,6 +43,11 @@ deleted only once every topic it carries has a page here.
 | Why exactly-once delivery is impossible and exactly-once *effects* are not | [delivery-semantics.md](delivery-semantics.md) |
 | Event time, watermarks, checkpoints, late data, state as your real RTO | [stream-processing-semantics.md](stream-processing-semantics.md) |
 | Idempotency keys, the unknown outcome, foreign state mutations | [idempotency.md](idempotency.md) |
+| Little's law, the utilisation knee, why 80% is the ceiling | [queueing-theory-basics.md](queueing-theory-basics.md) |
+| Fan-out amplification, hedged and tied requests, why averages lie | [tail-latency.md](tail-latency.md) |
+| Deadline propagation, retry budgets, jitter, the 27× amplifier | [timeouts-retries-backoff.md](timeouts-retries-backoff.md) |
+| Goodput collapse, CoDel, adaptive LIFO, criticality classes | [load-shedding-and-admission-control.md](load-shedding-and-admission-control.md) |
+| Why the system stays down after the trigger is gone | [cascading-and-metastable-failures.md](cascading-and-metastable-failures.md) |
 
 ## Written / planned
 
@@ -56,12 +61,15 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | **done** |
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | **done** |
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | **done** |
-| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | next |
+| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | **done** |
+| 6 | patterns/: outbox · saga · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | next — **creates `patterns/`** |
 
-**20 of 47 fundamentals written.** The batches build on each other: batch 1 is what correctness
+**25 of 47 fundamentals written.** The batches build on each other: batch 1 is what correctness
 costs, batch 2 is what splitting and copying data costs instead, batch 3 is the single node
-underneath, batch 4 is what happens once the work is asynchronous — and why every async design
-ends up needing idempotency.
+underneath, batch 4 is what happens once the work is asynchronous, and batch 5 is what happens
+when any of it is overloaded — five pages that are one argument: queueing explains the knee, tail
+latency explains why fan-out hits it, retries explain how load multiplies past it, shedding is the
+control, and metastability is what happens without one.
 
 ## How to use these
 

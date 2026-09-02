@@ -225,6 +225,7 @@ vCPU ≈ $30/month            Egress ≈ $0.05–0.09/GB
 - [Drills index](07-drills/README.md)
 - [Interview playbook](00-interview-playbook.md)
 - [Interview prep index](README.md)
+- [Queueing theory basics](fundamentals/queueing-theory-basics.md)
 - [Reference index](08-reference/README.md)
 - [Repo index](../INDEX.md)
 - [Resources index](10-resources/README.md)

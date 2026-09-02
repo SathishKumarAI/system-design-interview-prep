@@ -148,11 +148,11 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `timeouts-retries-backoff.md` | P0 | retries.md, backoff.md, jitter.md, timeout-budget.md | Deadline propagation, retry budgets, layered-retry amplification arithmetic | split ← reliability-patterns |
-| `load-shedding-and-admission-control.md` | P0 | load-shedding.md, admission-control.md, overload.md | Shed early and cheap, priority classes, queue-age drop, 429 semantics | split ← reliability-patterns |
-| `cascading-and-metastable-failures.md` | P0 | cascading-failure.md, metastable.md, retry-storm.md | Why load returning to normal doesn't recover the system; breaking the loop | new |
-| `tail-latency.md` | P0 | p99.md, hedged-requests.md, tail-at-scale.md | Fan-out amplification maths, hedged and tied requests, why averages lie | new |
-| `queueing-theory-basics.md` | P0 | littles-law.md, utilisation.md, capacity-math.md | Little's law, the utilisation/latency knee, why 80% utilisation is the ceiling | new |
+| [`timeouts-retries-backoff.md`](../fundamentals/timeouts-retries-backoff.md) ✅ | P0 | retries.md, backoff.md, jitter.md, timeout-budget.md | Deadline propagation, retry budgets, layered-retry amplification arithmetic | **written** |
+| [`load-shedding-and-admission-control.md`](../fundamentals/load-shedding-and-admission-control.md) ✅ | P0 | load-shedding.md, admission-control.md, overload.md | Shed early and cheap, priority classes, queue-age drop, 429 semantics | **written** |
+| [`cascading-and-metastable-failures.md`](../fundamentals/cascading-and-metastable-failures.md) ✅ | P0 | cascading-failure.md, metastable.md, retry-storm.md | Why load returning to normal doesn't recover the system; breaking the loop | **written** |
+| [`tail-latency.md`](../fundamentals/tail-latency.md) ✅ | P0 | p99.md, hedged-requests.md, tail-at-scale.md | Fan-out amplification maths, hedged and tied requests, why averages lie | **written** |
+| [`queueing-theory-basics.md`](../fundamentals/queueing-theory-basics.md) ✅ | P0 | littles-law.md, utilisation.md, capacity-math.md | Little's law, the utilisation/latency knee, why 80% utilisation is the ceiling | **written** |
 | `capacity-planning.md` | P1 | headroom.md, autoscaling.md, peak-factor.md | Peak factors, headroom for failover, autoscaling lag, pre-warming | new |
 | `multi-region-and-dr.md` | P1 | dr.md, active-active.md, failover.md, rto-rpo.md | Strategy ladder vs RTO/RPO, conflict resolution, evacuation drills, data residency | split ← reliability-patterns |
 
@@ -381,10 +381,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | ✅ written, link-checked, `docs/fundamentals-batch-2` |
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | ✅ written, link-checked, `docs/fundamentals-batch-3` |
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | ✅ written, link-checked, `docs/fundamentals-batch-4` |
-| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | next |
-| 6–13 | see §6 batch order | planned |
+| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | ✅ written, link-checked, `docs/fundamentals-batch-5` |
+| 6 | **patterns/** (folder created here): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | next |
+| 7–13 | see §6 batch order | planned |
 
-**20 / 123 written.** Fundamentals 20/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**25 / 123 written.** Fundamentals 25/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 

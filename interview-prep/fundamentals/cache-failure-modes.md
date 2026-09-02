@@ -259,7 +259,9 @@ Three design rules fall out of it, and all three generalise beyond caching:
 - [Cache invalidation](cache-invalidation.md)
 - [Caching](../02-primitives/caching.md)
 - [Caching strategies](caching-strategies.md)
+- [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Fundamentals index](README.md)
+- [Tail latency](tail-latency.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

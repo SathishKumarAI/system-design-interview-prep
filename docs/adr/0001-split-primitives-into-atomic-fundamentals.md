@@ -122,6 +122,7 @@ written first and lists a canonical path plus forbidden aliases for every topic.
 - [Messaging and streams](../../interview-prep/02-primitives/messaging-and-streams.md)
 - [Next session — start here](../NEXT-SESSION.md)
 - [Primitives index](../../interview-prep/02-primitives/README.md)
+- [Reliability patterns](../../interview-prep/02-primitives/reliability-patterns.md)
 - [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
 - [STATUS](../../STATUS.md)
 - [Storage and databases](../../interview-prep/02-primitives/storage-and-databases.md)

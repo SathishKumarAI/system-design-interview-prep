@@ -4,50 +4,50 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 
 | You want | Read |
 |---|---|
-| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 5 |
+| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 6 |
 | The stop point and the traps | This file |
 | Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
 | Why the structure changed | [docs/adr/0001-split-primitives-into-atomic-fundamentals.md](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | The repo map | [INDEX.md](INDEX.md) |
 
 **Last updated:** 2026-09-02
-**Branch:** `docs/fundamentals-batch-4` · **PRs #1–#5** open, none merged
+**Branch:** `docs/fundamentals-batch-5` · **PRs #1–#6** open, none merged
 
 ---
 
 ## Where things stopped
 
-The restructure is decided, recorded, and **executing**. Batches 1–4 are written and verified.
+The restructure is decided, recorded, and **executing**. Batches 1–5 are written and verified.
 
 | Layer | State |
 |---|---|
 | D1–D4 decisions | Answered — all approved, scope = **all 123 topics**. [ADR-0001](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
-| `interview-prep/fundamentals/` | **20 pages written** (consistency · replication · storage+caching · messaging) + README |
-| `02-primitives/` split so far | **6 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) |
-| Manifest | §7 records the decisions, §8 tracks progress: **20 / 123** |
-| `patterns/`, `comparisons/` | Not created yet — they arrive with batches 6–8, deliberately |
-| Links / backlinks | 1386 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| `interview-prep/fundamentals/` | **25 pages written** (consistency · replication · storage+caching · messaging · reliability) + README |
+| `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (breakers, bulkheads, degradation, DR) |
+| Manifest | §7 records the decisions, §8 tracks progress: **25 / 123** |
+| `patterns/`, `comparisons/` | Not created yet — **`patterns/` is created by batch 6**, `comparisons/` by batch 8 |
+| Links / backlinks | 1485 links checked, 4 broken (known placeholders), backlink pass idempotent |
 
 ## The next action
 
 Two things, in this order:
 
-1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → #3 → #4 → #5. They are stacked, so
-   each retargets to `main` as the one below it lands. The session could not merge them
+1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → #3 → #4 → #5 → #6. They are stacked,
+   so each retargets to `main` as the one below it lands. The session could not merge them
    (`gh pr merge` blocked by the permission classifier):
-   `gh pr merge 1 --squash --delete-branch`, then 2, 3, 4, 5.
-2. **Batch 5 — reliability.** Five files, three `split ←`
-   `02-primitives/reliability-patterns.md` and two `new`:
-   `timeouts-retries-backoff` · `load-shedding-and-admission-control` ·
-   `cascading-and-metastable-failures` (new) · `tail-latency` (new) ·
-   `queueing-theory-basics` (new).
-   Batch order is in [manifest §6](interview-prep/topics/manifest.md).
+   `gh pr merge 1 --squash --delete-branch`, then 2–6.
+2. **Batch 6 — patterns.** This batch **creates `interview-prep/patterns/`**, the first new folder
+   since the restructure began, so it also needs a folder README and an INDEX.md row:
+   `outbox-pattern` · `saga-pattern` · `distributed-transactions` ·
+   `materialized-views-and-derived-data` · `expand-contract-migration`.
+   The first three come out of `02-primitives/transactions-and-idempotency.md`, which can then be
+   retired once ledgers also has a home. Batch order is in
+   [manifest §6](interview-prep/topics/manifest.md).
 
-Follow the shape of batches 1–4: research 2–3 sources first, one cited production incident per
+Follow the shape of batches 1–5: research 2–3 sources first, one cited production incident per
 page, ≥ 2 Mermaid diagram *types*, real arithmetic in "Numbers that matter", then the three
-scripts. Batch 5 is the first with mostly **new** pages rather than splits — there is no source
-text to lean on, so budget more research time and expect the manifest scope lines to be the only
-brief.
+scripts. Patterns pages differ from fundamentals in one way worth honouring — the manifest asks
+each to state **when the pattern earns its complexity and what applying it too early costs**.
 
 ## Traps — things that will bite on re-entry
 
@@ -74,7 +74,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1386 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1485 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 ## Related work outside this repo

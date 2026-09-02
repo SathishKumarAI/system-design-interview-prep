@@ -18,10 +18,11 @@ how does it fail, what do I say about it in an interview.*
 > ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). A file here is
 > deleted only when every topic it carries has a successor page. Split so far:
 > `consistency-and-consensus.md`, `replication-and-partitioning.md`, `caching.md`,
-> `storage-and-databases.md`, `messaging-and-streams.md` and `transactions-and-idempotency.md`
-> → twenty pages in `fundamentals/`. All six source files stay — each still holds at least one
-> topic with no successor yet (clocks/CRDTs · rebalancing · Redis internals · store selection and
-> schema evolution · backpressure and consumer lag · 2PC, outbox, sagas and ledgers).
+> `storage-and-databases.md`, `messaging-and-streams.md`, `transactions-and-idempotency.md` and
+> `reliability-patterns.md` → **twenty-five pages** in `fundamentals/`. All seven source files stay
+> — each still holds at least one topic with no successor yet (clocks/CRDTs · rebalancing · Redis
+> internals · store selection and schema evolution · backpressure and consumer lag · 2PC, outbox,
+> sagas and ledgers · breakers, bulkheads, degradation and DR).
 
 ## Where to look
 
@@ -35,7 +36,7 @@ how does it fail, what do I say about it in an interview.*
 | CAP/PACELC, isolation levels, Raft, leases, clocks | [consistency-and-consensus.md](consistency-and-consensus.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | Queues vs logs, Kafka, delivery semantics, ordering, backpressure | [messaging-and-streams.md](messaging-and-streams.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | Idempotency, sagas, outbox, exactly-once *effects*, ledgers | [transactions-and-idempotency.md](transactions-and-idempotency.md) — **partly split**, see [../fundamentals/](../fundamentals/README.md) |
-| Timeouts, retries, circuit breakers, bulkheads, load shedding, DR | [reliability-patterns.md](reliability-patterns.md) |
+| Timeouts, retries, circuit breakers, bulkheads, load shedding, DR | [reliability-patterns.md](reliability-patterns.md) — **partly split**, see [../fundamentals/](../fundamentals/README.md) |
 | SLOs, RED/USE, tracing, canary, feature flags, on-call | [observability-and-delivery.md](observability-and-delivery.md) |
 | AuthN/AuthZ, secrets, tenancy isolation, abuse, privacy | [security-and-multitenancy.md](security-and-multitenancy.md) |
 | Where the money goes and how to cut it | [cost-engineering.md](cost-engineering.md) |

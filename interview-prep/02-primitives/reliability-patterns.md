@@ -11,6 +11,18 @@ tags: [timeouts, retries, circuit-breaker, load-shedding, dr]
 
 # Reliability patterns
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> Overload and latency now have their own pages with real arithmetic and cited incidents
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
+> [timeouts-retries-backoff](../fundamentals/timeouts-retries-backoff.md) ·
+> [load-shedding-and-admission-control](../fundamentals/load-shedding-and-admission-control.md) ·
+> [cascading-and-metastable-failures](../fundamentals/cascading-and-metastable-failures.md) ·
+> [tail-latency](../fundamentals/tail-latency.md) ·
+> [queueing-theory-basics](../fundamentals/queueing-theory-basics.md).
+> Still only here: **circuit breakers**, **bulkheads**, **graceful degradation** and
+> **multi-region DR** — the first three become `patterns/` pages in batch 7, so this file stays.
+> Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
+
 The section that 2026 rubrics score explicitly as "operational maturity". Bring it up
 **unprompted** — that is the whole point.
 
@@ -144,11 +156,13 @@ and regular region evacuation drills are the answer.
 
 - [Cache failure modes](../fundamentals/cache-failure-modes.md)
 - [Caching strategies](../fundamentals/caching-strategies.md)
+- [Cascading and metastable failures](../fundamentals/cascading-and-metastable-failures.md)
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)
 - [Hot shard mitigation](../fundamentals/hot-shard-mitigation.md)
 - [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
+- [Load shedding and admission control](../fundamentals/load-shedding-and-admission-control.md)
 - [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Primitives index](README.md)
 - [Replication topologies](../fundamentals/replication-topologies.md)

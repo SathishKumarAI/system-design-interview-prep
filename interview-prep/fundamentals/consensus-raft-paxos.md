@@ -271,6 +271,7 @@ sensitive component you own, and observability must not sit downstream of the th
 
 ## Referenced by
 
+- [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
 - [Fundamentals index](README.md)
