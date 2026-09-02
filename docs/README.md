@@ -19,7 +19,15 @@ Reasoning and history. Code holds the reasons that fit in a comment; this holds 
 | What happened in a given session, including the dead ends? | [sessions/](sessions/) |
 | Where did work stop, and what will bite me? | [../STATUS.md](../STATUS.md) |
 | What is the plan for the topic set? | [../interview-prep/topics/manifest.md](../interview-prep/topics/manifest.md) |
-| A recorded architecture decision | `adr/` — none yet; template at [../interview-prep/_templates/adr-template.md](../interview-prep/_templates/adr-template.md) |
+| Why is the folder structure the way it is? | [adr/0001-split-primitives-into-atomic-fundamentals.md](adr/0001-split-primitives-into-atomic-fundamentals.md) |
+| A new architecture decision | `adr/NNNN-…`; template at [../interview-prep/_templates/adr-template.md](../interview-prep/_templates/adr-template.md) |
+
+## Session records
+
+| Date | Session | What it produced |
+|---|---|---|
+| 2026-09-02 | [staff restructure groundwork and the docs skill](sessions/2026-09-02-staff-restructure-and-skill.md) | The 75-file prep set, the manifest, the diagram library, and the `staff-technical-docs` skill + benchmark |
+| 2026-09-02 | [fundamentals batches 1–5](sessions/2026-09-02-fundamentals-batches-1-5.md) | Executed the plan: **25 pages**, five branches, six stacked PRs; found the `gen_backlinks.py` code-fence bug |
 
 ## The three-document split, and why it isn't redundant
 

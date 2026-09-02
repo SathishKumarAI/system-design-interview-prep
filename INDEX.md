@@ -25,8 +25,8 @@ sources.
 |---|---|---|
 | **Framework** | [00-interview-playbook.md](interview-prep/00-interview-playbook.md) | How to run the 45 minutes; what's scored |
 | **Numbers** | [01-numbers.md](interview-prep/01-numbers.md) | Latency, capacity, availability, cost |
-| **Fundamentals** | [fundamentals/](interview-prep/fundamentals/README.md) | One mechanism per page, staff depth: internals, arithmetic, cited failure modes. Replacing `02-primitives/` file by file |
-| **Primitives** (legacy) | [02-primitives/](interview-prep/02-primitives/README.md) | 12 bundled building blocks; the fast revision layer, being split into `fundamentals/` |
+| **Fundamentals** | [fundamentals/](interview-prep/fundamentals/README.md) | **25 of 47 written.** One mechanism per page, staff depth: internals, real arithmetic, cited incidents. Replacing `02-primitives/` file by file ([ADR-0001](docs/adr/0001-split-primitives-into-atomic-fundamentals.md)) |
+| **Primitives** (legacy) | [02-primitives/](interview-prep/02-primitives/README.md) | 12 bundled building blocks; the fast revision layer. 7 partly split, none deleted — each keeps a banner naming its successor pages |
 | **Backend cases** | [03-backend-cases/](interview-prep/03-backend-cases/README.md) | 11 worked designs |
 | **Frontend cases** | [04-frontend-cases/](interview-prep/04-frontend-cases/README.md) | RADIO + 4 worked designs |
 | **Data cases** | [05-data-cases/](interview-prep/05-data-cases/README.md) | Playbook + 4 worked designs |

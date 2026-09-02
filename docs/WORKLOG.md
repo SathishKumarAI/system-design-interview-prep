@@ -475,4 +475,5 @@ assertions, which is the weakest evidence produced this session.
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
 - [Docs index](README.md)
 - [Repo index](../INDEX.md)
+- [Session record — fundamentals batches 1–5](sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [STATUS](../STATUS.md)

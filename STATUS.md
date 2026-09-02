@@ -7,6 +7,7 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 | **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 6 |
 | The stop point and the traps | This file |
 | Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
+| What happened last session, mistakes included | [docs/sessions/2026-09-02-fundamentals-batches-1-5.md](docs/sessions/2026-09-02-fundamentals-batches-1-5.md) |
 | Why the structure changed | [docs/adr/0001-split-primitives-into-atomic-fundamentals.md](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | The repo map | [INDEX.md](INDEX.md) |
 
@@ -26,7 +27,7 @@ The restructure is decided, recorded, and **executing**. Batches 1–5 are writt
 | `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (breakers, bulkheads, degradation, DR) |
 | Manifest | §7 records the decisions, §8 tracks progress: **25 / 123** |
 | `patterns/`, `comparisons/` | Not created yet — **`patterns/` is created by batch 6**, `comparisons/` by batch 8 |
-| Links / backlinks | 1489 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| Links / backlinks | 1511 links checked, 4 broken (known placeholders), backlink pass idempotent |
 
 ## The next action
 
@@ -74,7 +75,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1489 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1511 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 ## Related work outside this repo
@@ -90,4 +91,5 @@ and worked around it in the docs rather than in the script.
 - [Docs index](docs/README.md)
 - [Next session — start here](docs/NEXT-SESSION.md)
 - [Repo index](INDEX.md)
+- [Session record — fundamentals batches 1–5](docs/sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [Worklog](docs/WORKLOG.md)

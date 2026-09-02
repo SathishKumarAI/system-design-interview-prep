@@ -117,6 +117,7 @@ written first and lists a canonical path plus forbidden aliases for every topic.
 
 - [Caching](../../interview-prep/02-primitives/caching.md)
 - [Consistency and consensus](../../interview-prep/02-primitives/consistency-and-consensus.md)
+- [Docs index](../README.md)
 - [File conventions](../../interview-prep/CONVENTIONS.md)
 - [Fundamentals index](../../interview-prep/fundamentals/README.md)
 - [Messaging and streams](../../interview-prep/02-primitives/messaging-and-streams.md)
@@ -124,6 +125,8 @@ written first and lists a canonical path plus forbidden aliases for every topic.
 - [Primitives index](../../interview-prep/02-primitives/README.md)
 - [Reliability patterns](../../interview-prep/02-primitives/reliability-patterns.md)
 - [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
+- [Repo index](../../INDEX.md)
+- [Session record — fundamentals batches 1–5](../sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [STATUS](../../STATUS.md)
 - [Storage and databases](../../interview-prep/02-primitives/storage-and-databases.md)
 - [Topic manifest](../../interview-prep/topics/manifest.md)

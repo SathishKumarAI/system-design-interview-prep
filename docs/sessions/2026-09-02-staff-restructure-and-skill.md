@@ -146,4 +146,6 @@ That became a promoted section in the skill: *fix the link, not the filename.*
 
 ## Referenced by
 
+- [Docs index](../README.md)
+- [Session record — fundamentals batches 1–5](2026-09-02-fundamentals-batches-1-5.md)
 - [Worklog](../WORKLOG.md)

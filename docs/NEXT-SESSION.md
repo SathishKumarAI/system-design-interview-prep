@@ -34,7 +34,7 @@ are still present and banner-marked, and each stays until its remaining topics l
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1489 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1511 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
 ## 3. Batch 6 — patterns (creates a new folder)
@@ -125,5 +125,6 @@ scripts from the repo root, wikilinks stay disabled, `vendor/` is read-only.
 
 - [Docs index](README.md)
 - [Repo index](../INDEX.md)
+- [Session record — fundamentals batches 1–5](sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [STATUS](../STATUS.md)
 - [Worklog](WORKLOG.md)
