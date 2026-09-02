@@ -277,6 +277,7 @@ consistency checker surfaced it in days.
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
 - [Fundamentals index](README.md)
+- [Idempotency](idempotency.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
 - [Topic manifest](../topics/manifest.md)
 

@@ -253,6 +253,7 @@ back is a privacy incident (deletion requests, right to erasure), not just a dat
 - [Consistency models](consistency-models.md)
 - [Consistent hashing](consistent-hashing.md)
 - [Fundamentals index](README.md)
+- [Kafka internals](kafka-internals.md)
 - [Replication topologies](replication-topologies.md)
 - [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)

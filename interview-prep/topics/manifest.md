@@ -130,17 +130,17 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `log-vs-queue.md` | P0 | message-queue.md, queues.md, pubsub.md | Retention/replay/consumer-group semantics; when a queue is the correct smaller answer | split ← messaging-and-streams |
-| `kafka-internals.md` | P0 | kafka.md, partitions.md, isr.md | ISR, `acks`/`min.insync.replicas`, rebalance protocols, compaction, tiered storage | split ← messaging-and-streams |
-| `delivery-semantics.md` | P0 | exactly-once.md, at-least-once.md, message-dedup.md | Why exactly-once delivery is impossible and exactly-once *effects* are not | split ← messaging-and-streams |
-| `stream-processing-semantics.md` | P0 | watermarks.md, event-time.md, windowing.md, flink.md | Event vs processing time, watermarks, late data, checkpoints, state size | split ← messaging-and-streams |
+| [`log-vs-queue.md`](../fundamentals/log-vs-queue.md) ✅ | P0 | message-queue.md, queues.md, pubsub.md | Retention/replay/consumer-group semantics; when a queue is the correct smaller answer | **written** ← messaging-and-streams |
+| [`kafka-internals.md`](../fundamentals/kafka-internals.md) ✅ | P0 | kafka.md, partitions.md, isr.md | ISR, `acks`/`min.insync.replicas`, rebalance protocols, compaction, tiered storage | **written** ← messaging-and-streams |
+| [`delivery-semantics.md`](../fundamentals/delivery-semantics.md) ✅ | P0 | exactly-once.md, at-least-once.md, message-dedup.md | Why exactly-once delivery is impossible and exactly-once *effects* are not | **written** ← messaging-and-streams |
+| [`stream-processing-semantics.md`](../fundamentals/stream-processing-semantics.md) ✅ | P0 | watermarks.md, event-time.md, windowing.md, flink.md | Event vs processing time, watermarks, late data, checkpoints, state size | **written** ← messaging-and-streams |
 | `backpressure-and-consumer-lag.md` | P1 | backpressure.md, lag.md | Lag as the async-system health metric; shedding vs buffering; priority topics | split ← messaging-and-streams |
 
 ### 1.8 Transactions and correctness
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `idempotency.md` | P0 | idempotency-keys.md, dedup.md, retry-safety.md | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence | split ← transactions-and-idempotency |
+| [`idempotency.md`](../fundamentals/idempotency.md) ✅ | P0 | idempotency-keys.md, dedup.md, retry-safety.md | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence | **written** ← transactions-and-idempotency |
 | `distributed-transactions.md` | P0 | 2pc.md, two-phase-commit.md, tcc.md, xa.md | 2PC blocking window, TCC reservations, single-partition avoidance as the real answer | split ← transactions-and-idempotency |
 | `ledgers-and-double-entry.md` | P1 | ledger.md, double-entry.md, accounting.md | Append-only entries, balance materialisation, continuous invariant checking | split ← transactions-and-idempotency |
 
@@ -380,10 +380,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | ✅ written, link-checked, `docs/fundamentals-batch-1` |
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | ✅ written, link-checked, `docs/fundamentals-batch-2` |
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | ✅ written, link-checked, `docs/fundamentals-batch-3` |
-| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | next |
-| 5–13 | see §6 batch order | planned |
+| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | ✅ written, link-checked, `docs/fundamentals-batch-4` |
+| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | next |
+| 6–13 | see §6 batch order | planned |
 
-**15 / 123 written.** Fundamentals 15/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**20 / 123 written.** Fundamentals 20/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 

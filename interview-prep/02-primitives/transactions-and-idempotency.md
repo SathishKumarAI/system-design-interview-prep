@@ -11,6 +11,13 @@ tags: [idempotency, saga, outbox, ledger, 2pc]
 
 # Transactions, sagas and idempotency
 
+> [!info] Partly split — the staff-level version of idempotency lives in `fundamentals/`
+> [idempotency.md](../fundamentals/idempotency.md) carries key scope, the in-flight collision,
+> stored responses, the **unknown-outcome** state and foreign state mutations
+> ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)).
+> Still only here: **2PC / distributed transactions**, **outbox**, **sagas** and **ledgers** —
+> those become `patterns/` pages in a later batch, and this file stays until they do.
+
 The primitive that decides whether your system can charge a card twice. Any design touching
 money, inventory, bookings or notifications needs this section explicitly.
 
@@ -137,10 +144,12 @@ transitions, and reconciliation against the provider's daily file.
 
 ## Referenced by
 
+- [Delivery semantics](../fundamentals/delivery-semantics.md)
 - [Design a chat / messaging system](../03-backend-cases/chat-messaging.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)
 - [Design a payments system / ledger](../03-backend-cases/payments-ledger.md)
 - [Design ride-hailing / proximity matching (Uber)](../03-backend-cases/ride-hailing.md)
+- [Idempotency](../fundamentals/idempotency.md)
 - [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
 - [Messaging and streams](messaging-and-streams.md)
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)

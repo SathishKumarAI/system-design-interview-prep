@@ -38,6 +38,11 @@ deleted only once every topic it carries has a page here.
 | Where to cache, which pattern, how big, and what the miss path costs | [caching-strategies.md](caching-strategies.md) |
 | The stale-set race, versioned keys, leases, CDC-driven invalidation | [cache-invalidation.md](cache-invalidation.md) |
 | Stampede, hot key, penetration, cold start — and why they don't self-recover | [cache-failure-modes.md](cache-failure-modes.md) |
+| Queue or log? Replay, fan-out, per-message retry, retention as a recovery bound | [log-vs-queue.md](log-vs-queue.md) |
+| ISR, `acks`, `min.insync.replicas`, rebalance protocols, compaction, KRaft | [kafka-internals.md](kafka-internals.md) |
+| Why exactly-once delivery is impossible and exactly-once *effects* are not | [delivery-semantics.md](delivery-semantics.md) |
+| Event time, watermarks, checkpoints, late data, state as your real RTO | [stream-processing-semantics.md](stream-processing-semantics.md) |
+| Idempotency keys, the unknown outcome, foreign state mutations | [idempotency.md](idempotency.md) |
 
 ## Written / planned
 
@@ -50,12 +55,13 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | **done** |
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | **done** |
 | 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | **done** |
-| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | next |
+| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | **done** |
+| 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | next |
 
-**15 of 47 fundamentals written.** The three batches build on each other: batch 1 is what
-correctness costs, batch 2 is what splitting and copying data costs instead, batch 3 is what
-happens on the single node underneath — how bytes are stored, found, and copied closer to the
-reader.
+**20 of 47 fundamentals written.** The batches build on each other: batch 1 is what correctness
+costs, batch 2 is what splitting and copying data costs instead, batch 3 is the single node
+underneath, batch 4 is what happens once the work is asynchronous — and why every async design
+ends up needing idempotency.
 
 ## How to use these
 

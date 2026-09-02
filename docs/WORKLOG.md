@@ -13,6 +13,68 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 4: messaging and delivery
+
+Branch: `docs/fundamentals-batch-4` · PRs open: #1 (plan), #2–#5 (batches 1–4)
+
+### What
+
+Five pages: `log-vs-queue`, `kafka-internals`, `delivery-semantics`,
+`stream-processing-semantics` from `messaging-and-streams.md`, and `idempotency` from
+`transactions-and-idempotency.md`. Fundamentals 20 of 47; manifest total 20 of 123.
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| kafka-internals | Vanlightly's *How to lose messages on a Kafka cluster*: with `acks=all` and the **default** `min.insync.replicas=1`, an ISR shrunk to the leader still acknowledges writes — a subsequent leader failure loses acknowledged data with no error anywhere |
+| delivery-semantics | **Jepsen: Redpanda 21.10.1** — three liveness and seven safety issues, including a single transaction processing *some but not all* of its records twice, and an off-by-one advancing the last stable offset past committed messages |
+| stream-processing-semantics | **Pinterest** — slowed watermark progression in an inner join produced backpressure then checkpoint failures, because one high-volume topic starved another; fixed with per-topic rate limiting |
+| idempotency | **Brandur / Stripe** — idempotency keys with foreign state mutations, atomic phases and recovery points; 24-hour key retention; the provider's record as the arbiter for unknown outcomes |
+| log-vs-queue | Kafka's own `__consumer_offsets` as a compacted topic — the log used as a table, by the log itself |
+
+### Why this framing
+
+- **Exactly-once delivery is impossible; exactly-once effects are not.** Every vendor feature is
+  the second thing, and it holds only inside a boundary that vendor controls. The moment a step
+  calls a payment API the guarantee ends — so the honest sentence is "EOS inside Kafka,
+  at-least-once at the edges, idempotent effects where it matters".
+- **`acks=all` is half a durability setting.** Without `min.insync.replicas=2` it silently
+  degrades to `acks=1` exactly when the cluster is unhealthy. Stated as the production baseline:
+  RF=3, `min.insync.replicas=2`, `acks=all`, idempotent producer, unclean leader election off —
+  *and* the cost that comes with it (two broker losses stop writes).
+- **The watermark is only as fast as your slowest source partition.** An idle partition freezes
+  the whole job's watermark: windows stop firing across every key while CPU and throughput look
+  healthy. This is the streaming failure people lose a day to.
+- **Idempotency is not deduplication.** Dedup handles the request that arrives twice; the
+  expensive case is the request that died halfway, which needs a state machine with an explicit
+  **unknown** state and a reconciler — not a cache of responses.
+- **The log is not the upgrade over a queue.** A queue gives per-message retry, visibility
+  timeouts and DLQs for free; on a log those are your code, and diverting a poison message to a
+  retry topic silently reorders it after its successors.
+
+### Trade-offs
+
+- Both source files kept and banner-marked. `messaging-and-streams.md` still uniquely holds
+  backpressure/consumer-lag; `transactions-and-idempotency.md` still holds 2PC, outbox, sagas and
+  ledgers — those become `patterns/` pages in batch 6, so this file survives longest.
+- `idempotency` was pulled into a messaging batch rather than waiting for its own, because
+  `delivery-semantics` is incoherent without it: at-least-once is only safe if the effect is
+  idempotent, and splitting them across branches would have left a dangling argument.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1386 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+202 files scanned, 654 inbound links mapped, 0 changed
+```
+
+All 20 fundamentals pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 3: storage engines and caching
 
 Branch: `docs/fundamentals-batch-3` · PRs open: #1 (plan), #2 (batch 1), #3 (batch 2), #4 (this)

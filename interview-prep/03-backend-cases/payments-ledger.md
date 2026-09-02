@@ -217,6 +217,7 @@ idempotent.
 - [Design real-time fraud detection](../06-ml-cases/fraud-detection.md)
 - [Design ride-hailing / proximity matching (Uber)](ride-hailing.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
+- [Idempotency](../fundamentals/idempotency.md)
 - [Leases, locks and fencing](../fundamentals/leases-locks-and-fencing.md)
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
 - [Question bank](../07-drills/question-bank.md)

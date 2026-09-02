@@ -210,6 +210,7 @@ CDC that silently drifts is worse than no CDC, because people trust it.
 
 - [Cache invalidation](../fundamentals/cache-invalidation.md)
 - [Data platform cases index](README.md)
+- [Log vs queue](../fundamentals/log-vs-queue.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 

@@ -210,6 +210,7 @@ for dashboard queries (which repeat constantly).
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
+- [Stream processing semantics](../fundamentals/stream-processing-semantics.md)
 
 ## Sources & further reading
 

@@ -11,6 +11,17 @@ tags: [kafka, queue, streaming, backpressure, delivery-semantics]
 
 # Messaging and streams
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> Four of the five topics here now have their own page with internals, arithmetic and cited
+> incidents ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
+> [log-vs-queue](../fundamentals/log-vs-queue.md) ·
+> [kafka-internals](../fundamentals/kafka-internals.md) ·
+> [delivery-semantics](../fundamentals/delivery-semantics.md) ·
+> [stream-processing-semantics](../fundamentals/stream-processing-semantics.md).
+> Still only here: **backpressure and consumer lag** — this file stays until
+> `backpressure-and-consumer-lag.md` exists.
+> Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
+
 ## What it is
 
 A buffer between producer and consumer that decouples them in **time** (bursts), in
@@ -148,8 +159,11 @@ change; a relay (or CDC on that table) publishes it. At-least-once, no lost even
 - [Design a news feed](../03-backend-cases/news-feed.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)
 - [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Kafka internals](../fundamentals/kafka-internals.md)
+- [Log vs queue](../fundamentals/log-vs-queue.md)
 - [Primitives index](README.md)
 - [Storage and databases](storage-and-databases.md)
+- [Stream processing semantics](../fundamentals/stream-processing-semantics.md)
 
 ## Sources & further reading
 

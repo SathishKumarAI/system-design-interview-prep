@@ -252,6 +252,7 @@ its five independent mechanisms failed together for five independent reasons.
 ## Referenced by
 
 - [Fundamentals index](README.md)
+- [Kafka internals](kafka-internals.md)
 - [Partitioning strategies](partitioning-strategies.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication lag and session guarantees](replication-lag-and-session-guarantees.md)

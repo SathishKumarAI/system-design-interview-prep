@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/fundamentals-batch-3` · **PRs #1–#4** open, none merged.
+**Branch:** `docs/fundamentals-batch-4` · **PRs #1–#5** open, none merged.
 
 ---
 
@@ -20,43 +20,47 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batches 1–3 are written and verified** — fifteen pages under
+five per branch. **Batches 1–4 are written and verified** — twenty pages under
 `interview-prep/fundamentals/`, each with a cited production incident, real arithmetic and two
-diagram types. 15 of 123 done. Nothing is half-applied: all four primitive files they split from
+diagram types. 20 of 123 done. Nothing is half-applied: all six primitive files they split from
 are still present and banner-marked, and each stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 (batch 1) → #3 (batch 2) → #4
-   (batch 3); each retargets to `main` as the one below it lands. The session could not merge them
-   (permission classifier blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then
-   2, 3, 4.
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 → #3 → #4 → #5; each retargets to
+   `main` as the one below it lands. The session could not merge them (permission classifier
+   blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2, 3, 4, 5.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1286 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1386 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 4 — messaging and delivery
+## 3. Batch 5 — reliability
 
-Five files from two source primitives; neither is deleted at the end.
+Five files: three split from `02-primitives/reliability-patterns.md`, **two written from
+scratch**. First batch that is mostly new pages, so there is no source text to lean on — budget
+more research time and treat the manifest scope lines as the only brief.
 
 | File | Source | Must carry |
 |---|---|---|
-| `log-vs-queue.md` | `messaging-and-streams.md` | Retention, replay, consumer-group semantics; **when a queue is the correct smaller answer** |
-| `kafka-internals.md` | `messaging-and-streams.md` | ISR, `acks` / `min.insync.replicas`, rebalance protocols (eager vs cooperative), log compaction, tiered storage |
-| `delivery-semantics.md` | `messaging-and-streams.md` | Why exactly-once *delivery* is impossible and exactly-once *effects* are not; the transactional-producer mechanics |
-| `stream-processing-semantics.md` | `messaging-and-streams.md` | Event vs processing time, watermarks, late data, checkpoint/state size, restart cost |
-| `idempotency.md` | `transactions-and-idempotency.md` | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence |
+| `timeouts-retries-backoff.md` | `reliability-patterns.md` | Deadline propagation, retry budgets, **layered-retry amplification arithmetic** (3 layers × 3 retries = 27× load) |
+| `load-shedding-and-admission-control.md` | `reliability-patterns.md` | Shed early and cheap, priority classes, queue-age drop (LIFO under overload), what a 429 actually promises |
+| `cascading-and-metastable-failures.md` | **new** | Why load returning to normal does not recover the system; how to break the loop. HotOS 2021 is the primary source |
+| `tail-latency.md` | **new** | Fan-out amplification maths, hedged and tied requests, why averages lie. Dean & Barroso *The Tail at Scale* |
+| `queueing-theory-basics.md` | **new** | Little's law, the utilisation/latency knee, why ~80% utilisation is the practical ceiling |
 
-`messaging-and-streams.md` still owns backpressure/consumer-lag; `transactions-and-idempotency.md`
-still owns 2PC, sagas, outbox and ledgers. Both keep their banner and stay.
+`reliability-patterns.md` also owns circuit breakers, bulkheads, graceful degradation and
+multi-region DR — those go to `patterns/` in batch 7 — so it keeps its banner and stays.
 
-Incident candidates worth verifying before writing: Kafka rebalance storms during rolling deploys,
-`min.insync.replicas=1` data loss on ISR shrink, the Slack 2021-01-04 or Cloudflare queue-backlog
-write-ups, and any public postmortem where a consumer group's offset reset replayed production
-traffic.
+These five interlock: queueing theory explains the knee, tail latency explains why fan-out hits it,
+retries explain how load multiplies past it, shedding is the control, and metastability is what
+happens without one. Write them as one argument, not five essays.
+
+Incident candidates worth verifying: AWS's own retry-storm write-ups, the 2021 Salesforce or
+Fastly configuration outages, Google's SRE-book overload chapter, and any postmortem where the
+service stayed down after the trigger was removed.
 
 ## 4. What "done" means for one page
 
@@ -68,7 +72,9 @@ separates a good page from a passable one:
    batch 2 used GitLab 2017, Discord's Cassandra hot partitions, DynamoDB's per-partition
    ceilings and Facebook's remote markers; batch 3 used RocksDB write stalls, Uber's 2016
    Postgres→MySQL write amplification, Facebook's 2010 four-hour cache-stampede outage and Meta's
-   Polaris consistency work. Do not reuse one across batches — find a new one.
+   Polaris consistency work; batch 4 used Vanlightly's Kafka message-loss analysis, Jepsen
+   Redpanda 21.10.1, Pinterest's watermark starvation and the Stripe/Brandur idempotency design.
+   Do not reuse one across batches — find a new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
 3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node

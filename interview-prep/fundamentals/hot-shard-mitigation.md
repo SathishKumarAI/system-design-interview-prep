@@ -260,6 +260,7 @@ C++ engine to remove GC from the tail-latency equation.
 - [Cache failure modes](cache-failure-modes.md)
 - [Consistent hashing](consistent-hashing.md)
 - [Fundamentals index](README.md)
+- [Kafka internals](kafka-internals.md)
 - [Partitioning strategies](partitioning-strategies.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication lag and session guarantees](replication-lag-and-session-guarantees.md)
