@@ -11,6 +11,15 @@ tags: [sql, nosql, lsm, btree, indexes]
 
 # Storage and databases
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> Engine internals and indexing now have their own pages with real amplification arithmetic and
+> cited incidents ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
+> [storage-engines](../fundamentals/storage-engines.md) ·
+> [indexing-and-query-planning](../fundamentals/indexing-and-query-planning.md).
+> Still only here: **store selection**, **object-storage internals**, **normalisation** and
+> **schema evolution / expand-contract migration** — this file stays until those land.
+> Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
+
 ## What it is
 
 The choice that is hardest to reverse. Pick by **access pattern**, never by popularity.
@@ -124,8 +133,10 @@ and OLAP tables alike. See [messaging-and-streams.md](messaging-and-streams.md).
 - [Design a URL shortener](../03-backend-cases/url-shortener.md)
 - [Design file sync / object storage (Dropbox, S3-like)](../03-backend-cases/object-storage-sync.md)
 - [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Indexing and query planning](../fundamentals/indexing-and-query-planning.md)
 - [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Primitives index](README.md)
+- [Storage engines — B-tree vs LSM](../fundamentals/storage-engines.md)
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 
 ## Sources & further reading

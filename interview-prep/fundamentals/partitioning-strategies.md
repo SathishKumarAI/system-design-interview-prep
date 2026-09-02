@@ -259,8 +259,10 @@ a new class of incident. The order of escalation:
 - [Consistent hashing](consistent-hashing.md)
 - [Fundamentals index](README.md)
 - [Hot shard mitigation](hot-shard-mitigation.md)
+- [Indexing and query planning](indexing-and-query-planning.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication topologies](replication-topologies.md)
+- [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

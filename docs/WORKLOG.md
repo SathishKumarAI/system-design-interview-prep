@@ -13,6 +13,68 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-02 — Batch 3: storage engines and caching
+
+Branch: `docs/fundamentals-batch-3` · PRs open: #1 (plan), #2 (batch 1), #3 (batch 2), #4 (this)
+
+### What
+
+Five pages, and the first batch to split **two** source primitives at once:
+`storage-engines` and `indexing-and-query-planning` from `storage-and-databases.md`;
+`caching-strategies`, `cache-invalidation` and `cache-failure-modes` from `caching.md`.
+Fundamentals is now 15 of 47; the manifest total is 15 of 123.
+
+### Incidents and primary sources
+
+| Page | Anchor |
+|---|---|
+| storage-engines | RocksDB write stalls — `level0_stop_writes_trigger` blocking writes **indefinitely** as designed backpressure; Uber's 2016 Postgres→MySQL write-amplification argument, **with** the HOT-update caveat that the usual retelling omits |
+| indexing-and-query-planning | The same Uber case read as an indexing story (`ctid` vs primary-key pointers); Postgres extended statistics for correlated columns; Markus Winand's rebuttal |
+| caching-strategies · cache-failure-modes | **Facebook, 23 Sept 2010** — invalid config value, every client self-repairing, error-as-invalidation feedback loop, 4 h, recovery required taking the site offline |
+| cache-invalidation | **Meta, "Cache made consistent" (2022)** — Polaris measuring cache consistency from outside the service; TAO from six nines to **ten nines**; consistency tracing |
+| cache-failure-modes | Facebook memcache **leases**; XFetch probabilistic early expiry (VLDB 2015); the HotOS 2021 metastable-failures framing |
+
+### Why this framing
+
+- **An LSM defers work, and deferred work arrives at a time you do not choose.** Write stalls are
+  the engine braking on purpose — p99 goes from 1 ms to seconds with no error, no CPU saturation
+  and no traffic change. Most write-ups describe compaction; almost none say the stall is the
+  designed behaviour and name the trigger to alert on.
+- **A cache's value is set by the miss path, not the hit path.** At 99% hit rate an empty cache is
+  a **100×** database load multiplier, so the cache tier is a hard dependency whether or not the
+  diagram admits it. The cold-start refill arithmetic (working set ÷ spare DB capacity) is the
+  number to compute before a restart, not during one.
+- **Invalidation's hard part is a race, not coverage.** The stale-set interleaving happens with
+  *correct* code that fires the invalidation. That reorders the strategy ranking: versioned keys
+  and leases (no race exists) above delete-on-write (a race you must win).
+- **The planner ignores your index because its estimate is wrong.** Fix the estimate, not the
+  join method — everything downstream of a bad row estimate is a bad decision.
+
+### Trade-offs
+
+- Both source files kept and banner-marked. `caching.md` still uniquely holds Redis internals;
+  `storage-and-databases.md` still holds store selection, object-storage internals, normalisation
+  and schema evolution. Same staging rule as batches 1–2.
+- The Uber Postgres case is cited on **two** pages, deliberately, read two different ways —
+  storage-engine amplification and index-pointer design. It is also the one place this set argues
+  *against* its own source: the HOT-update caveat and Robert Haas's response are included, because
+  citing the blog post uncritically is the common failure.
+- Facebook 2010 appears in both `caching-strategies` (as the incident) and `cache-failure-modes`
+  (as the mechanism). Same event, different lesson; cross-linked rather than duplicated.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1286 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+197 files scanned, 608 inbound links mapped, 0 changed
+```
+
+All 15 fundamentals pages carry two Mermaid diagram types.
+
+---
+
 ## 2026-09-02 — Batch 2: the replication cluster
 
 Branch: `docs/fundamentals-batch-2` · PRs open: #1 (plan), #2 (batch 1), #3 (this)

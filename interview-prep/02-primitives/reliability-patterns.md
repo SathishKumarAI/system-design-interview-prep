@@ -142,6 +142,8 @@ and regular region evacuation drills are the answer.
 
 ## Referenced by
 
+- [Cache failure modes](../fundamentals/cache-failure-modes.md)
+- [Caching strategies](../fundamentals/caching-strategies.md)
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)

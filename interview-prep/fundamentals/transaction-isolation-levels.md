@@ -273,9 +273,11 @@ consistency checker surfaced it in days.
 
 ## Referenced by
 
+- [Cache invalidation](cache-invalidation.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
 - [Fundamentals index](README.md)
+- [Indexing and query planning](indexing-and-query-planning.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

@@ -11,6 +11,15 @@ tags: [cache, redis, invalidation, hot-key]
 
 # Caching
 
+> [!info] Being split — staff-level versions live in `fundamentals/`
+> Three of the four topics here now have their own page with internals, arithmetic and cited
+> incidents ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)):
+> [caching-strategies](../fundamentals/caching-strategies.md) ·
+> [cache-invalidation](../fundamentals/cache-invalidation.md) ·
+> [cache-failure-modes](../fundamentals/cache-failure-modes.md).
+> Still only here: **Redis internals** — this file stays until `redis-internals.md` exists.
+> Use this page as the fast revision sheet; use `fundamentals/` to learn the mechanism.
+
 ## What it is
 
 Keeping a copy of an answer closer to the asker than the source of truth. Buys latency and
@@ -120,6 +129,8 @@ size for that, not for the whole dataset.
 
 ## Referenced by
 
+- [Cache invalidation](../fundamentals/cache-invalidation.md)
+- [Caching strategies](../fundamentals/caching-strategies.md)
 - [Consistent hashing](../fundamentals/consistent-hashing.md)
 - [Design a distributed rate limiter](../03-backend-cases/rate-limiter.md)
 - [Design a news feed](../03-backend-cases/news-feed.md)

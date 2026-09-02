@@ -228,6 +228,7 @@ trading availability against a correctness bug they never fixed.
 
 ## Referenced by
 
+- [Cache failure modes](cache-failure-modes.md)
 - [Consensus — Raft and Paxos](consensus-raft-paxos.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)

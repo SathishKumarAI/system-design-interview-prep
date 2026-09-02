@@ -86,17 +86,17 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `caching-strategies.md` | P0 | cache.md, cache-strategies.md, cache-patterns.md, caching.md | Aside/through/behind/refresh-ahead, layer placement economics | rewrite ← caching |
-| `cache-invalidation.md` | P0 | invalidation.md, ttl.md, cache-coherence.md | TTL vs versioned keys vs CDC-driven; the delete-on-write race, proven | split ← caching |
-| `cache-failure-modes.md` | P0 | stampede.md, dogpile.md, hot-key.md, cache-penetration.md | Stampede, hot key, penetration, cold start; single-flight, probabilistic expiry | split ← caching |
+| [`caching-strategies.md`](../fundamentals/caching-strategies.md) ✅ | P0 | cache.md, cache-strategies.md, cache-patterns.md, caching.md | Aside/through/behind/refresh-ahead, layer placement economics | **written** ← caching |
+| [`cache-invalidation.md`](../fundamentals/cache-invalidation.md) ✅ | P0 | invalidation.md, ttl.md, cache-coherence.md | TTL vs versioned keys vs CDC-driven; the delete-on-write race, proven | **written** ← caching |
+| [`cache-failure-modes.md`](../fundamentals/cache-failure-modes.md) ✅ | P0 | stampede.md, dogpile.md, hot-key.md, cache-penetration.md | Stampede, hot key, penetration, cold start; single-flight, probabilistic expiry | **written** ← caching |
 | `redis-internals.md` | P1 | redis.md, memcached.md | Single-threaded command loop, O(N) command hazards, cluster hash slots, hash tags, persistence | split ← caching |
 
 ### 1.4 Storage engines and data
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `storage-engines.md` | P0 | btree.md, lsm.md, lsm-tree.md, storage-internals.md | B-tree vs LSM internals, write/read/space amplification, compaction debt and latency cliffs | split ← storage-and-databases |
-| `indexing-and-query-planning.md` | P0 | indexes.md, index-design.md, sql-tuning.md | Composite order, covering, partial, cardinality; why the planner ignores your index | split ← storage-and-databases |
+| [`storage-engines.md`](../fundamentals/storage-engines.md) ✅ | P0 | btree.md, lsm.md, lsm-tree.md, storage-internals.md | B-tree vs LSM internals, write/read/space amplification, compaction debt and latency cliffs | **written** ← storage-and-databases |
+| [`indexing-and-query-planning.md`](../fundamentals/indexing-and-query-planning.md) ✅ | P0 | indexes.md, index-design.md, sql-tuning.md | Composite order, covering, partial, cardinality; why the planner ignores your index | **written** ← storage-and-databases |
 | `serialization-and-schema-evolution.md` | P1 | protobuf.md, avro.md, encoding.md, schema-registry.md | Field-number compatibility, rolling deploys with both versions live, registry rules | new |
 | `object-storage-internals.md` | P1 | s3-internals.md, blob-storage.md, erasure-coding.md | Erasure coding vs replication, durability arithmetic, scrubbing, first-byte latency | split ← storage-and-databases |
 | `bloom-filters-and-sketches.md` | P1 | hyperloglog.md, hll.md, count-min.md, t-digest.md | Space/error trade, mergeability, where sketches silently mislead | new |
@@ -379,10 +379,11 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 |---|---|---|
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | ✅ written, link-checked, `docs/fundamentals-batch-1` |
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | ✅ written, link-checked, `docs/fundamentals-batch-2` |
-| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | next |
-| 4–13 | see §6 batch order | planned |
+| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | ✅ written, link-checked, `docs/fundamentals-batch-3` |
+| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | next |
+| 5–13 | see §6 batch order | planned |
 
-**10 / 123 written.** Fundamentals 10/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
+**15 / 123 written.** Fundamentals 15/47 · Patterns 0/20 · Comparisons 0/18 · Cases 0/38 rewritten.
 
 ## See also
 

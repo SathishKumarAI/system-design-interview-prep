@@ -208,6 +208,7 @@ engine.
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
+- [Storage engines — B-tree vs LSM](../fundamentals/storage-engines.md)
 
 ## Sources & further reading
 

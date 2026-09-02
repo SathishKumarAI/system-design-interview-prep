@@ -11,7 +11,7 @@ tags: [handoff, resume]
 Written to make the first ten minutes productive instead of archaeological. If you read one file,
 read this one.
 
-**Branch:** `docs/fundamentals-batch-2` · **PRs #1, #2, #3** open, none merged.
+**Branch:** `docs/fundamentals-batch-3` · **PRs #1–#4** open, none merged.
 
 ---
 
@@ -20,42 +20,43 @@ read this one.
 The restructure decision is made and recorded
 ([ADR-0001](adr/0001-split-primitives-into-atomic-fundamentals.md)): `02-primitives/` is being
 split into `fundamentals/`, one mechanism per page, scope **all 123 manifest topics**, P0 first,
-five per branch. **Batches 1 and 2 are written and verified** — ten pages under
+five per branch. **Batches 1–3 are written and verified** — fifteen pages under
 `interview-prep/fundamentals/`, each with a cited production incident, real arithmetic and two
-diagram types. 10 of 123 done. Nothing is half-applied: both primitive files they split from are
-still present and banner-marked, and each stays until its remaining topics land.
+diagram types. 15 of 123 done. Nothing is half-applied: all four primitive files they split from
+are still present and banner-marked, and each stays until its remaining topics land.
 
 ## 2. Two housekeeping items before writing
 
-1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 (batch 1) → #3 (batch 2); each
-   retargets to `main` as the one below it lands. The session could not merge them (permission
-   classifier blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then 2, then 3.
+1. **Merge the stacked PRs, oldest first.** #1 (plan) → #2 (batch 1) → #3 (batch 2) → #4
+   (batch 3); each retargets to `main` as the one below it lands. The session could not merge them
+   (permission classifier blocked `gh pr merge`): `gh pr merge 1 --squash --delete-branch`, then
+   2, 3, 4.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
    python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-   # expect: checked 1186 relative links; broken: 4   (the {rel_path} placeholders)
+   # expect: checked 1286 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
-## 3. Batch 3 — storage engines and caching
+## 3. Batch 4 — messaging and delivery
 
-Five files from **two** source primitives. First batch that splits more than one file, so both
-need pointer banners and neither is deleted.
+Five files from two source primitives; neither is deleted at the end.
 
 | File | Source | Must carry |
 |---|---|---|
-| `storage-engines.md` | `storage-and-databases.md` | B-tree vs LSM internals; write/read/space amplification; compaction debt and the latency cliff it causes |
-| `indexing-and-query-planning.md` | `storage-and-databases.md` | Composite order, covering, partial indexes; cardinality estimation; **why the planner ignores your index** |
-| `caching-strategies.md` | `caching.md` | Aside/through/behind/refresh-ahead; layer placement economics; hit-rate arithmetic |
-| `cache-invalidation.md` | `caching.md` | TTL vs versioned keys vs CDC-driven; **the delete-on-write race, shown as an interleaving** |
-| `cache-failure-modes.md` | `caching.md` | Stampede, hot key, penetration, cold start; single-flight and probabilistic early expiry |
+| `log-vs-queue.md` | `messaging-and-streams.md` | Retention, replay, consumer-group semantics; **when a queue is the correct smaller answer** |
+| `kafka-internals.md` | `messaging-and-streams.md` | ISR, `acks` / `min.insync.replicas`, rebalance protocols (eager vs cooperative), log compaction, tiered storage |
+| `delivery-semantics.md` | `messaging-and-streams.md` | Why exactly-once *delivery* is impossible and exactly-once *effects* are not; the transactional-producer mechanics |
+| `stream-processing-semantics.md` | `messaging-and-streams.md` | Event vs processing time, watermarks, late data, checkpoint/state size, restart cost |
+| `idempotency.md` | `transactions-and-idempotency.md` | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence |
 
-Neither source file is deleted at the end: `caching.md` still owns `redis-internals`,
-`storage-and-databases.md` still owns object-storage internals and expand-contract migration.
+`messaging-and-streams.md` still owns backpressure/consumer-lag; `transactions-and-idempotency.md`
+still owns 2PC, sagas, outbox and ledgers. Both keep their banner and stay.
 
-Incident candidates worth verifying before writing: RocksDB/Cassandra compaction stalls, the
-Facebook memcache stampede work (already cited in batch 2), and any public write-up of a cache
-cold-start after a flush — the "we restarted the cache tier and took the database down" shape.
+Incident candidates worth verifying before writing: Kafka rebalance storms during rolling deploys,
+`min.insync.replicas=1` data loss on ISR shrink, the Slack 2021-01-04 or Cloudflare queue-backlog
+write-ups, and any public postmortem where a consumer group's offset reset replayed production
+traffic.
 
 ## 4. What "done" means for one page
 
@@ -65,7 +66,9 @@ separates a good page from a passable one:
 1. **A cited production incident** in Failure modes — a public postmortem beats any tutorial.
    Batch 1 used GitHub 2018, Jepsen PostgreSQL 12.3, Roblox 2021 and the Raft membership bug;
    batch 2 used GitLab 2017, Discord's Cassandra hot partitions, DynamoDB's per-partition
-   ceilings and Facebook's remote markers. Do not reuse one across batches — find a new one.
+   ceilings and Facebook's remote markers; batch 3 used RocksDB write stalls, Uber's 2016
+   Postgres→MySQL write amplification, Facebook's 2010 four-hour cache-stampede outage and Meta's
+   Polaris consistency work. Do not reuse one across batches — find a new one.
 2. **Real arithmetic** in Numbers that matter, each figure sourced or explicitly labelled
    "order of magnitude".
 3. **≥ 2 Mermaid diagram *types*** (flowchart + sequence/state), reusing the palette and node

@@ -254,6 +254,7 @@ back is a privacy incident (deletion requests, right to erasure), not just a dat
 - [Consistent hashing](consistent-hashing.md)
 - [Fundamentals index](README.md)
 - [Replication topologies](replication-topologies.md)
+- [Storage engines — B-tree vs LSM](storage-engines.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

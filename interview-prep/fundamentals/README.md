@@ -33,6 +33,11 @@ deleted only once every topic it carries has a page here.
 | Why did the user's own comment disappear? The three anomalies, position-token routing, remote markers | [replication-lag-and-session-guarantees.md](replication-lag-and-session-guarantees.md) |
 | One shard is at 100% and the cluster is at 20% | [hot-shard-mitigation.md](hot-shard-mitigation.md) |
 | Ring, virtual nodes, bounded loads, rendezvous vs Maglev vs jump hash | [consistent-hashing.md](consistent-hashing.md) |
+| B-tree vs LSM internals, compaction, write stalls, amplification arithmetic | [storage-engines.md](storage-engines.md) |
+| Why is the planner ignoring my index? Composite order, cardinality errors, reading a plan | [indexing-and-query-planning.md](indexing-and-query-planning.md) |
+| Where to cache, which pattern, how big, and what the miss path costs | [caching-strategies.md](caching-strategies.md) |
+| The stale-set race, versioned keys, leases, CDC-driven invalidation | [cache-invalidation.md](cache-invalidation.md) |
+| Stampede, hot key, penetration, cold start — and why they don't self-recover | [cache-failure-modes.md](cache-failure-modes.md) |
 
 ## Written / planned
 
@@ -44,11 +49,13 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 |---|---|---|
 | 1 | consistency-models · transaction-isolation-levels · consensus-raft-paxos · leases-locks-and-fencing · quorums-and-anti-entropy | **done** |
 | 2 | partitioning-strategies · replication-topologies · replication-lag-and-session-guarantees · hot-shard-mitigation · consistent-hashing | **done** |
-| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | next |
-| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | planned |
+| 3 | storage-engines · indexing-and-query-planning · caching-strategies · cache-invalidation · cache-failure-modes | **done** |
+| 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | next |
 
-**10 of 47 fundamentals written.** The two batches pair deliberately: batch 1 is what correctness
-costs, batch 2 is what happens when you split and copy data to avoid paying it.
+**15 of 47 fundamentals written.** The three batches build on each other: batch 1 is what
+correctness costs, batch 2 is what splitting and copying data costs instead, batch 3 is what
+happens on the single node underneath — how bytes are stored, found, and copied closer to the
+reader.
 
 ## How to use these
 

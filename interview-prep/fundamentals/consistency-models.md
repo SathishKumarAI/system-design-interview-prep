@@ -259,6 +259,7 @@ The `E` half is the one you live with 99.99% of the time.
 
 ## Referenced by
 
+- [Cache invalidation](cache-invalidation.md)
 - [Consensus — Raft and Paxos](consensus-raft-paxos.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Fundamentals index](README.md)

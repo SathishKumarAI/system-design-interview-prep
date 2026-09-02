@@ -17,9 +17,10 @@ how does it fail, what do I say about it in an interview.*
 > replaced by one page per mechanism, written to the staff contract
 > ([ADR-0001](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). A file here is
 > deleted only when every topic it carries has a successor page. Split so far:
-> `consistency-and-consensus.md` and `replication-and-partitioning.md` → ten pages in
-> `fundamentals/`. Both source files stay: the first still uniquely holds clocks and CRDTs, the
-> second still holds rebalancing.
+> `consistency-and-consensus.md`, `replication-and-partitioning.md`, `caching.md` and
+> `storage-and-databases.md` → fifteen pages in `fundamentals/`. All four source files stay —
+> each still holds at least one topic with no successor yet (clocks/CRDTs, rebalancing, Redis
+> internals, store selection and schema evolution respectively).
 
 ## Where to look
 
@@ -27,8 +28,8 @@ how does it fail, what do I say about it in an interview.*
 |---|---|
 | How does the request reach me at all? DNS, anycast, CDN, TLS, HTTP/3, WebSocket, gRPC | [networking-and-edge.md](networking-and-edge.md) |
 | L4 vs L7, gateways, service mesh, routing, sticky sessions | [load-balancing-and-gateways.md](load-balancing-and-gateways.md) |
-| Where to cache, eviction, invalidation, stampedes, hot keys | [caching.md](caching.md) |
-| SQL vs NoSQL, B-tree vs LSM, which store for which access pattern | [storage-and-databases.md](storage-and-databases.md) |
+| Where to cache, eviction, invalidation, stampedes, hot keys | [caching.md](caching.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
+| SQL vs NoSQL, B-tree vs LSM, which store for which access pattern | [storage-and-databases.md](storage-and-databases.md) — **partly split**, see [../fundamentals/](../fundamentals/README.md) |
 | Leader/follower, quorums, sharding, consistent hashing, rebalancing | [replication-and-partitioning.md](replication-and-partitioning.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | CAP/PACELC, isolation levels, Raft, leases, clocks | [consistency-and-consensus.md](consistency-and-consensus.md) — **split**, see [../fundamentals/](../fundamentals/README.md) |
 | Queues vs logs, Kafka, delivery semantics, ordering, backpressure | [messaging-and-streams.md](messaging-and-streams.md) |
