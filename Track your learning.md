@@ -41,5 +41,10 @@ My apologize my friend for my doing the daily task.
 	- initially i am thinking how to answer, after a talk about 10-20mins that i got see i still need to learn.
 	- so today lets try to understand in and out.
 	- 
-	- 
+	-
 
+## Referenced by
+
+- [8-week study plan](interview-prep/07-drills/8-week-plan.md)
+- [Interview prep index](interview-prep/README.md)
+- [Repo index](INDEX.md)

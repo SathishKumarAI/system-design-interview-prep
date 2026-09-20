@@ -28,3 +28,8 @@ Additional benefits include:
 - [NGINX architecture](https://www.nginx.com/blog/inside-nginx-how-we-designed-for-performance-scale/)
 - [HAProxy architecture guide](http://www.haproxy.org/download/1.2/doc/architecture.txt)
 - [Wikipedia](https://en.wikipedia.org/wiki/Reverse_proxy)
+
+## Referenced by
+
+- [Load balancing and gateways](../../interview-prep/02-primitives/load-balancing-and-gateways.md)
+- [Repo index](../../INDEX.md)
