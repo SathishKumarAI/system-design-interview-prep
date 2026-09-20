@@ -8,4 +8,8 @@
 	- better for reads than writes in theory
 examples:
 	-Banking applications
-	- JOB scheduling 
+	- JOB scheduling
+
+## Referenced by
+
+- [Repo index](../../../INDEX.md)

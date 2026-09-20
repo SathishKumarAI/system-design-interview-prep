@@ -26,3 +26,9 @@ This approach is seen in file systems and RDBMSes. Strong consistency works well
 ### Source(s) and further reading
 
 - [Transactions across data centers](http://snarfed.org/transactions_across_datacenters_io.html)
+
+## Referenced by
+
+- [CAP theorem](CAP%20theorem.md)
+- [Consistency and consensus](../../interview-prep/02-primitives/consistency-and-consensus.md)
+- [Repo index](../../INDEX.md)

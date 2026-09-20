@@ -83,3 +83,10 @@ Availability (Total) = 1 - (1 - Availability (Foo)) * (1 - Availability (Bar))
 ```
 
 If both `Foo` and `Bar` each had 99.9% availability, their total availability in parallel would be 99.9999%.
+
+## Referenced by
+
+- [CAP theorem](CAP%20theorem.md)
+- [Consistency and consensus](../../interview-prep/02-primitives/consistency-and-consensus.md)
+- [Reliability patterns](../../interview-prep/02-primitives/reliability-patterns.md)
+- [Repo index](../../INDEX.md)

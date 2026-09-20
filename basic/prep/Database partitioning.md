@@ -17,3 +17,8 @@ Database partitioning involves dividing a large database into smaller, more mana
 
 - **Complexity**: Implementing and maintaining sharding can be complex, especially as the number of shards increases.
 - **Data Rebalancing**: When the distribution of data becomes uneven across shards, rebalancing can be expensive and disruptive to the system.
+
+## Referenced by
+
+- [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
+- [Repo index](../../INDEX.md)
