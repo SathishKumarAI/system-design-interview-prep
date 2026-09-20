@@ -403,3 +403,6 @@ Mastering this properly prepares you for:
 * Hash-based problems
 * System design discussions
 
+## Referenced by
+
+- [Repo index](../../INDEX.md)

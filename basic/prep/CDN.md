@@ -33,3 +33,9 @@ Sites with heavy traffic work well with pull CDNs, as traffic is spread out more
 - [Globally distributed content delivery](https://figshare.com/articles/Globally_distributed_content_delivery/6605972)
 - [The differences between push and pull CDNs](http://www.travelblogadvice.com/technical/the-differences-between-push-and-pull-cdns/)
 - [Wikipedia](https://en.wikipedia.org/wiki/Content_delivery_network)
+
+## Referenced by
+
+- [main](../../main.md)
+- [Networking and the edge](../../interview-prep/02-primitives/networking-and-edge.md)
+- [Repo index](../../INDEX.md)
