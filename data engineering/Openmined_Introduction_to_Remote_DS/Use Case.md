@@ -4,4 +4,8 @@
 3. Global Health - ![[Wealth_Study/Pasted image 20240716001552.png]]
 4. National Security
 5. Intelligence
-6. 
+6.
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

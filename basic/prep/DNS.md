@@ -35,3 +35,9 @@ Services such as [CloudFlare](https://www.cloudflare.com/dns/) and [Route 53]
 - [DNS architecture](https://technet.microsoft.com/en-us/library/dd197427(v=ws.10).aspx)
 - [Wikipedia](https://en.wikipedia.org/wiki/Domain_Name_System)
 - [DNS articles](https://support.dnsimple.com/categories/dns/)
+
+## Referenced by
+
+- [main](../../main.md)
+- [Networking and the edge](../../interview-prep/02-primitives/networking-and-edge.md)
+- [Repo index](../../INDEX.md)

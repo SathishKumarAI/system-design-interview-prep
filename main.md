@@ -22,12 +22,12 @@ common terms in design
 
 [[Reverse proxy (web server)]]
 [[Application Layer]]
-[Database](basic\prep\Graph Database.md)
+[Database](basic/prep/Graph%20Database.md)
 [Federation](basic\prep\Federation.md)
 [Sharding](basic\prep\Sharding.md)
 [Denormalization](basic\prep\Denormalization.md)
 [[SQL tuning]]
-[NoSQL](basic\prep\SQL or NoSQL.md)
+[NoSQL](basic/prep/SQL%20or%20NoSQL.md)
 [[Document store]]
 [[Wide column store]]
 [[Graph Database]]
@@ -44,6 +44,9 @@ Applications:
 [[Apache Kafka]]
 
 basic / Databases:
-[SQL](basic\prep\SQL or NoSQL.md)
-[NoSQL](basic\prep\SQL or NoSQL.md)
+[SQL](basic/prep/SQL%20or%20NoSQL.md)
+[NoSQL](basic/prep/SQL%20or%20NoSQL.md)
 
+## Referenced by
+
+- [Repo index](INDEX.md)

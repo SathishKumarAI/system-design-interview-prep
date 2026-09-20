@@ -12,3 +12,7 @@ Horizontal scaling involves adding more servers to a system to distribute the lo
 
 - **Complexity**: Managing multiple servers introduces additional complexity, such as load balancing, data consistency, and synchronization across machines.
 - **Cost**: Although adding cheaper commodity hardware is often more cost-effective than vertical scaling, managing a large number of servers can still be expensive.
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)
