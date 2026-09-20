@@ -39,3 +39,8 @@ Java Applications in Papa Johns:
 	CR: new feature / bugs fixes
 
 deploy tools:
+
+## Referenced by
+
+- [Observability and delivery](../../../interview-prep/02-primitives/observability-and-delivery.md)
+- [Repo index](../../../INDEX.md)

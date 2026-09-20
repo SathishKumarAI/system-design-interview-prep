@@ -16,3 +16,9 @@ Caching is the process of storing copies of data in a temporary storage location
 
 - **Consistency**: Ensuring that the cache reflects the latest state of the data can be challenging. Cache invalidation (removing or updating outdated data) is a complex problem.
 - **Cache Miss**: If data is not in the cache (a cache miss), the system must fall back on the slower underlying data store, which can introduce delays.
+
+## Referenced by
+
+- [Caching](../../interview-prep/02-primitives/caching.md)
+- [Common Principles](Common%20Principles.md)
+- [Repo index](../../INDEX.md)

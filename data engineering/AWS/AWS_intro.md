@@ -71,3 +71,7 @@ Edge locations are global locations where content is cached. For example, if you
 Amazon CloudFront delivers your content through a worldwide network of edge locations. When a user requests content that is being served with CloudFront, the request is routed to the location that provides the lowest latency. So that content is delivered with the best possible performance. CloudFront speeds up the distribution of your content by routing each user request through the AWS backbone network to the edge location that can best serve your content.
 
 ![Cache your content in an edge location closest to your customers.](https://explore.skillbuilder.aws/files/a/w/aws_prod1_docebosaas_com/1721077200/mnuxQ5FmLJof3wWrO9Ia1w/tincan/7b5246b3e4dcf41ee9510fd1863163b18f6b0358/assets/XwzRSOJ7v49YBXYC_6wjg5Qmcv-Jg7jd4.png)
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

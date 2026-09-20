@@ -27,3 +27,9 @@ Microservices might also be understood in contrast with two preceding applicatio
 The difference between microservices and monolithic architecture is that microservices compose a single application from many smaller, loosely coupled services as opposed to the monolithic approach of a large, tightly coupled application.
 
 [The differences between microservices and SOA](https://www.ibm.com/blog/soa-vs-microservices/) can be a bit less clear. While technical contrasts can be drawn between microservices and SOA, especially around the role of the [enterprise service bus](https://www.ibm.com/topics/esb), it’s easier to consider the difference as one of scope. SOA was an enterprise-wide effort to standardize the way all web services in an organization talk to and integrate with each other, whereas microservices architecture is application-specific.
+
+## Referenced by
+
+- [Application Layer](Application%20Layer.md)
+- [main](../../main.md)
+- [Repo index](../../INDEX.md)

@@ -39,3 +39,8 @@ Benchmarking and profiling might point you to the following optimizations.
 - [Is there a good reason i see VARCHAR(255) used so often?](http://stackoverflow.com/questions/1217466/is-there-a-good-reason-i-see-varchar255-used-so-often-as-opposed-to-another-l)
 - [How do null values affect performance?](http://stackoverflow.com/questions/1017239/how-do-null-values-affect-performance-in-a-database-search)
 - [Slow query log](http://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html)
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)
+- [Storage and databases](../../interview-prep/02-primitives/storage-and-databases.md)
