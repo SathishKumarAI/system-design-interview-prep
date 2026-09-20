@@ -82,3 +82,7 @@ The CAP theorem states that in a distributed system, you can only guarantee two 
 #### Trade-offs:
 - **Consistency**: Ensures that all nodes in a system return the same data at any time.
 - **Availability**: Ensures that every request receives a response, even if some nodes are down.
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

@@ -16,3 +16,8 @@ Database replication involves copying and maintaining data across multiple datab
 
 - **Data Consistency**: Maintaining consistent data across multiple servers can be complex, especially in master-master replication.
 - **Latency**: Delays in data propagation between the master and replicas may lead to outdated data being served by replica nodes.
+
+## Referenced by
+
+- [Replication and partitioning](../../interview-prep/02-primitives/replication-and-partitioning.md)
+- [Repo index](../../INDEX.md)

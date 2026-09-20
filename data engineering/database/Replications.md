@@ -11,3 +11,8 @@ Types:
 Single leader replication is useful to ensure that there are no data conflicts, all writes will go to one node.
 
 Leaderless and multileader replication is useful for increasing write [[throughput]] beyond just one dB node (at cost of potential write conflicts )
+
+## Referenced by
+
+- [Databases](Databases.md)
+- [Repo index](../../INDEX.md)
