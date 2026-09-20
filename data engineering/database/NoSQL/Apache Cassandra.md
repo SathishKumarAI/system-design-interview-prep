@@ -11,4 +11,8 @@
 - Great applications with high write volume, consistency is not as important, all writes and reads go to same shard(no transactions)
 
 - Examples: Chat applications
-- 
+-
+
+## Referenced by
+
+- [Repo index](../../../INDEX.md)

@@ -285,3 +285,6 @@ JOIN products p ON o.product_id = p.product_id;
 - **Subqueries** (e.g., correlated subqueries)
 - **Advanced joins** (e.g., LEFT JOINs, RIGHT JOINs, FULL OUTER JOINs)
 
+## Referenced by
+
+- [Repo index](../../../INDEX.md)

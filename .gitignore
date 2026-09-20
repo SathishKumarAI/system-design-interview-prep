@@ -1,3 +1,7 @@
+# Upstream reference repos — cloned by 10-resources/fetch-references.sh, never edited,
+# never committed. ~100 MB of other people's git history has no business in this repo.
+interview-prep/10-resources/vendor/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

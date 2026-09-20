@@ -3,4 +3,8 @@
 - data is written in large nested documents, better data locality 
 - if you choose to organized your data in a way that takes advantage of this but denormalized
 - B-trees and Transactions 
--  
+-
+
+## Referenced by
+
+- [Repo index](../../../INDEX.md)

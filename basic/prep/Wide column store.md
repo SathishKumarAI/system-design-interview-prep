@@ -15,3 +15,7 @@ Wide column stores offer high availability and high scalability. They are often 
 - [Bigtable architecture](http://www.read.seas.harvard.edu/~kohler/class/cs239-w08/chang06bigtable.pdf)
 - [HBase architecture](https://www.edureka.co/blog/hbase-architecture/)
 - [Cassandra architecture](http://docs.datastax.com/en/cassandra/3.0/cassandra/architecture/archIntro.html)
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)
