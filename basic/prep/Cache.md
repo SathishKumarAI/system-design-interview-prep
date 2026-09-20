@@ -160,3 +160,9 @@ Refresh-ahead can result in reduced latency vs read-through if the cache can acc
 - [Scalability](http://www.lecloud.net/post/9246290032/scalability-for-dummies-part-3-cache)
 - [AWS ElastiCache strategies](http://docs.aws.amazon.com/AmazonElastiCache/latest/UserGuide/Strategies.html)
 - [Wikipedia](https://en.wikipedia.org/wiki/Cache_(computing))
+
+## Referenced by
+
+- [Caching](../../interview-prep/02-primitives/caching.md)
+- [main](../../main.md)
+- [Repo index](../../INDEX.md)

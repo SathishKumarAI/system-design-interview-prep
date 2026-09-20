@@ -43,3 +43,8 @@ Use UDP over TCP when:
 - [Transmission control protocol](https://en.wikipedia.org/wiki/Transmission_Control_Protocol)
 - [User datagram protocol](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
 - [Scaling memcache at Facebook](http://www.cs.bu.edu/~jappavoo/jappavoo.github.com/451/papers/memcache-fb.pdf)
+
+## Referenced by
+
+- [Networking and the edge](../../interview-prep/02-primitives/networking-and-edge.md)
+- [Repo index](../../INDEX.md)

@@ -14,3 +14,7 @@ Vertical scaling refers to increasing the capacity of a single machine, such as 
 - **Single point of failure**: If the server crashes, the whole system goes down, leading to poor fault tolerance.
 
 Vertical scaling is more suited for smaller applications or where the system’s growth is predictable and manageable. For large-scale applications with unpredictable growth, horizontal scaling may be a better option.
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

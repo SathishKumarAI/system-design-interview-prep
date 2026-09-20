@@ -19,3 +19,7 @@ Systems such as [Consul](https://www.consul.io/docs/index.html), [Etcd](https:
 - [Service oriented architecture](https://en.wikipedia.org/wiki/Service-oriented_architecture)
 - [Introduction to Zookeeper](http://www.slideshare.net/sauravhaloi/introduction-to-apache-zookeeper)
 - [Here's what you need to know about building microservices](https://cloudncode.wordpress.com/2016/07/22/msa-getting-started/)
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)

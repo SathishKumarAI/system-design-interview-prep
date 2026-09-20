@@ -22,3 +22,7 @@ A key-value store is the basis for more complex systems such as a document store
 - [Disadvantages of key-value stores](http://stackoverflow.com/questions/4056093/what-are-the-disadvantages-of-using-a-key-value-table-over-nullable-columns-or)
 - [Redis architecture](http://qnimate.com/overview-of-redis-architecture/)
 - [Memcached architecture](https://adayinthelifeof.nl/2011/02/06/memcache-internals/)
+
+## Referenced by
+
+- [Repo index](../../../INDEX.md)

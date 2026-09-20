@@ -13,3 +13,9 @@ In most systems, reads can heavily outnumber writes 100:1 or even 1000:1. A read
 
 ###### Source(s) and further reading: denormalization
 - [Denormalization](https://en.wikipedia.org/wiki/Denormalization)
+
+## Referenced by
+
+- [main](../../main.md)
+- [Repo index](../../INDEX.md)
+- [Storage and databases](../../interview-prep/02-primitives/storage-and-databases.md)

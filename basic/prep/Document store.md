@@ -15,3 +15,7 @@ Document stores provide high flexibility and are often used for working with occ
 - [MongoDB architecture](https://www.mongodb.com/mongodb-architecture)
 - [CouchDB architecture](https://blog.couchdb.org/2016/08/01/couchdb-2-0-architecture/)
 - [Elasticsearch architecture](https://www.elastic.co/blog/found-elasticsearch-from-the-bottom-up)
+
+## Referenced by
+
+- [Repo index](../../INDEX.md)
