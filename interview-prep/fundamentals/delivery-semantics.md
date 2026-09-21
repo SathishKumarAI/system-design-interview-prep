@@ -215,6 +215,39 @@ tolerate duplicates by construction do not have this exposure at all.
 - **Jepsen: Redpanda 21.10.1** — the reminder that exactly-once is an implementation, not an
   axiom.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The at-least-once default** | SQS standard — an explicit "at-least-once delivery model"; the visibility timeout does **not** guarantee a message won't be delivered twice inside it | Service Bus in peek-lock — an abandoned or expired lock redelivers. Event Grid is documented as "at least once" with **no ordering guarantee** |
+| **Broker-side dedup** | SQS FIFO `MessageDeduplicationId`, or `ContentBasedDeduplication` (a SHA-256 of the body). **5-minute interval, not configurable** | Service Bus duplicate detection on the application-set `MessageId`. Window **defaults to 10 minutes**, settable 20 s–7 days |
+| **What ordering costs** | SQS FIFO: **300 TPS per partition per API action** (`SendMessage`, `ReceiveMessage`, `DeleteMessage`), 3,000 msg/s with 10-message batches. High-throughput mode lifts it, per Region | Service Bus sessions: `SessionId` (AMQP `group-id`) gives FIFO per session, and one receiver holds an **exclusive lock on the whole session** — so a session is the unit of parallelism, exactly as a message group is |
+| **Transactional exactly-once** | Amazon MSK is Apache Kafka, so KIP-98 idempotent producers and transactions are available unchanged | Event Hubs' Kafka endpoint lists **Kafka Transactions as supported but "Currently in Preview"**, and points production Kafka workloads at Premium/Dedicated for "full Kafka protocol support" |
+| **Idempotency token at the API** | A `ClientToken` / `ClientRequestToken` on most mutating APIs. DynamoDB's is **valid for 10 minutes after the request finishes**, and the same token with a changed parameter returns `IdempotentParameterMismatch` | No cross-service token convention. Cosmos DB offers ETag + `If-Match`; Service Bus offers `MessageId` duplicate detection |
+| **The default that bites** | `ContentBasedDeduplication` hashes **"the body of the message—but not the attributes of the message"**. Two messages that differ only in their attributes are one message, silently — and dedup is a FIFO-only feature, so a standard queue has none at all | Duplicate detection is **off until you enable it**, and the **Basic tier does not support it**. Enabling it also costs throughput, because every `MessageId` is matched against the retained window — so the safe setting and the fast setting are the same dial |
+
+Neither cloud sells exactly-once across a boundary it does not own, and both say so in the
+documentation. What they sell is a dedup window — 5 minutes on SQS FIFO, 10 minutes by default on
+Service Bus — which is the "deduplication windows are a lie you must size" section above, with the
+vendor's number filled in. Idempotent effects still have no window.
+
+## In an LLM deployment
+
+At-least-once plus a model is a **correctness** problem, not only a cost one. At any temperature
+above zero the second delivery of the same request produces a *different* answer, so the two
+executions do not converge the way `SET status='paid'` does — the user sees one answer, the ledger
+may hold another, and the bill holds both. The dedup must therefore key on the request and serve a
+**stored completion**, never re-generate to "get the answer again".
+
+The unit of work also breaks every queue assumption on this page. SQS's visibility timeout
+**defaults to 30 seconds**; a generation that runs ten minutes is redelivered roughly twenty times
+before the first attempt finishes, each redelivery a fresh, separately billed, differently worded
+answer — a duplicate storm manufactured by a default. The maximum extension is **12 hours from
+first receipt**, and extending does not reset that clock. Both clouds grew a separate door for this
+shape of work: SageMaker Asynchronous Inference queues payloads **up to 1 GB with processing times
+up to one hour** and scales instances to zero between requests, and Bedrock batch inference runs
+asynchronously from S3 to S3 — at the price of dropping tool calling and structured output.
+
 ## Staff-level follow-ups
 
 1. Explain why exactly-once delivery is impossible, then explain what Kafka's EOS actually
@@ -255,3 +288,16 @@ tolerate duplicates by construction do not have this exposure at all.
 - [Confluent — exactly-once semantics are possible: here's how Kafka does it](https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/)
 - [AWS — SQS FIFO exactly-once processing and the deduplication window](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html)
 - [Two Generals' problem](https://en.wikipedia.org/wiki/Two_Generals%27_Problem) — why the transport guarantee cannot exist
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — SQS visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) — 30 s default, 12 h maximum, at-least-once inside the timeout
+- [AWS — SQS message quotas](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html) — FIFO 300 TPS per partition per API action, 3,000 msg/s batched
+- [AWS — SQS FIFO exactly-once processing](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html) — 5-minute interval, content-based dedup hashes the body only
+- [AWS — DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html) — client token valid 10 minutes, `IdempotentParameterMismatch`
+- [AWS — SageMaker Asynchronous Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html) — 1 GB payloads, up to one hour, scale to zero
+- [AWS — Bedrock batch inference](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html) — asynchronous S3-to-S3; no tool calling or structured output
+- [Azure — Service Bus duplicate detection](https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection) — 10-minute default window, 20 s–7 days, not on Basic
+- [Azure — Service Bus message sessions](https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sessions) — `SessionId`, exclusive session lock
+- [Azure — Event Grid delivery and retry](https://learn.microsoft.com/en-us/azure/event-grid/delivery-and-retry) — at-least-once, no ordering guarantee
+- [Azure — migrate to Event Hubs for Apache Kafka](https://learn.microsoft.com/en-us/azure/event-hubs/apache-kafka-migration-guide) — Kafka Transactions "Currently in Preview"

@@ -219,6 +219,39 @@ failure domain with a much larger blast radius than the data it coordinates.**
 - **Pulsar at Yahoo** — the system built explicitly because queue and log workloads were both
   needed and running two systems was worse.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The queue** | Amazon SQS (standard and FIFO) | Azure Service Bus queues and topics; Azure Queue Storage below it for the cheap, feature-free case |
+| **The log** | Kinesis Data Streams; Amazon MSK for real Kafka | Azure Event Hubs (with a Kafka endpoint) |
+| **Per-message retry, the queue's real edge** | Visibility timeout + receive count + a **redrive policy** naming `maxReceiveCount` and a DLQ. The DLQ is a queue **you create and attach yourself**, and it must be a standard queue | `MaxDeliveryCount`, **default 10**, then dead-lettered with reason `MaxDeliveryCountExceeded`. The DLQ "doesn't need to be explicitly created and can't be deleted"; a second **transfer** DLQ sits on the *source* entity for forwarding failures |
+| **Retention — the replay window** | SQS: **4 days default, 60 s minimum, 14 days maximum.** Kinesis: **24 h minimum, 8,760 h (365 days) maximum** | Service Bus: until settled — a queue is not storage. Event Hubs: **1 day Basic, 7 Standard, 90 Premium/Dedicated** |
+| **Consumer parallelism ceiling** | Kinesis shard: **1 MB/s or 1,000 records/s in, 2 MB/s out, and five `GetRecords` transactions per second**. That last quota caps you at five pollers per shard before throttling, and is the one people miss | Event Hubs: per throughput unit **1 MB/s or 1,000 events/s in, 2 MB/s or 4,096 events/s out**; **5 non-epoch receivers per consumer group**, 20 consumer groups on Standard |
+| **Fan-out to a new consumer** | A new KCL application, or a registered **enhanced fan-out** consumer with its own 2 MB/s — **20 per stream** | A new consumer group, free within the tier's cap |
+| **The default that bites** | **SQS visibility timeout defaults to 30 seconds.** Any handler slower than that has its message redelivered *while it is still working* — duplicate processing manufactured by a default, and the extension ceiling is **12 hours from first receipt**, which extending does not reset | An Event Hubs **Basic** namespace gets **one consumer group and one day of retention**. That removes both properties that make a log a log; choosing Basic is choosing a queue with partition arithmetic attached |
+
+One more SQS number worth carrying: a standard queue holds **approximately 120,000 in-flight
+messages** before `ReceiveMessage` returns `OverLimit` (or, under long polling, simply stops
+returning messages). Slow consumers therefore hit a ceiling that looks like a throughput problem
+and is actually an un-deleted-message problem.
+
+## In an LLM deployment
+
+The poison message becomes the long prompt, and it is much more expensive on a log. A request whose
+context exceeds the model's window fails deterministically; on SQS it is redelivered
+`maxReceiveCount` times and lands in the DLQ while everything else keeps flowing, and on a Kafka or
+Kinesis partition it blocks every message behind it. The difference in cost is the difference in
+unit of work: a head-of-line block on millisecond work is a blip, and a head-of-line block on
+**4-second** generations is minutes of lag on one key's partition before anyone notices.
+
+The log earns its keep for the opposite reason. "Re-run last month's production prompts against the
+candidate model" is a question only a retained log can answer without asking the producers for the
+data again, and **Kinesis retains up to 365 days** for exactly that. The queue cannot: an
+acknowledged message is gone, so every offline evaluation set has to be built by teeing traffic at
+write time — a decision you must make *before* you need it. If a model will ever be replaced, and
+it will, that is the named replay requirement this page asks you to produce before choosing a log.
+
 ## Staff-level follow-ups
 
 1. A team wants Kafka for a single consumer processing 200 msg/s with no replay requirement.
@@ -261,3 +294,12 @@ failure domain with a much larger blast radius than the data it coordinates.**
 - [AWS — SQS FIFO throughput quotas](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-high-throughput.html)
 - [Kafka KIP-405 — tiered storage](https://cwiki.apache.org/confluence/display/KAFKA/KIP-405%3A+Kafka+Tiered+Storage)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.11
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — SQS message quotas](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html) — retention 4 days default / 14 days max, visibility timeout 30 s default
+- [AWS — SQS visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) — 12-hour ceiling, ~120,000 in-flight messages
+- [AWS — SQS dead-letter queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html) — redrive policy and `maxReceiveCount`
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — per-shard rates, five `GetRecords`/s, 20 registered consumers, 365-day retention
+- [Azure — Service Bus dead-letter queues](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues) — `MaxDeliveryCount` default 10, DLQ and transfer DLQ
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — throughput units, consumer groups, retention by tier

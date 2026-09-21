@@ -220,6 +220,41 @@ producing results.
 - **Kafka Streams** — the lighter alternative: state in RocksDB backed by changelog *topics*, so
   recovery replays the changelog rather than restoring a snapshot. Different trade, same problems.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The engine** | **Amazon Managed Service for Apache Flink** — real Flink, your own DataStream/Table code, every concept on this page unchanged | **Azure Stream Analytics** — a SQL dialect over streams, sized in streaming units. It is not Flink and does not expose Flink's model. **No first-party managed Flink**; run it yourself if you need it |
+| **Watermark control** | Flink's own: `WatermarkStrategy`, `forBoundedOutOfOrderness`, and `withIdleness` for the idle-partition stall | The portal's **Event ordering** page: "Out of order events" (reorder tolerance) and "Events that arrive late". **Early arrival is fixed at 5 minutes and cannot be adjusted** — events more than 5 minutes ahead of their arrival time are dropped |
+| **Late data disposition** | The three this page names: drop, side output, allowed lateness with retraction | **Two, chosen per job:** drop the event, or **adjust its timestamp to the watermark**. Adjusting rewrites `System.Timestamp` while leaving the event-time field alone — so the only evidence is the two values disagreeing |
+| **Checkpointing** | `CheckpointingEnabled`, `CheckpointInterval`, `MinPauseBetweenCheckpoints`; snapshots (savepoints) drive updates, scaling and maintenance with exactly-once semantics | Not exposed. Stream Analytics journals its own estimated arrival time so that replay is repeatable, which is the trade: no state backend to tune, and no state backend to reach for |
+| **The leading indicator** | Checkpoint duration, `currentInputWatermark` per source, per-task backpressure | **Watermark delay** (wall clock minus the largest watermark seen), plus **Out-of-Order Events**, **Late Input Events** and **Early Input Events** counters |
+| **The default that bites** | `ConfigurationType: DEFAULT` pins `CheckpointInterval` to **60,000 ms** and `MinPauseBetweenCheckpoints` to **5,000 ms** — and AWS states those values "will be used, **even if they are set to other values** using either the AWS Command Line Interface, or by setting the values in the application code". Your job's own `enableCheckpointing()` is silently ignored | **Arrival time is the default event time.** Omit `TIMESTAMP BY` and the job aggregates in *processing time* — the unreproducible mode §Failure modes calls fatal, selected by writing nothing. Out-of-order tolerance then defaults to **00 min 00 s** and late arrival to **5 seconds**, which Microsoft's own guidance calls "likely too small for IoT devices with divergent timestamps" |
+
+Stream Analytics' late-arrival default is worth reading twice. Five seconds is also the *idle-source*
+allowance, since with no incoming events the watermark is arrival time minus the late-arrival
+window — so a sparse partition delays output by that amount rather than freezing it, which is a
+different failure from Flink's and needs a different alert.
+
+## In an LLM deployment
+
+The embedding pipeline is the canonical streaming job with a model in it, and two things change.
+
+**The operator is a network call, not CPU.** Per-record cost is an inference round trip, so
+throughput is bounded by a remote endpoint's rate limits rather than by parallelism. When that
+endpoint starts returning 429s, backpressure delays checkpoint barriers, checkpoints time out, the
+job restarts and replays — the metastable loop in §Mechanics, arriving by way of a quota rather
+than a slow disk. Under Managed Flink's **60-second** default interval that loop has plenty of room
+to establish itself before anyone looks at a dashboard.
+
+**A backfill is a re-embed, and it is not free.** Replay is the recovery story for a streaming job,
+but changing the embedding model invalidates every vector, so "replay from the start" means paying
+inference on the whole corpus — at 1,000 documents/second, a 10 M-document index is about
+**three hours** of continuous, billed compute, once per model upgrade. That work belongs on a batch
+endpoint, not on the streaming job that maintains the index: **Azure OpenAI's Batch API targets
+24-hour turnaround at 50% of global-standard cost** and exists for exactly this shape. Keep the
+stream for the incremental path and give the backfill its own door.
+
 ## Staff-level follow-ups
 
 1. Your windows stopped firing at 03:00 with no errors, healthy CPU and normal throughput. Give the
@@ -262,3 +297,9 @@ producing results.
 - [Pinterest — Unified Flink Source at Pinterest](https://medium.com/pinterest-engineering/unified-flink-source-at-pinterest-streaming-data-processing-c9d4e89f2ed6) and [Tuning Flink clusters for stability and efficiency](https://medium.com/pinterest-engineering/tuning-flink-clusters-for-stability-and-efficiency-50d3d50384ed)
 - [Chandy & Lamport — Distributed snapshots (1985)](https://lamport.azurewebsites.net/pubs/chandy.pdf)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.11
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — fault tolerance in Managed Service for Apache Flink](https://docs.aws.amazon.com/managed-flink/latest/java/how-fault.html) — `ConfigurationType: DEFAULT` overrides application code; 60,000 ms / 5,000 ms defaults
+- [Azure — time handling in Stream Analytics](https://learn.microsoft.com/en-us/azure/stream-analytics/stream-analytics-time-handling) — arrival time is the default, out-of-order tolerance 00:00, late arrival 5 s, fixed 5-minute early-arrival window
+- [Azure — global batch with Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/batch) — 24-hour target turnaround at 50% of global standard

@@ -238,6 +238,43 @@ happening.
   designs (thread-per-core C++, object-storage-native). They inherit the protocol's semantics —
   and, as Jepsen showed for Redpanda 21.10, must independently get transaction semantics right.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The service** | **Amazon MSK** — Standard brokers, Express brokers, MSK Serverless. Real Apache Kafka: every setting on this page is yours | **Azure Event Hubs** with the Kafka endpoint (`NAMESPACE.servicebus.windows.net:9093`, SASL_SSL/PLAIN). A protocol façade, not Kafka. **No first-party managed Apache Kafka** — run it yourself if you need the engine |
+| **What you configure** | An MSK *cluster configuration*: `min.insync.replicas`, `unclean.leader.election.enable`, `num.partitions`, `auto.create.topics.enable`, `replica.lag.time.max.ms` (30,000 ms, the Apache default) | Tier, throughput units or processing units, partition count, retention. `acks`, the ISR and `min.insync.replicas` are **not exposed** |
+| **The durability triangle** | `default.replication.factor` is **3 in a 3-AZ cluster, 2 in a 2-AZ cluster**; `min.insync.replicas` is **2 in 3-AZ, 1 in 2-AZ** | Not yours. Zone redundancy is a tier feature, not a topic setting |
+| **Partitions** | Yours, and the one-way door is yours. MSK Serverless caps at **2,400 partition leaders** (120 for compacted topics), **5 MBps in / 10 MBps out per partition** | **32 per event hub on Basic and Standard**; 100 on Premium (200 per PU namespace-wide), 1,024 on Dedicated. Count can be **increased only on Premium/Dedicated**, never decreased |
+| **Retention and tiering** | `retention.ms` is a **mandatory** topic setting with a **3-day minimum** (`-1` for infinite); tiered storage via `remote.storage.enable` — and once disabled for a topic **it cannot be re-enabled** | **1 day Basic, 7 days Standard, 90 days Premium/Dedicated.** Capture writes to Blob/ADLS; there is no tiered-storage equivalent that extends the log itself |
+| **Compaction** | `cleanup.policy=compact`, standard semantics including `delete.retention.ms` | Supported: **1 GB per partition Standard, 250 GB per partition Premium/Dedicated** |
+| **The default that bites** | **`unclean.leader.election.enable` defaults to `true`** on a non-tiered-storage MSK cluster (it is `false` only on tiered ones). The setting this page says should page you on any non-zero value is **on by default** — and a 2-AZ cluster's `min.insync.replicas=1` reproduces the `acks=all` false-safety exactly | Standard tier accepts **gzip only** — the migration guide tells snappy/lz4/zstd producers to "Change to gzip or none" — and **Kafka Transactions are "Currently in Preview"**. Microsoft's own guidance is that full protocol compatibility needs **Premium or Dedicated** |
+
+The split is clean: MSK inherits every trap above, including the ones AWS turned on for you, so an
+MSK cluster created with defaults needs the same four-setting review as a self-managed one. Event
+Hubs removes the traps by removing the knobs, and charges for that in fidelity — a Kafka client
+connects, but the durability contract underneath it is Event Hubs', not `acks`/ISR.
+
+## In an LLM deployment
+
+Two of this page's numbers become the binding constraints when the consumer calls a model.
+
+**`max.poll.interval.ms` is 5 minutes**, and a consumer that invokes a model synchronously inside
+its poll loop will exceed it on any long generation. It is then ejected, its partitions move to
+consumers that are *also* about to block on inference, and the rebalance storm in §Mechanics runs
+with a GPU at the bottom of it. The fix is not a larger interval: it is to decouple — hand the
+prompt to an async inference endpoint and commit, rather than holding a partition assignment open
+across a request whose p99 you do not control.
+
+**Message size is the second.** Kafka's broker default is 1 MB; MSK Serverless caps a message at
+**8 MiB**; Event Hubs at **1 MB on Standard and Premium, 20 MB on Dedicated**. A prompt carrying a
+long RAG context or an inlined image crosses 1 MB routinely, so the payload belongs in object
+storage with a claim-check pointer on the topic — which also makes the log cheap enough to retain,
+since retention is sized on pointers rather than on prompts. The compaction trap generalises too: a
+compacted topic keyed by document ID *is* the embedding index's source of truth, and a consumer
+that bootstraps after `delete.retention.ms` (24 h) misses the tombstones and resurrects deleted
+documents into a vector store nobody will think to check.
+
 ## Staff-level follow-ups
 
 1. Give the four settings that make a Kafka write durable, then walk the exact interleaving where
@@ -277,3 +314,11 @@ happening.
 - [Confluent — best practices for validating Kafka disaster recovery and HA](https://www.confluent.io/blog/best-practices-for-validating-apache-kafka-r-disaster-recovery-and-high/)
 - [KIP-429 — incremental cooperative rebalancing](https://cwiki.apache.org/confluence/display/KAFKA/KIP-429%3A+Kafka+Consumer+Incremental+Rebalance+Protocol) · [KIP-345 — static membership](https://cwiki.apache.org/confluence/display/KAFKA/KIP-345%3A+Introduce+static+membership+protocol+to+reduce+consumer+rebalances)
 - [KIP-500 — replace ZooKeeper with a self-managed metadata quorum (KRaft)](https://cwiki.apache.org/confluence/display/KAFKA/KIP-500%3A+Replace+ZooKeeper+with+a+Self-Managed+Metadata+Quorum) · [KIP-405 — tiered storage](https://cwiki.apache.org/confluence/display/KAFKA/KIP-405%3A+Kafka+Tiered+Storage)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — default Amazon MSK configuration](https://docs.aws.amazon.com/msk/latest/developerguide/msk-default-configuration.html) — `unclean.leader.election.enable=true` on non-tiered clusters, `min.insync.replicas` 2 (3-AZ) / 1 (2-AZ), mandatory 3-day `retention.ms`
+- [AWS — Amazon MSK quota](https://docs.aws.amazon.com/msk/latest/developerguide/limits.html) — MSK Serverless: 2,400 partition leaders, 5/10 MBps per partition, 8 MiB message
+- [AWS — What is MSK Serverless?](https://docs.aws.amazon.com/msk/latest/developerguide/serverless.html)
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — partitions, retention and compaction size by tier
+- [Azure — migrate to Event Hubs for Apache Kafka](https://learn.microsoft.com/en-us/azure/event-hubs/apache-kafka-migration-guide) — gzip only, transactions in preview, Premium for full protocol support

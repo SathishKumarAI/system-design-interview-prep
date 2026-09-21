@@ -214,6 +214,38 @@ reconciler resolves the unknowns using the provider as the arbiter. The generali
 - **Payment reconciliation** — settlement files as the arbiter for unknowns: the provider's record
   of truth, compared daily, is what closes the state machine.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The key at the service boundary** | A `ClientToken` / `ClientRequestToken` parameter on most mutating APIs — EC2 `RunInstances`, DynamoDB `TransactWriteItems`. The convention is service-wide, which is why "did my instance launch?" is answerable | **No cross-service convention.** Cosmos DB gives ETag + `If-Match` optimistic concurrency, Service Bus gives `MessageId` duplicate detection — different mechanisms, per service |
+| **The key inside your own handler** | **Powertools for AWS Lambda — Idempotency**: an `@idempotent` decorator over DynamoDB or a Valkey/Redis-compatible cache, choosing the key from named fields or the whole payload | No first-party equivalent. **Durable Functions** is the nearest thing in spirit: the orchestration history *is* the stored response, replayed rather than re-executed |
+| **The dedup window you don't own** | DynamoDB's client token is **valid for 10 minutes after the request finishes**; reusing it with a changed parameter returns `IdempotentParameterMismatch` — the same-key-different-body check, enforced by the service | Service Bus duplicate detection **defaults to a 10-minute window** (20 s–7 days) and matches on `MessageId` alone: "No other parts of the message other than the `MessageId` are considered" |
+| **The claim, by unique constraint** | DynamoDB `ConditionExpression: attribute_not_exists(pk)`; a unique index on Aurora/RDS. This is the natural-idempotence row of §Mechanics, priced at zero | A `create` on an existing `id` within the partition returns 409 Conflict in Cosmos DB; a unique index in Azure SQL |
+| **The in-progress state** | Powertools raises **`IdempotencyAlreadyInProgressError`** on a concurrent second call — it refuses rather than executing twice, which is the 409 this page asks for. Step Functions Standard "automatically returns an idempotent response on starting an execution with the same name as a currently-running workflow" | Durable Functions: an activity's result is written to the history, so a replay returns the recorded value instead of re-calling the foreign system |
+| **The default that bites** | Powertools expires idempotency records after **one hour (3,600 s) by default**. A client retrying from a durable queue for longer than that re-executes the operation as new — the retention-shorter-than-the-retry-horizon failure above, shipped as a default, and invisible because the second execution succeeds | Duplicate detection is **off until you enable it** and is **unsupported on the Basic tier**. It also costs throughput, since every incoming `MessageId` is matched against the retained window — so the correct window and the fast window pull in opposite directions |
+
+Neither platform gives you the `unknown` state. `ClientToken`, `MessageId` dedup and Powertools all
+answer "have I seen this before?"; none of them answers "did the foreign call happen?". The
+reconciler against the provider's record stays yours on both clouds.
+
+## In an LLM deployment
+
+Idempotency is the piece most inference APIs do not give you, and the piece that matters most. A
+retry of a generation is **not** a no-op even when it succeeds: at any non-zero temperature the
+second execution returns a different answer, so a duplicate produces two valid-looking results
+where the domain expects one. That inverts the usual emphasis on this page — the *claim* is cheap,
+and the **stored response** is the whole mechanism. Persist the completion keyed by the request and
+serve those bytes back, rather than re-generating to "get the answer again", because re-generating
+is the bug here rather than merely wasteful.
+
+Two defaults make it urgent rather than theoretical. Powertools' idempotency records expire after
+**one hour** — short for anything queued behind a model, where retries come from a durable queue
+over many hours. And SQS's visibility timeout is **30 seconds**: a generation taking minutes is
+redelivered repeatedly while the first attempt is still running, so the concurrency case in
+§Mechanics is not an edge case, it is the steady state. Claim the key before the model call, return
+409 to the loser, and store the completion when it lands.
+
 ## Staff-level follow-ups
 
 1. Two retries of the same idempotency key arrive concurrently, 5 ms apart. Walk through your
@@ -257,3 +289,12 @@ reconciler resolves the unknowns using the provider as the arbiter. The generali
 - [Kafka KIP-98 — idempotent producer and transactions](https://cwiki.apache.org/confluence/display/KAFKA/KIP-98+-+Exactly+Once+Delivery+and+Transactional+Messaging)
 - [AWS — ensuring idempotency with `ClientToken`](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
 - [RFC 9110 — HTTP semantics, idempotent methods](https://www.rfc-editor.org/rfc/rfc9110#name-idempotent-methods)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — Powertools for AWS Lambda, Idempotency utility](https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/) — DynamoDB/Valkey/Redis persistence, 3,600 s default expiry, `IdempotencyAlreadyInProgressError`
+- [AWS — DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html) — client token valid 10 minutes, `IdempotentParameterMismatch`
+- [AWS — choosing a Step Functions workflow type](https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html) — Standard's automatic idempotent response on a duplicate execution name
+- [AWS — SQS visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html) — 30-second default
+- [Azure — Service Bus duplicate detection](https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection) — 10-minute default, `MessageId` only, not on Basic
+- [Azure — durable orchestrator code constraints](https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-code-constraints) — activity results replayed from history
