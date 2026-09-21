@@ -125,6 +125,35 @@ serving:   model → get_online_features(batch) → features → prediction
 The single compiled definition is the whole point: two code paths written by hand *will* diverge,
 and the divergence is invisible until model quality quietly drops.
 
+```mermaid
+flowchart LR
+    def["Feature definition<br/>versioned in Git, reviewed"]
+    sp["Batch job — Spark"]
+    fl["Streaming job — Flink"]
+    off[("Offline store — Iceberg<br/>entity_id, event_timestamp, values")]
+    on[("Online store — Redis / Dynamo<br/>entity_id to latest values, TTL")]
+    tr["Training<br/>point-in-time join"]
+    sv["Model serving"]
+    pm["Parity monitor"]
+
+    def ==> |"compile — one definition, two runtimes"| sp
+    def ==> |"compile"| fl
+    sp --> |"daily partitions, append-only rows"| off
+    fl --> |"windowed aggregates, < 10 s"| on
+    fl -.-> |"the same rows, so training can see them"| off
+    tr --> |"labels + event_timestamp"| off
+    off --> |"as-of join, values at or before label_ts"| tr
+    sv --> |"batched multi-get, 200 entities x 50 features"| on
+    on --> |"p99 < 20 ms"| sv
+    sv -.-> |"log the SERVED vector, 1% sample"| pm
+    off -.-> |"recompute those entities at those timestamps"| pm
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    class def,sp,fl,tr,sv,pm service
+    class off,on store
+```
+
 ### Deep dive A — point-in-time correctness (the core of the case)
 
 You have a label event at time `T`. The training row must contain feature values **as they were
@@ -160,7 +189,36 @@ differences, late data, or a streaming job that fell behind.
 - Recompute those same features offline for the same entities and timestamps.
 - Alert on distributional divergence and on per-feature mismatch rate.
 
-That parity monitor is more valuable than any amount of pipeline code review.
+That parity monitor is more valuable than any amount of pipeline code review. One feature, one
+entity, one timestamp — and two different answers:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant M as Model — serving
+    participant O as Online store
+    participant F as Flink streaming job
+    participant L as Offline store
+    participant T as Training job
+    participant P as Parity monitor
+
+    Note over M,L: 09:00:00 — a prediction for user U needs txn_count_1h
+
+    M->>O: get_online_features(U)
+    O-->>M: txn_count_1h = 3
+    Note over F: Flink is four minutes behind. Two transactions<br/>at 08:57 have not landed yet. The true value<br/>at 09:00 was 5. Nothing has errored.
+    M->>P: log the SERVED vector — 3
+
+    Note over T,L: next day, assembling the training set for this label
+
+    T->>L: as-of join at event_timestamp 09:00:00
+    L-->>T: txn_count_1h = 5
+    Note over T: the offline store caught up hours ago, so<br/>training learns from a value serving never saw.<br/>One definition, two runtimes, two answers.
+
+    P->>L: recompute U at 09:00:00
+    L-->>P: 5
+    Note over P: served 3, offline 5. This is SKEW, not drift —<br/>retraining will not fix it and drift monitors will<br/>not see it. The fix is training on the LOGGED value,<br/>and an availability-lag-aware join.
+```
 
 ### Deep dive C — the three freshness modes
 

@@ -109,6 +109,43 @@ alerts → owning team + dashboard
 registry ← training pipeline ← retraining trigger (schedule | drift | metric decay)
 ```
 
+With the volumes and the sampling decisions on the edges:
+
+```mermaid
+flowchart LR
+    sv["50 models serving<br/>100k predictions/s"]
+    k[["Kafka<br/>async prediction log"]]
+    agg["Flink aggregator<br/>distributions, null rates, latency"]
+    lake[("Lakehouse<br/>sampled features + predictions")]
+    drift["Drift jobs, hourly<br/>live window vs fixed reference"]
+    lbl[("Label store<br/>seconds to 90 days")]
+    dm["Delayed metrics<br/>join on request_id"]
+    al["Alert router<br/>tier 1 pages, tier 2 tickets, tier 3 dashboard"]
+    reg[("Model registry<br/>lineage, stage, rollback")]
+    trn["Training pipeline"]
+
+    sv -.-> |"fire and forget, < 5 ms added to serving"| k
+    k --> |"100% of metadata"| agg
+    k ==> |"1 to 10% of feature vectors, ~1-2 TB/day"| lake
+    lake --> |"reference and live windows"| drift
+    agg --> |"feature null and default rate"| al
+    drift --> |"ONE importance-weighted model score,<br/>not 200 per-feature alerts"| al
+    lbl --> |"labels arrive late, or never"| dm
+    lake --> |"predictions keyed by request_id"| dm
+    dm --> |"AUC and precision@k vs baseline"| al
+    al --> |"owning team + runbook link"| trn
+    drift -.-> |"drift-triggered retrain"| trn
+    trn ==> |"candidate + eval results + lineage"| reg
+    reg --> |"shadow, canary, A/B, full — one-command rollback"| sv
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class sv,agg,drift,dm,al,trn service
+    class lake,lbl,reg store
+    class k queue
+```
+
 ### Deep dive A — what to monitor, in priority order
 
 The ordering is the answer: you almost never have fresh labels, so monitor inputs and outputs
@@ -122,6 +159,32 @@ first.
 | 4 | **Serving latency / error rate** | Ordinary reliability |
 | 5 | **Business metric by segment** | The thing you actually care about, but noisy and slow |
 | 6 | **Delayed-label metrics** | Ground truth — most trustworthy, arrives last |
+
+One real defect, and when each layer finds out about it:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Upstream pipeline
+    participant N as Null-rate monitor
+    participant S as Prediction-distribution monitor
+    participant B as Business metric
+    participant L as Delayed-label metric
+
+    U--xU: a join change drops 30% of rows. The job exits 0. The DAG is GREEN.
+    Note over U: nothing failed in any way the orchestrator<br/>can see. Job success is not data success.
+
+    U->>N: feature default rate 0.2% becomes 31%
+    Note over N: T + 5 min. Costs nothing, needs no labels,<br/>and names the broken feature. This is the<br/>highest-value ML alert there is.
+    U->>S: prediction distribution shifts left
+    Note over S: T + 1 h. Confirms the model is actually<br/>affected, still without a single label.
+    U->>B: conversion by segment sags
+    Note over B: T + 1 day. Noisy, and a full day of degraded<br/>decisions has already shipped.
+    U->>L: chargebacks mature, AUC drops
+    Note over L: T + 90 days. The most trustworthy number in<br/>the system and completely useless as a detector.
+
+    Note over N,L: the ordering IS the design: detect on inputs and outputs,<br/>confirm on labels. A team that waits for ground truth<br/>finds out last, every time.
+```
 
 **Drift tests:** PSI or KL divergence for numeric features, chi-square for categorical, and a
 KS test for continuous distributions. Compare a rolling live window against a **fixed reference**

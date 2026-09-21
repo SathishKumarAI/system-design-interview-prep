@@ -117,6 +117,49 @@ Kafka → streaming aggregator (Flink) → online feature store  [seconds]
 labels (chargebacks, review outcomes) → label store → training pipeline → registry → canary
 ```
 
+Drawn out, the loop from decision log back onto the hot path is the part worth seeing:
+
+```mermaid
+flowchart LR
+    pay["Payment request<br/>10k tps peak"]
+    api["Risk API"]
+    rules["Rules engine<br/>blocklists, hard limits"]
+    fs[("Online feature store<br/>card, device, IP, account aggregates")]
+    mdl["GBDT ensemble<br/>calibrated probability"]
+    pol["Policy layer<br/>score + rules + segment threshold"]
+    k[["Kafka<br/>decision log"]]
+    fk["Flink<br/>windowed counters, 1 m to 30 d"]
+    lake[("Lakehouse<br/>decisions, features, outcomes")]
+    lbl[("Label store<br/>chargebacks 30 to 90 d, reviews in hours")]
+    tr["Training + backtest<br/>time-split only"]
+    reg["Registry, canary, holdback"]
+
+    pay --> |"txn, card token, device, IP"| api
+    api --> |"deterministic checks, ~5 ms"| rules
+    api --> |"batched multi-get, ~25 ms"| fs
+    fs --> |"~50 entity aggregates"| mdl
+    mdl --> |"p of fraud, ~10 ms"| pol
+    rules --> |"rules_fired + reason codes"| pol
+    pol --> |"approve, step-up, review or decline — p99 < 100 ms"| pay
+    pol -.-> |"evaluation_id + feature snapshot"| k
+    k -.-> |"seconds"| fk
+    fk --> |"velocity features back onto the hot path"| fs
+    k -.-> |"every decision, for audit and backtest"| lake
+    lbl -.-> |"join on txn_id as labels mature"| lake
+    lake ==> |"matured labels, plus fast labels for the second model"| tr
+    tr ==> reg
+    reg -.-> |"champion and challenger"| mdl
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class pay client
+    class api,rules,mdl,pol,fk,tr,reg service
+    class fs,lake,lbl store
+    class k queue
+```
+
 ### Deep dive A — imbalance, thresholds, and the business
 
 - **Never optimise accuracy.** Use PR-AUC and, above all, the **operating point**: what
@@ -132,6 +175,35 @@ labels (chargebacks, review outcomes) → label store → training pipeline → 
   generates *fast labels*.
 - Handle imbalance in training with class weights or focal loss and careful negative sampling —
   but note that **resampling changes calibration**, so recalibrate afterwards.
+
+The 100 ms is not a target, it is a customer standing at a checkout. Spending it:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Payment flow
+    participant A as Risk API
+    participant R as Rules engine
+    participant F as Online feature store
+    participant M as GBDT model
+    participant D as Policy layer
+
+    P->>A: evaluate(txn) — the clock started at the checkout button
+    Note over A: 100 ms p99 for everything below, including<br/>the network hops. There is no second round trip<br/>to spend and no cache to hide behind.
+    par fire both, never chain them
+        A->>R: blocklists and hard limits
+        R-->>A: rules_fired — 5 ms
+    and
+        A->>F: multi-get card, device, IP and account aggregates
+        F-->>A: ~50 features — 25 ms
+    end
+    A->>M: assembled feature vector
+    M-->>A: calibrated probability 0.62 — 10 ms
+    A->>D: score + rules + segment
+    Note over D: 0.62 lands in the middle band. Not a decline —<br/>a STEP-UP. The third outcome costs no extra latency,<br/>saves the sale, and generates a fast label in hours.
+    D-->>P: step_up + reason codes — ~60 ms used, 40 ms of slack left
+    Note over F,M: and if the feature store is slow, the budget is gone<br/>before the model ever runs. Scoring with defaults beats<br/>blowing the timeout — but which way you fail is a<br/>business policy per segment, never a library default.
+```
 
 ### Deep dive B — delayed labels
 

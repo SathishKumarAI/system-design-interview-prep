@@ -100,6 +100,42 @@ clients → gateway (auth, per-tenant rate limit + quota, routing, usage meterin
         observability: TTFT, ITL, queue depth, KV utilisation, tokens/s/GPU, $/1k tokens
 ```
 
+Drawn out, with the rates and payloads on the edges:
+
+```mermaid
+flowchart LR
+    c["Clients<br/>chat, code, batch jobs"]
+    gw["Gateway<br/>authn, per-tenant quota, metering"]
+    rt["Router<br/>model by tier, priority queue"]
+    pf["Prefill pool<br/>compute-bound, chunked"]
+    dc["Decode pool<br/>bandwidth-bound, continuous batching"]
+    sm["Small 8B model<br/>easy queries and degraded mode"]
+    pc[("Prefix cache<br/>GPU blocks + host tier")]
+    kv[("Paged KV cache<br/>the concurrency ceiling")]
+    obs[("Usage + metrics<br/>TTFT, ITL, tokens/s/GPU")]
+
+    c --> |"OpenAI-compatible POST, 500 rps peak"| gw
+    gw --> |"within quota"| rt
+    gw --> |"429 fast when over quota"| c
+    rt --> |"prompt, 200 to 100k tokens"| pf
+    pf --> |"block reuse on a shared prefix"| pc
+    pf ==> |"KV cache transferred over the network"| dc
+    dc --> |"pages in and out every decode step"| kv
+    rt -.-> |"large model saturated or down"| sm
+    sm --> |"same stream contract, degraded header"| c
+    dc --> |"SSE stream, > 30 tok/s, ITL < 30 ms"| c
+    dc -.-> |"prompt, completion and cached_tokens"| obs
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    class c client
+    class gw,rt,pf,dc,sm service
+    class obs store
+    class pc,kv cache
+```
+
 ### Deep dive A — the four techniques that make this affordable
 
 | Technique | Problem it solves | Effect |
@@ -111,6 +147,37 @@ clients → gateway (auth, per-tenant rate limit + quota, routing, usage meterin
 
 Together these are why a modern serving stack handles several times the traffic of a naive
 `model.generate()` loop on identical hardware.
+
+Continuous batching is the one worth drawing, because the gain is invisible until you look at
+what a finished sequence does to the slot it leaves behind:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Request A — 20 output tokens
+    participant B as Request B — 800 output tokens
+    participant S as Scheduler
+    participant G as GPU step loop
+
+    rect rgb(255,240,240)
+    Note over S,G: static batching — the batch waits for its slowest member
+    S->>G: admit [A, B] together as one batch
+    G-->>A: A emits EOS after 20 decode steps
+    Note over G: A's KV pages stay reserved for 780 more steps.<br/>New arrivals queue behind a GPU that is mostly idle.
+    G-->>B: B finishes at step 800. Only now can the batch turn over.
+    end
+
+    rect rgb(240,255,240)
+    Note over S,G: continuous batching — schedule at the ITERATION level
+    S->>G: step n: decode [A, B]
+    G-->>A: A emits EOS at step 20
+    S->>G: step 21: A evicted, C admitted straight into its freed pages
+    Note over S,G: the batch is re-formed every single step.<br/>A finished slot is refilled on the next ITERATION,<br/>not on the next batch. That is the whole trick.
+    G-->>B: B keeps decoding alongside C, D, E as they arrive
+    end
+
+    Note over G: chunked prefill then interleaves a long prompt's prefill<br/>with these decode steps, so one 100k-token request<br/>cannot stall everybody else's token stream.
+```
 
 ### Deep dive B — prefill/decode disaggregation
 

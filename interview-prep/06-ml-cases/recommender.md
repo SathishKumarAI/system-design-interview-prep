@@ -114,6 +114,45 @@ request → user features (online store)
         → top 20 + reasons → response + impression log
 ```
 
+The same shape as components. Note that only the *user* tower is on the request path:
+
+```mermaid
+flowchart LR
+    it["Item tower<br/>nightly over the 100M catalogue"]
+    ann[("ANN index<br/>100M x 128d, 13 GB at int8")]
+    ut["User tower<br/>one forward pass per request"]
+    cov[("Co-visitation table<br/>precomputed item to item")]
+    trd[("Trending by segment<br/>time-decayed counts")]
+    mg["Merge + dedup + filter<br/>seen, unavailable, blocked"]
+    ff["Batched feature fetch"]
+    fs[("Online feature store")]
+    rk["Ranker<br/>GBDT or DNN, multi-task"]
+    re["Re-rank<br/>MMR diversity, freshness, rules"]
+    req["Request"]
+    lg[("Impression log<br/>request_id, position, outcome")]
+
+    it ==> |"item embeddings, nightly + incremental"| ann
+    req --> |"user_id + context"| ut
+    ut --> |"user vector, 128d"| ann
+    ann --> |"~1,000 by similarity, ~10 ms"| mg
+    cov --> |"session-based candidates"| mg
+    trd --> |"cold-start and coverage"| mg
+    mg --> |"~1,000 candidates"| ff
+    fs --> |"200k values, one columnar multi-get"| ff
+    ff --> |"feature matrix"| rk
+    rk --> |"calibrated scores, ~50 ms"| re
+    re --> |"top 20 + reasons, p99 < 200 ms"| req
+    re -.-> |"impressions stamped with request_id"| lg
+    lg -.-> |"1B rows/day, sampled, propensity-logged"| it
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    class req client
+    class it,ut,mg,ff,rk,re service
+    class ann,cov,trd,fs,lg store
+```
+
 ### Deep dive A — candidate generation
 
 | Source | Mechanism | Covers |
@@ -130,7 +169,30 @@ request time — one small forward pass, then an ANN lookup. That asymmetry is w
 
 **ANN trade-offs to name:** HNSW gives excellent recall/latency at high memory; IVF-PQ compresses
 hard (int8/PQ) at some recall cost. Say you'd measure **recall@k against exact search** — an ANN
-index silently losing 20% recall is a common, invisible failure.
+index silently losing 20% recall is a common, invisible failure. It is worth walking through why
+it is invisible, because every instinct points at the ranker instead:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Request
+    participant T as User tower
+    participant A as ANN index — HNSW or IVF-PQ
+    participant R as Ranker
+    participant E as Exact search — offline audit only
+
+    U->>T: user_id + context
+    T-->>A: user vector, 128d
+    A-->>R: 1,000 candidates in 10 ms, HTTP 200
+    Note over A,R: nothing failed. No error, no timeout, no<br/>latency change, no null features. That is<br/>precisely what makes this one expensive.
+    R-->>U: top 20, entirely plausible
+
+    Note over A,E: nightly, over a sampled query set
+    E->>E: exhaustive scan for the same user vectors
+    E-->>A: recall@1000 against exact = 0.78
+    Note over A,E: 22% of the best candidates were never offered<br/>to the ranker at all. CTR sags a few percent,<br/>every dashboard is green, and the investigation<br/>starts on the model.
+    Note over E: so the fix is a measurement, not a model: graph<br/>recall@k against exact search as an SLO, and alert<br/>when a PQ setting or an index rebuild moves it.
+```
 
 ### Deep dive B — ranking
 

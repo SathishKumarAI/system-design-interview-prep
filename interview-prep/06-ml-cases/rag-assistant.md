@@ -126,6 +126,48 @@ user → auth → query understanding (rewrite follow-ups into standalone querie
      → response + citations + logs
 ```
 
+The same two paths as components, with what crosses each edge:
+
+```mermaid
+flowchart LR
+    u["User"]
+    qu["Query understanding<br/>rewrite follow-up, classify"]
+    vi[("Vector index<br/>40M chunks, ACL on each")]
+    li[("Lexical index<br/>BM25, same chunks")]
+    fuse["RRF fusion"]
+    rr["Reranker<br/>cross-encoder, ~80 ms"]
+    asm["Prompt assembly<br/>system + citations-required"]
+    llm["LLM provider<br/>pinned version"]
+    post["Post-process<br/>citations resolve, guardrails"]
+    src["Sources<br/>wiki, tickets, code, PDFs, Slack"]
+    parse["Parse + chunk<br/>structure-aware, ~600 tokens"]
+    emb["Batch embed"]
+
+    u --> |"message + history, ~5 rps peak"| qu
+    qu --> |"standalone query + caller ACL"| vi
+    qu --> |"same query, terms"| li
+    vi --> |"top 50 dense, filtered search"| fuse
+    li --> |"top 50 lexical"| fuse
+    fuse --> |"~50 candidates"| rr
+    rr --> |"top 8 chunks ≈ 5k input tokens"| asm
+    asm --> |"prefix-cached prompt"| llm
+    llm --> |"stream + claimed citations"| post
+    post --> |"SSE tokens, TTFT ~1 s, ~$0.04 per answer"| u
+    src -.-> |"CDC and webhooks"| parse
+    parse ==> |"chunks carry the doc ACL"| emb
+    emb ==> |"upsert 1024-dim vectors, < 15 min"| vi
+    parse ==> |"upsert chunk text"| li
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class u client
+    class qu,fuse,rr,asm,post,parse,emb service
+    class vi,li store
+    class llm,src external
+```
+
 ### Deep dive A — retrieval quality (where the wins are)
 
 Ranked by payoff per unit of effort:
@@ -144,6 +186,31 @@ Ranked by payoff per unit of effort:
 > "I'd start with hybrid retrieval plus a reranker before touching the generation model at all.
 > In practice most 'the LLM is hallucinating' complaints are retrieval failures — the model never
 > got the right chunk."
+
+One query, end to end, with the two failure sources marked where they actually enter:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant Q as Query rewrite
+    participant V as Vector index
+    participant B as BM25 index
+    participant X as Reranker
+    participant M as LLM
+
+    U->>Q: "and what about the second one?"
+    Note over Q: a follow-up is unanswerable standalone.<br/>Skip the rewrite and retrieval searches<br/>these literal words. Failure enters here first.
+    Q->>V: rewritten standalone query, ACL-filtered
+    Q->>B: same query, terms
+    V-->>X: top 50 dense — catches paraphrase, misses ERR-4021
+    B-->>X: top 50 lexical — catches ERR-4021, misses paraphrase
+    Note over V,B: both indexes are only as fresh as ingestion.<br/>A page edited 20 minutes ago is not here yet —<br/>STALENESS enters at the index, never at the model.
+    X-->>M: top 8 after RRF + cross-encoder, ≈ 5k tokens
+    Note over X,M: the model can ground only on these 8.<br/>If the answer sat at rank 9, nothing downstream<br/>can recover it — and the model will still answer.
+    M-->>U: streamed answer + citations, TTFT ~1 s
+    Note over M,U: what gets reported as HALLUCINATION is usually<br/>this: a gap retrieval left, filled confidently.<br/>Fix retrieval before touching the generation model.
+```
 
 ### Deep dive B — permissions (the one that gets people fired)
 

@@ -103,6 +103,42 @@ post features ────┘
                   → top N + logging
 ```
 
+Every edge here is sized by the 75M-scorings-per-second arithmetic above:
+
+```mermaid
+flowchart LR
+    ret["Retrieval<br/>separate stage, backend case"]
+    fa["Feature assembly<br/>one columnar multi-get"]
+    on[("Online store<br/>user + post features")]
+    fk["Flink counters<br/>likes, hides, velocity per post"]
+    lc[("Per-ranker local cache<br/>hot posts, TTL 1 to 5 s")]
+    mdl["Multi-task ranker<br/>click, like, share, hide, dwell heads"]
+    val["Value combine<br/>weighted sum, weights set by product"]
+    rr["Re-rank<br/>diversity, author cap, integrity"]
+    cl["Client"]
+    lg[("Impression log<br/>served features + outcomes")]
+
+    ret --> |"500 candidates"| fa
+    on --> |"75k values in one round trip, ~10 ms"| fa
+    fk -.-> |"engagement velocity, < 10 s old"| on
+    lc --> |"viral post counters, removes the hot key"| fa
+    fa --> |"one batched forward pass over 500 items"| mdl
+    mdl --> |"5 calibrated probabilities per item"| val
+    val --> |"scored list"| rr
+    rr --> |"top N, p99 < 50 ms of a 200 ms page"| cl
+    rr -.-> |"per-head predictions + feature snapshot ref"| lg
+    lg -.-> |"~100M downsampled rows, daily retrain"| mdl
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    class cl client
+    class ret,fa,fk,mdl,val,rr service
+    class on,lg store
+    class lc cache
+```
+
 ### Deep dive A — multi-task scoring
 
 One model, several heads sharing a trunk. Buys: shared representation, one forward pass, and
@@ -151,6 +187,31 @@ The ranker decides what gets seen, which decides what gets trained on. Mitigatio
 log propensities, reserve a small random-exposure slice for unbiased evaluation, and keep a
 **chronological holdback** cohort — it's the only honest baseline for "is ranking actually
 helping?" and it answers a question interviewers love to ask.
+
+A new post's life is the loop in its smallest form. Nothing in it is broken:
+
+```mermaid
+stateDiagram-v2
+    [*] --> fresh: post created, zero engagement
+    fresh --> scored: ranker asks for velocity features<br/>the post does not have any
+    scored --> unseen: ranked below posts WITH history
+    unseen --> fresh: no impressions, so still no history
+    note right of unseen
+        The loop. Every component did its job
+        correctly and the post is permanently
+        invisible. This is a ranking failure
+        with no failing component.
+    end note
+    scored --> shown: exploration boost, or the<br/>random-exposure slice
+    shown --> learned: impressions produce velocity<br/>within seconds via the Flink counters
+    learned --> ranked: now competes on its own signal
+    ranked --> [*]
+    note right of ranked
+        Log the propensity on the way through,
+        or tomorrow's training data bakes in
+        the exposure decision you just made.
+    end note
+```
 
 ## 7. Scale & failure
 
