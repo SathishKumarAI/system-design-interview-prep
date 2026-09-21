@@ -120,6 +120,42 @@ lineage: parsed from dbt manifests / SQL ASTs / Spark plans → graph store
 incident: failed tier-1 check → page owner + notify downstream consumer owners automatically
 ```
 
+Two gates, drawn: one in the producer's CI, one between the branch and the table.
+
+```mermaid
+flowchart LR
+    prod["Producer repo<br/>the contract lives HERE"]
+    ci["Producer CI<br/>schema compatibility gate"]
+    pipe["Pipeline run<br/>extract and transform"]
+    br[("Iceberg branch<br/>written, not published")]
+    aud["AUDIT<br/>schema, freshness, volume, uniqueness,<br/>distribution, reconciliation"]
+    main[("Main table<br/>what consumers read")]
+    cr[("check_results<br/>one time series per check")]
+    lin[("Lineage graph<br/>column-level, parsed from dbt, SQL and Spark")]
+    inc["Incident router<br/>tier 1 pages, tier 2 tickets, tier 3 dashboard"]
+    cons["Downstream owners<br/>finance, 2 ML models, BI"]
+
+    prod --> |"a contract or schema change"| ci
+    ci --> |"incompatible blocks the MERGE, not the 3am pipeline"| prod
+    pipe ==> |"write first, always"| br
+    br --> |"run this table's own contract"| aud
+    aud ==> |"pass: atomic fast-forward into main"| main
+    aud -.-> |"fail: do not publish, consumers keep the last good snapshot"| inc
+    aud -.-> |"every result, pass or fail"| cr
+    cr -.-> |"per-check flake rate demotes a noisy check"| inc
+    inc --> |"named owner plus a runbook"| prod
+    lin --> |"impact set in under 5 minutes"| inc
+    inc -.-> |"notified automatically, not by hand"| cons
+    main --> cons
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    class ci,pipe,aud,inc service
+    class br,main,cr,lin store
+    class prod,cons client
+```
+
 ### Deep dive A — write-audit-publish
 
 The single most valuable pattern here. Instead of "write, then test, then apologise":
@@ -130,7 +166,33 @@ The single most valuable pattern here. Instead of "write, then test, then apolog
 
 Consumers never see bad data; they see *stale* data, which is almost always the better
 failure. Say that trade explicitly: **stale beats wrong**, for every consumer except a few
-real-time ones who should be told which they're getting.
+real-time ones who should be told which they're getting. The same defect, both ways round:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Pipeline
+    participant T as Main table
+    participant C as Checks
+    participant D as Consumers — CFO dashboard, 2 ML models
+
+    rect rgb(255,240,240)
+    Note over P,D: write, then test, then apologise
+    P->>T: overwrite the partition. An upstream filter change<br/>quietly dropped 30% of rows.
+    T-->>D: consumers read it the moment it lands
+    C->>C: row_count_anomaly fires 40 minutes later
+    Note over D: the board deck is already built on it and a model<br/>has already retrained on it. DETECTION was never<br/>the problem here — the ordering was.
+    end
+
+    rect rgb(240,255,240)
+    Note over P,D: write, audit, publish
+    P->>T: write to an Iceberg BRANCH. Main is untouched.
+    C->>C: run the contract's checks against the branch
+    C--xP: the volume check fails, so publish never happens
+    T-->>D: consumers go on reading yesterday's snapshot
+    Note over D: STALE, not WRONG. For every consumer but a handful<br/>of real-time ones that is the better failure, and<br/>saying which they are getting is the mature answer.
+    end
+```
 
 ### Deep dive B — what to check
 

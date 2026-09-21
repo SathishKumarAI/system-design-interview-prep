@@ -113,6 +113,42 @@ ad server → Kafka(ads.events) ──┬──→ Flink: dedupe (event_id, 5 mi
 query API → OLAP store (recent, real-time segments) ∪ (historical, batch-corrected segments)
 ```
 
+The handover boundary is the two edges into the query API:
+
+```mermaid
+flowchart LR
+    ad["Ad server"]
+    k[["Kafka ads.events<br/>key = ad_id, 500k/s peak"]]
+    fd["Flink dedupe<br/>signed event_id, ~150M keys in state"]
+    fw["Flink event-time windows<br/>watermark = max event time minus 2 min"]
+    hll["HLL sketches<br/>12 KB per campaign, mergeable"]
+    olap[("Pinot or Druid<br/>real-time segments, upsertable")]
+    bronze[("Iceberg bronze.ad_events<br/>5 TB/day, exactly-once via 2PC")]
+    batch["Nightly recompute<br/>D-1, plus D-3 and D-7 restatements"]
+    gold[("gold.ad_metrics_daily<br/>BILLING TRUTH")]
+    api["Query API<br/>p99 under 500 ms"]
+
+    ad ==> |"impression and click events with cost_micros"| k
+    k --> |"streaming path"| fd
+    k ==> |"raw, replayable, the audit trail"| bronze
+    fd --> |"deduped within a bounded window"| fw
+    fw --> |"upsert campaign, minute, dimensions"| olap
+    fw --> |"per campaign and day"| hll
+    hll --> |"reach, ~0.8% error"| olap
+    bronze ==> |"full-day dedupe catches what slipped the window"| batch
+    batch --> |"authoritative at D+1 06:00"| gold
+    batch ==> |"backfill corrected historical segments"| olap
+    olap --> |"under 24 h: real-time segments"| api
+    gold --> |"beyond 24 h: batch-corrected"| api
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class ad,fd,fw,hll,batch,api service
+    class olap,bronze,gold store
+    class k queue
+```
+
 This is a **Lambda architecture**, deliberately — and here it's justified, which is worth
 saying explicitly since Lambda is usually the wrong default:
 
@@ -136,6 +172,36 @@ Three independent duplicate sources, and you need an answer for each:
 Dedup window is bounded (say 1 hour) because state cannot grow forever. Anything later than
 the window slips through the streaming path — and is **caught by the nightly batch recompute**,
 which deduplicates over the full day from bronze. That's exactly why the batch path exists.
+
+The three sources are easier to keep straight as one click's journey, because each is killed by
+a different layer and the last one is not killed at all:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Browser
+    participant S as Click redirect
+    participant K as Kafka
+    participant F as Flink
+    participant O as Pinot
+    participant B as Nightly batch
+
+    U->>S: click, carrying signed event_id E minted at ad-serve time
+    U->>S: network hiccup, the browser retries the same redirect
+    Note over S,K: duplicate 1 — client retry. One real click, two requests.
+    S->>K: produce E
+    S->>K: produce E again
+    Note over K: duplicate 2 — at-least-once producer. The idempotent<br/>producer collapses a RETRY of one send, not two<br/>genuine sends of the same event. Different problem.
+    K->>F: E, E
+    F->>F: dedupe on E against keyed state, 1 h window
+    F->>O: counted ONCE into the campaign-minute bucket
+    F--xF: job restarts, replays from its last checkpoint
+    Note over F,O: duplicate 3 — replay. Killed by checkpoint plus<br/>transactional sink: the aggregate commit is PART of<br/>the checkpoint, so a replay commits nothing twice.
+    Note over F: but the state is bounded at 1 h. A duplicate that<br/>arrives 90 minutes later WALKS STRAIGHT THROUGH,<br/>and no amount of streaming configuration fixes it.
+    B->>B: next morning, dedupe E over the whole day from bronze
+    B-->>O: restated, billing-correct
+    Note over B,O: that gap is the entire justification for the batch path.<br/>Graph the streaming-versus-batch divergence — it is this<br/>architecture's health metric, and it is how you know.
+```
 
 ### Deep dive B — event time, watermarks, late data
 

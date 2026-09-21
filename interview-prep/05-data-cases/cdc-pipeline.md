@@ -119,6 +119,46 @@ MySQL (binlog, ROW format)           ├→ Debezium connectors (Kafka Connect c
                         Trino / warehouse / ML feature pipelines
 ```
 
+Drawn out, the reconciliation loop back to the connector is the piece that makes this operable:
+
+```mermaid
+flowchart LR
+    pg[("Postgres x 20<br/>logical replication slot")]
+    my[("MySQL x 5<br/>binlog, ROW format")]
+    dbz["Debezium connectors<br/>Kafka Connect cluster"]
+    sh[["Schema history topic<br/>the connector's own state"]]
+    k[["Kafka, one topic per table<br/>key = primary key, 200 topics"]]
+    br["Bronze sink"]
+    sl["MERGE job"]
+    bronze[("cdc_raw tables<br/>append-only, by ingest day")]
+    silver[("dw tables + SCD2 history<br/>merge-on-read")]
+    cmp["Compaction + snapshot expiry"]
+    rec["Nightly reconciliation<br/>row counts + sampled checksum"]
+    q["Trino, warehouse, ML feature pipelines"]
+
+    pg ==> |"WAL, under 5% added load, zero blocking locks"| dbz
+    my ==> |"binlog"| dbz
+    dbz -.-> |"one entry per DDL, versioned"| sh
+    dbz --> |"op c/u/d/r, before + after, LSN — ~2 KB, 5k/s peak"| k
+    k ==> |"every event, unchanged"| br
+    br --> |"raw, replayable"| bronze
+    k ==> |"keyed by PK, so per-row order holds"| sl
+    sl --> |"upsert current state, close the SCD2 row"| silver
+    silver --> |"read amplification stays bounded"| cmp
+    cmp --> |"p95 freshness under 5 min"| q
+    silver -.-> |"counts and checksums against the source"| rec
+    rec -.-> |"drift over threshold triggers a per-table re-snapshot"| dbz
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class dbz,br,sl,cmp,rec,q service
+    class bronze,silver store
+    class k,sh queue
+    class pg,my external
+```
+
 ### Deep dive A — snapshot to stream, without losing or duplicating
 
 The classic failure is a gap or an overlap between the initial snapshot and the stream.
@@ -153,6 +193,41 @@ Someone drops a column at 2am. The pipeline must not page you.
 - **Data contracts** are the real fix: schema changes on replicated tables go through a review
   that includes the data team, and the producer's CI checks compatibility. Say this — it's an
   organisational answer to an organisational problem, and staff-level candidates give it.
+
+Following one such change through, with the two tempting wrong answers marked:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as App team
+    participant S as Source DB
+    participant C as Connector
+    participant K as Kafka topic
+    participant M as Sink MERGE job
+    participant T as Target table
+
+    Note over A,S: 02:00 — ALTER TABLE line_items ALTER amount TYPE numeric
+    A->>S: the migration lands. Nobody told the data team.
+    S->>C: DDL arrives on the WAL like any other change
+    C->>C: record the new schema version in the schema history topic
+    Note over C: this is why the connector carries its own state:<br/>events before and after this point describe<br/>DIFFERENT shapes of the same table.
+    C->>K: events now carry amount as numeric, schema v7
+
+    rect rgb(255,240,240)
+    Note over M,T: the two tempting wrong answers
+    M--xM: fail the connector. The WAL now accumulates on a<br/>production disk, and the retention cliff is a far<br/>worse outage than a few bad rows.
+    M--xT: coerce numeric into the old bigint column. Silent<br/>precision loss, green pipeline, nobody alerted.
+    end
+
+    rect rgb(240,255,240)
+    Note over M,T: the rule set
+    M->>T: new column, add it nullable. Dropped column, keep it<br/>and stop populating — never delete history.
+    M->>T: type change, land into amount_v2 and reconcile
+    M-->>K: anything genuinely incompatible goes to a dead-letter<br/>topic with an alert, and the connector keeps running.
+    end
+
+    Note over A,T: none of which is the real fix. The real fix is a data<br/>contract that fails the PRODUCER's CI, so 02:00 never happens.
+```
 
 ### Deep dive C — deletes, tombstones and GDPR
 

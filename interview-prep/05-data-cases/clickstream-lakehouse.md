@@ -124,6 +124,47 @@ SDKs → edge collector (validate, enrich: geo/IP, UA parse, consent check) → 
               compaction + snapshot expiry jobs (continuous)
 ```
 
+The same pipeline with the volumes and the freshness SLA on each hop:
+
+```mermaid
+flowchart LR
+    sdk["Web, mobile and server SDKs"]
+    col["Edge collector<br/>validate, geo and UA enrich, consent"]
+    k[["Kafka raw topic<br/>600 MB/s average, RF3"]]
+    fb["Flink bronze sink<br/>checkpoint + 2PC"]
+    fr["Flink real-time aggregates"]
+    bronze[("bronze.events_raw<br/>partitioned by ingest day")]
+    dedup["Dedupe, clean, PII<br/>event_id state, 7-day TTL"]
+    silver[("silver.events<br/>by event day, bucketed on user_id")]
+    gold[("gold.sessions and daily_metrics")]
+    olap[("ClickHouse / Pinot")]
+    maint["Compaction, snapshot expiry,<br/>orphan cleanup, manifest rewrite"]
+    q["Trino and BI, ML training"]
+
+    sdk --> |"batched gzip, ~100 events, answered 202 immediately"| col
+    col ==> |"2M/s peak, ~1 KB events"| k
+    k ==> |"commit IS the checkpoint, so no duplicate rows"| fb
+    fb --> |"bronze under 1 min"| bronze
+    k --> |"watermark ~5 min, lateness ~1 h"| fr
+    fr --> |"windowed counts, seconds fresh"| olap
+    bronze ==> |"immutable, so replay is always available"| dedup
+    dedup --> |"silver under 5 min"| silver
+    silver ==> |"dbt or Spark, incremental, gold by 06:00"| gold
+    maint -.-> |"250 KB files rewritten to ~256 MB"| silver
+    maint -.-> |"snapshot expiry keeps 7 days"| bronze
+    silver --> q
+    gold --> q
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class sdk client
+    class col,fb,fr,dedup,maint,q service
+    class bronze,silver,gold,olap store
+    class k queue
+```
+
 ### Deep dive A — exactly-once into Iceberg
 
 - Flink checkpoints periodically; the Iceberg sink is **transactional**: files are written
@@ -153,6 +194,31 @@ SDKs → edge collector (validate, enrich: geo/IP, UA parse, consent check) → 
   quietly reporting different numbers forever.
 - Detect nonsense client clocks (`ts_event` far from `ts_ingest`) and quarantine rather than
   corrupting partitions from 2035.
+
+One purchase, six days late, and every layer it touches on the way in:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant D as Mobile SDK, offline
+    participant K as Kafka
+    participant R as Real-time path
+    participant B as Bronze
+    participant S as Silver, partition for day D
+    participant F as Finance
+
+    Note over D: day D, 14:02 — a purchase happens on a plane.<br/>ts_event is D 14:02. The event sits in the device buffer.
+    R->>S: day D closes. Watermark passed long ago, allowed<br/>lateness of 1 h expired. The partition is written.
+    S-->>F: PROVISIONAL numbers for day D
+    D->>K: day D+6 — the device reconnects and flushes its buffer
+    K->>B: lands in the bronze partition for ingest day D+6
+    Note over B: bronze partitions by INGEST time, so this partition<br/>is still append-only and nothing old was rewritten.<br/>That is the whole reason for the two partitioning schemes.
+    K--xR: far past the streaming watermark, so it goes to the<br/>side output and is COUNTED, never silently dropped.
+    B->>S: the D+7 rebuild re-reads bronze for ts_event = D and<br/>atomically overwrites the silver partition
+    Note over S: Iceberg snapshot isolation — readers keep seeing the<br/>old snapshot until the new one commits. No half-loads.
+    S-->>F: FINAL numbers for day D, now including the flight
+    Note over R,F: so publish the policy, not just the pipeline: provisional<br/>for 7 days, final after. Without that sentence, finance and<br/>product report different numbers forever and both are right.
+```
 
 ### Deep dive C — small files and maintenance
 
