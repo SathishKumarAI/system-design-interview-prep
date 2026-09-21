@@ -201,6 +201,25 @@ trading availability against a correctness bug they never fixed.
 - **etcd concurrency API** — sessions with keepalive; the key's revision provides the monotonic
   token, and the client library queues waiters on the preceding revision to avoid a herd.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The lease primitive** | **No lease service.** You build one: a DynamoDB item with an owner attribute and an expiry, taken with `ConditionExpression` and reclaimed by TTL | **A real one.** Blob Storage `Lease Blob`: `acquire`, `renew`, `change`, `release`, `break`, with `x-ms-lease-duration` of **15–60 seconds, or `-1` for infinite** |
+| **The token you get** | Whatever you put in the item. Nothing monotonic is issued for you | `x-ms-lease-id`, a **GUID** — an identity, not a counter. It orders nothing, so it is not a fencing token |
+| **Fencing at the resource** | S3 conditional writes: `If-None-Match: *` to claim a key that must not exist, `If-Match: <ETag>` to write only over the version you read. Conflict is **`412 Precondition Failed`**, or `409 Conflict` against a concurrent delete | A write to a leased blob **must carry the lease ID** or it fails `412`. `If-Match` on the ETag gives the same compare-and-swap as S3 |
+| **Leader election** | `coordination.k8s.io/Lease` objects against the EKS control plane's etcd | The same on AKS; outside Kubernetes, the Blob lease is the idiomatic answer and predates it |
+| **Breaking a lease** | Your own logic, and it is your bug if you get it wrong | `break` with `x-ms-lease-break-period` (0–60 s); "a lease that has been broken can't be renewed", and any authorized caller may break without holding the ID |
+| **The default that bites** | A conditional write that **fails still consumes write capacity** — "the amount consumed is dependent on the size of the existing item" — so every loser in a contended lock pays, and a hot lock is a bill as well as a queue | On an **expired** lease, a write that carries *no* lease ID **succeeds**. The lease excludes only writers who bother to take one; a writer that ignores leases entirely is never fenced, at any point in the state machine |
+
+Two things follow that a staff answer should say without being asked. First, `If-Match` and the lease ID are **compare-and-swap, not fencing**: they reject a writer whose view of the object is stale, which stops the two-writer interleaving, but neither tells the resource *which* of two writers is the older epoch — so a zombie that re-reads and retries can still win. A real fencing token needs a monotonically increasing number the resource compares, and on both clouds you supply that yourself, in an attribute or a blob name. Second, the honest upshot of the Azure row: a lease protects a blob from disciplined clients only, which is precisely the guarantee this page opens by saying you do not have.
+
+## In an LLM deployment
+
+The lease TTLs on offer are calibrated for work that is much shorter than inference. Azure's non-infinite blob lease maxes out at **60 seconds**; a long-context generation or a batch embedding job runs for minutes to hours. That leaves exactly the two options the page describes: renew on a heartbeat and accept that a GPU worker stalled behind a 30-second allocator pause loses its lease while still holding the GPU, or take the infinite lease and own the cleanup path forever, including the case where the worker's node is gone.
+
+Spot and preemptible GPU capacity makes the zombie holder the common case rather than the exotic one. A preempted worker gets a short notice and then stops existing — but a worker that is merely *paused* by memory pressure or a driver reset comes back believing it still owns the job, and writes its result. The side effects that matter here are usually unfenceable in the way the page means: a provider API call that has already been billed, a webhook already delivered, tokens already streamed to a user. The answer is the same as it always was — idempotency keyed on the job, plus a conditional write on the result row so that only the first completion is recorded — and the LLM version just adds that the duplicate you failed to prevent cost real GPU-seconds, not a wasted `SELECT`.
+
 ## Staff-level follow-ups
 
 1. A worker holds a Redis `SET NX PX` lock and writes to S3. Walk the exact interleaving in which
@@ -248,3 +267,6 @@ trading availability against a correctness bug they never fixed.
 - [Ghemawat et al. — The Google File System, SOSP 2003](https://research.google/pubs/pub51/) — chunk leases and version numbers
 - [Kubernetes — Leases](https://kubernetes.io/docs/concepts/architecture/leases/)
 - [etcd — concurrency / sessions](https://etcd.io/docs/latest/dev-guide/api_concurrency_reference_v3/)
+- [Azure Blob Storage — Lease Blob (REST API)](https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob) — 15–60 s or infinite, the five actions, the lease-state outcome tables including the unleased write on an expired lease; verified 2026-09-20
+- [Amazon S3 — prevent object overwrites with conditional writes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html) — `If-None-Match` / `If-Match`, 412 and 409 behaviour
+- [DynamoDB — working with items: conditional writes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html) — `ConditionExpression`, `ConditionalCheckFailedException`, and that a failed condition still consumes write capacity

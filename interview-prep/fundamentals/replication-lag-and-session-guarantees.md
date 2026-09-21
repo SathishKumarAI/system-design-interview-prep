@@ -209,6 +209,25 @@ the incident by itself; it is the condition that produces the incident.
 - **DynamoDB** — no token, no session guarantees: per-request `ConsistentRead` at 2× cost. A clean
   illustration that the alternative to routing is paying full price on every read.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Read-your-writes, bought** | Aurora MySQL **local write forwarding** with `aurora_replica_read_consistency = SESSION`: the reader waits for your own forwarded writes to land before it answers. `GLOBAL` waits for everyone's | Cosmos DB **Session** consistency plus the **session token** — the real thing from Terry et al., productised and exposed |
+| **The token** | There isn't one you can carry. Aurora makes the *reader* wait; RDS and Aurora PostgreSQL offer neither, so read-your-writes there is your router's problem | `x-ms-session-token`, returned on every write. Session tokens are **partition-bound**, so you flow the token for the partition you wrote |
+| **The brute-force alternative** | DynamoDB `ConsistentRead: true`, at 2× the RCUs, per read | Azure SQL: none. "Applications that require guaranteed data consistency across sessions... should use the primary replica" |
+| **The lag metric** | `AuroraReplicaLag` (ms) and RDS `ReplicaLag` in CloudWatch | `physical_replication_delay_in_seconds` on PostgreSQL flexible server; `replication_lag_sec` in `sys.dm_geo_replication_link_status`; `redo_queue_size` / `redo_rate` on an Azure SQL read replica |
+| **Typical lag, as documented** | Aurora Global Database replicates cross-Region "with latency typically under a second" | Azure SQL read replicas: "tens of milliseconds to single-digit seconds. However, there is no fixed upper bound". PostgreSQL flexible server: "a few seconds to minutes, and in some heavy workload or high-latency scenarios, this delay could extend to hours" |
+| **The default that bites** | `aurora_replica_read_consistency` defaults to `''`, and AWS says plainly: "Always set [it]... If you don't, then Aurora doesn't forward writes." You can enable write forwarding on the cluster, see it `enabled` in the console, and still get eventual reads on every session | A Cosmos client with **no cached session token for a partition** reads at **Eventual** — "reads to that physical partition behave as reads with Eventual Consistency" — and so does a client that has just been recreated. A fresh process, a restarted pod or a cold Lambda loses read-your-writes on a Session account, silently and with no error |
+
+That Azure row is the single most useful thing on this page for a chat or upload backend: behind a round-robin load balancer with no session affinity, the read can land on a node whose client never saw the write, and the guarantee you paid for is gone unless you flow the token yourself — through a cookie, a header, or the conversation record.
+
+## In an LLM deployment
+
+The user-visible failure is always the same sequence: upload a document, immediately ask a question about it, get "I don't have that information". It is read-your-writes with two extra hops, and the extra hops dominate. The blob write commits, the row commits, and the chunk still has to be embedded and indexed before the retriever can find it. If the index is refreshed on a schedule, the floor is the schedule: an Azure AI Search indexer's smallest interval is **5 minutes**, so no consistency level anywhere in the stack gets that first question answered. The fix is architectural — push the chunks to the index on the upload request and only then acknowledge to the user — and Microsoft's own docs say so: "If you have strict indexer execution requirements that are time-sensitive, consider using the push API model."
+
+Conversation state is the other half, and it is the classic monotonic-reads bug wearing a new hat. A chat backend behind a load balancer writes turn *n* through one pod and reads the thread through another; on a lagging replica the user watches their own last message disappear and the model answer a question that is now missing its context. Carry the position token — a Cosmos session token, a GTID, a commit LSN — **in the conversation record**, so that every turn's read is bounded by the previous turn's write, and treat sticky sessions as a latency optimisation rather than as the correctness mechanism.
+
 ## Staff-level follow-ups
 
 1. Name every surface in a product you have built where a user could observe their own write, and
@@ -251,3 +270,10 @@ the incident by itself; it is the condition that produces the incident.
 - [PostgreSQL — monitoring streaming replication](https://www.postgresql.org/docs/current/monitoring-stats.html)
 - [GitLab — postmortem of the database outage of January 31, 2017](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.5 — "problems with replication lag"
+- [Aurora — local write forwarding](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-write-forwarding.html) and [read consistency for write forwarding](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-write-forwarding-consistency.html) — `EVENTUAL` / `SESSION` / `GLOBAL`, and the empty default that disables forwarding; verified 2026-09-20
+- [Azure Cosmos DB — manage consistency](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency) — session tokens across web tiers behind a round-robin load balancer
+- [Azure Cosmos DB — consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — session tokens are partition-bound; no token means eventual reads
+- [Azure SQL — read queries on replicas](https://learn.microsoft.com/en-us/azure/azure-sql/database/read-scale-out) — propagation latency with no fixed upper bound; use the primary when consistency is required
+- [Azure Database for PostgreSQL flexible server — read replicas](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-read-replicas) — asynchronous, lag from seconds to hours, the lag metrics
+- [Amazon Aurora global databases](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html) — cross-Region latency typically under a second
+- [Azure AI Search — schedule indexer execution](https://learn.microsoft.com/en-us/azure/search/search-howto-schedule-indexers) — 5-minute minimum interval; push API for time-sensitive indexing

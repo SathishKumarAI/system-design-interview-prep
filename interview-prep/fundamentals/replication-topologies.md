@@ -227,6 +227,25 @@ its five independent mechanisms failed together for five independent reasons.
 - **CockroachDB / Spanner** — replication *is* consensus, so there is no separate failover
   procedure and RPO is zero by construction; the cost is a quorum round trip per write.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Single-leader HA** | RDS Multi-AZ **DB instance**: one synchronous standby in another AZ, automatic failover | Azure SQL Business Critical / Premium: a primary plus one or more secondary replicas, zone-redundant on request. General Purpose has **no replicas** |
+| **Read scale-out** | Up to **15 Aurora Replicas** on one shared cluster volume; RDS read replicas replicate asynchronously | Read scale-out via `ApplicationIntent=ReadOnly`; Hyperscale adds up to 4 HA replicas and **30 named replicas**; PostgreSQL flexible server allows 5 replicas (30 with cascading) |
+| **Cross-region** | Aurora Global Database: one primary plus **up to 10 secondary Regions**, "latency typically under a second", optional write forwarding from a secondary | Active geo-replication: **up to 4 geo-secondaries**, asynchronous, readable, chained if you need more than four |
+| **Multi-leader** | DynamoDB global tables in MREC: multi-active, conflicts resolved by "the modification with the latest internal timestamp... a 'last writer wins' conflict resolution method" | Cosmos DB multi-region writes — and note that `Strong` is unavailable the moment you turn them on |
+| **The RPO control** | MRSC global tables give RPO 0; MREC's RPO is the replication delay, tracked by the `ReplicationLatency` CloudWatch metric | `sp_wait_for_database_copy_sync` blocks the caller until the last committed transaction is hardened **and replayed** on the geo-secondary — per-transaction RPO 0, at the cost of the wait |
+| **The default that bites** | The Multi-AZ standby is not a replica you can use: "You can't use a standby replica to serve read traffic." Teams buy Multi-AZ, double the bill and get zero read capacity | Read scale-out is **on by default** on Premium, Business Critical and Hyperscale. A connection string copied from an analytics job — `ApplicationIntent=ReadOnly` and all — silently moves that service onto a lagging replica with no error and no log line |
+
+The two clouds also answer the failover-fencing question differently, and it is worth knowing which you are buying. Aurora removes the event: replicas share the cluster volume, so promotion copies no data. Azure SQL geo-failover does not — "the connection endpoint for the new primary changes because the new primary is now located on a different logical server", which means the promotion is also a DNS and connection-string problem unless you are using a failover group.
+
+## In an LLM deployment
+
+The topology question for a model deployment is usually not about the database at all — it is that a second region needs a second copy of everything the retriever reads, and those artefacts are far larger than the rows that changed. One million chunks embedded at 1 536 dimensions in float32 is **6.1 GB** of vectors alone (10⁶ × 1 536 × 4 bytes), before the graph structure an ANN index adds on top. Replicating the source rows is cheap and replicating the derived index is not, so the realistic topology is single-leader for the documents and **rebuild-per-region** for the index, with the embedding job run once and its output shipped rather than recomputed per region — recomputing is the same tokens billed twice.
+
+Conflict resolution is where the analogy genuinely breaks. Last-writer-wins on a vector is harmless, because the vector is a pure function of the chunk; last-writer-wins on the *chunk* is a lost edit that then silently propagates into an embedding and gets quoted to a user as though it were current. If you go multi-leader, put the conflict resolution on the source document — where a human can adjudicate it — and treat every derived artefact as a rebuild target, never as a thing to merge.
+
 ## Staff-level follow-ups
 
 1. State your system's RPO and RTO as numbers, then show the arithmetic. Which term dominates,
@@ -265,3 +284,11 @@ its five independent mechanisms failed together for five independent reasons.
 - [MySQL — semisynchronous replication](https://dev.mysql.com/doc/refman/8.0/en/replication-semisync.html)
 - [Amazon Aurora — storage and replication architecture (SIGMOD 2017)](https://www.amazon.science/publications/amazon-aurora-design-considerations-for-high-throughput-cloud-native-relational-databases)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.5
+- [Amazon RDS — Multi-AZ DB instance deployments](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html) — synchronous standby, and that it cannot serve read traffic; verified 2026-09-20
+- [Amazon RDS — working with DB instance read replicas](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html) — asynchronous replication, no autoscaling of replicas
+- [Amazon Aurora DB clusters](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.html) and [Aurora global databases](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html) — 15 Aurora Replicas, 10 secondary Regions, sub-second cross-Region latency
+- [DynamoDB global tables — how they work](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html) — MREC last-writer-wins, MRSC RPO 0, `ReplicationLatency`
+- [Azure SQL — active geo-replication](https://learn.microsoft.com/en-us/azure/azure-sql/database/active-geo-replication-overview) — four geo-secondaries, asynchronous, `sp_wait_for_database_copy_sync`, endpoint change on failover
+- [Azure SQL — read queries on replicas](https://learn.microsoft.com/en-us/azure/azure-sql/database/read-scale-out) — read scale-out enabled by default on Premium, Business Critical and Hyperscale
+- [Azure SQL Database — Hyperscale service tier](https://learn.microsoft.com/en-us/azure/azure-sql/database/service-tier-hyperscale) — up to 4 HA replicas and 30 named replicas
+- [Azure Database for PostgreSQL flexible server — read replicas](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-read-replicas) — five replicas, thirty with cascading
