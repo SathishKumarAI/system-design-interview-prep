@@ -108,6 +108,47 @@ App shell (SSR or a cached static shell)  → instant paint, skeletons
          └── Service worker: cache shell + last feed page for offline read
 ```
 
+The same tree as a flow, with the budget each edge has to respect:
+
+```mermaid
+flowchart LR
+    shell["App shell<br/>SSR or cached static, skeletons"]
+    route["Feed route<br/>lazy chunk"]
+    q["useInfiniteQuery<br/>cache, dedupe, retry, background refetch"]
+    api["GET /v1/feed"]
+    norm[("Normalized cache<br/>posts by id, plus an ordered id list")]
+    virt["Virtualizer<br/>visible items plus overscan"]
+    card["PostCard<br/>memoized, referentially stable props"]
+    media["Media<br/>IntersectionObserver"]
+    cdn["Image CDN"]
+    act["Actions<br/>optimistic mutate with rollback"]
+    sw["Service worker<br/>shell plus the last page"]
+
+    shell --> |"instant paint under a 170 KB JS budget"| route
+    route --> |"mounts the query and the virtualizer"| q
+    q --> |"cursor, never offset — the list mutates under you"| api
+    api --> |"20 items, ~40 KB JSON, plus next_cursor"| norm
+    norm --> |"one post, one copy, updates everywhere it appears"| virt
+    virt --> |"~15 mounted cards, not 60k DOM nodes"| card
+    card --> media
+    media --> |"srcset and sizes, fetchpriority on the LCP image"| cdn
+    cdn --> |"AVIF at the displayed size, 40 to 80 KB"| media
+    card --> act
+    act --> |"snapshot, apply, roll back on error"| norm
+    act -.-> |"POST like with an Idempotency-Key"| api
+    virt -.-> |"prefetch at ~5 items from the end"| q
+    sw -.-> |"offline read, plus queued likes"| q
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class shell,route,virt,card,media,act client
+    class q,sw service
+    class norm store
+    class api,cdn external
+```
+
 ### Deep dive A — virtualization
 
 Render only visible items + a small overscan buffer; recycle DOM nodes as you scroll.
@@ -143,6 +184,38 @@ onSettled:  invalidate so the truth eventually wins
 The step everyone forgets is **cancelling in-flight refetches** — otherwise a response that
 was already in the air overwrites your optimistic update and the heart un-fills a second
 after the user tapped it. Also: send an idempotency key so a retry doesn't double-like.
+
+The race, both ways round — the only difference is one line in `onMutate`:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant C as Query cache
+    participant R as Background refetch, already in flight
+    participant S as Server
+
+    Note over C,R: a routine background refetch left 900 ms ago.<br/>Its response is somewhere on the network and it<br/>says liked = false, count = 411.
+
+    U->>C: taps the heart
+    C->>C: onMutate — snapshot, then set liked = true, count = 412
+    C-->>U: the heart fills instantly. That is the entire point.
+    C->>S: POST like, with an Idempotency-Key
+
+    rect rgb(255,240,240)
+    Note over C,R: without cancelling in-flight refetches
+    R-->>C: the old response finally lands: liked = false, count = 411
+    C-->>U: the heart UN-FILLS, a second after the tap
+    Note over U: so they tap again. The idempotency key saves the<br/>count on the server, but the UI has now lied twice<br/>and the bug looks like a flaky backend.
+    end
+
+    rect rgb(240,255,240)
+    Note over C,R: with the cancel
+    C->>R: cancelQueries for this key, BEFORE applying the optimism
+    S-->>C: 200 — liked = true, count = 412
+    C->>C: onSettled — invalidate, and let the truth win on its own
+    end
+```
 
 ### Deep dive D — INP
 

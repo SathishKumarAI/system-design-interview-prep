@@ -95,6 +95,40 @@ Rules for every component API:
 | No business logic, no data fetching | The moment a component fetches, it's coupled to one product |
 | Polymorphic `as` only where genuinely needed | Types get expensive fast |
 
+Those rules exist because of one recurring conversation, and its three possible endings:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as One product team
+    participant L as Library maintainer
+    participant C as Component API
+    participant O as The other 29 teams
+
+    T->>L: "Dialog needs its footer aligned left, just for this one screen"
+
+    rect rgb(255,240,240)
+    Note over L,O: configuration — say yes with a prop
+    L->>C: add a footerAlign prop with three accepted values
+    Note over C: that is prop 26. Every combination is now a<br/>supported state to test and keep working forever,<br/>and the next request adds prop 27.
+    O->>L: 29 more requests shaped exactly like this one
+    end
+
+    rect rgb(255,245,235)
+    Note over T,O: say no, with no escape hatch
+    L-->>T: out of scope
+    T->>T: copies the component into the product repo
+    Note over T,O: the fork misses next quarter's a11y fix. A keyboard<br/>trap now ships in one app and nobody can see it from<br/>here. Fork count is the library's real health metric.
+    end
+
+    rect rgb(240,255,240)
+    Note over T,C: composition — the parts were always theirs to arrange
+    L-->>T: Dialog.Footer takes children and className, asChild swaps<br/>the element, the ref forwards and the rest spreads
+    T->>C: arranges its own footer. No new prop, and no fork.
+    Note over C: the API did not change, so the other 29 teams pay<br/>nothing — which is the entire point, because a major<br/>version costs roughly 60 engineer-days across them.
+    end
+```
+
 ## 5. Data model — design tokens
 
 ```
@@ -125,6 +159,45 @@ styled components (tokens applied) ──→ published package(s)
 docs site (live examples, props table, a11y notes, do/don't) + Storybook
                               ↓
 CI: unit + a11y (axe) + visual regression + bundle size budget per component
+```
+
+One source, three outputs, and two gates:
+
+```mermaid
+flowchart LR
+    tok[("tokens.json<br/>primitive, then semantic, then component")]
+    bld["Style Dictionary build"]
+    css["CSS custom properties<br/>on a data-theme root"]
+    ts["TS constants and types"]
+    fig["Figma variables"]
+    hl["Headless layer<br/>focus trap, roving tabindex, ARIA"]
+    st["Styled components<br/>~40 primitives"]
+    ci["CI gates<br/>axe, visual diff, bundle budget, SSR test"]
+    pkg[["Published package<br/>subpath exports, sideEffects false"]]
+    docs["Docs site and Storybook<br/>live examples, a11y notes"]
+    teams["30 teams, 5 products"]
+
+    tok ==> |"one source of truth"| bld
+    bld --> |"runtime theming, zero JS, no wrong-theme flash"| css
+    bld --> |"typed token names"| ts
+    bld --> |"so design and code cannot drift"| fig
+    css --> |"semantic tokens only, never a primitive"| st
+    hl --> |"wrap it, do not reimplement it"| st
+    st --> |"every interactive component"| ci
+    ci ==> |"a11y or size regression blocks the release"| pkg
+    st --> docs
+    pkg --> |"importing Button must not pull in DataTable"| teams
+    pkg -.-> |"a codemod ships with every breaking change"| teams
+    teams -.-> |"fork count is the health metric"| st
+
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    class bld,hl,st,ci,docs service
+    class tok,css,ts,fig store
+    class pkg queue
+    class teams client
 ```
 
 **Build a headless layer or adopt one?** Reimplementing focus traps, roving tabindex, dialog

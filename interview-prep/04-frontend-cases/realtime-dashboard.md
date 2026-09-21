@@ -103,6 +103,42 @@ WebSocket → Web Worker (parse, validate, downsample, write into SharedArrayBuf
              (imperative draw)            (setState once per frame, memoized)
 ```
 
+With the rates on the edges, the decoupling is the whole diagram:
+
+```mermaid
+flowchart LR
+    srv["Metrics backend"]
+    ws["WebSocket or SSE"]
+    wk["Web Worker<br/>parse, validate, downsample"]
+    rb[("Ring buffers<br/>fixed capacity, so memory is constant by construction")]
+    raf["requestAnimationFrame loop<br/>main thread"]
+    cv["Canvas charts<br/>one node, imperative redraw"]
+    rx["React widgets<br/>memoized"]
+    url["URL state<br/>time range and selection"]
+    ly[("Layout and widget config<br/>server state, per user")]
+
+    srv --> |"batched server-side ~100 ms, downsampled to chart pixel width"| ws
+    ws ==> |"5,000 msg/s, ~1 MB/s"| wk
+    wk --> |"coalesce to the latest value per series"| rb
+    rb --> |"read once per frame, 60 times a second"| raf
+    raf --> |"one draw call per chart"| cv
+    raf --> |"one setState per frame"| rx
+    url --> |"shareable view, survives refresh"| rx
+    ly --> rx
+    rx -.-> |"visibilitychange pauses and unsubscribes"| ws
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class cv,rx,raf,url client
+    class wk,ws service
+    class ly store
+    class rb cache
+    class srv external
+```
+
 ### Deep dive A — backpressure in the browser
 
 Four layers, all needed:
@@ -126,6 +162,31 @@ Four layers, all needed:
 
 Also: `document.visibilityState` — pause rendering (and ideally unsubscribe) for a hidden tab.
 A user with six dashboard tabs open should cost you one tab's worth of work.
+
+One frame, at 5,000 messages a second:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Server
+    participant W as Web Worker
+    participant R as Ring buffers
+    participant M as Main thread
+    participant D as Display
+
+    Note over S,D: a frame is 16.6 ms. At 5,000 msg/s, about 83<br/>messages land inside one of them.
+
+    S->>W: a batch of ~83 updates, ~17 KB
+    W->>W: parse and validate, OFF the main thread
+    Note over W: JSON parsing at this rate on the main thread blows<br/>the frame budget before a single pixel is drawn.<br/>That alone is why the worker exists.
+    W->>R: write the latest value per series, overwriting the oldest
+    Note over R: 82 intermediate values are DROPPED, on purpose.<br/>For a dashboard that is correct behaviour, not data<br/>loss. The exception is an audit-grade trade blotter,<br/>which needs an append-only virtualized table instead.
+    M->>R: rAF tick — read the current state, once
+    M->>D: one canvas draw per chart, one setState per widget
+    D-->>M: frame presented, inside budget
+
+    Note over S,M: double the stream and nothing about the render cost moves.<br/>Arrival rate and render rate are decoupled BY CONSTRUCTION,<br/>which is a design property, not an optimisation.
+```
 
 ### Deep dive B — chart rendering
 

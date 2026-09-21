@@ -133,6 +133,43 @@ persistence: Postgres (metadata, permissions) + object store (snapshots)
 presence/awareness: in-memory pub-sub only, TTL'd, never persisted
 ```
 
+The same picture with what crosses each edge. Note that nothing on the render path waits
+on the network:
+
+```mermaid
+flowchart LR
+    ed["Editor view"]
+    doc[("Local CRDT document<br/>source of truth for the UI")]
+    idb[("IndexedDB<br/>debounced, survives a tab crash")]
+    ws["Sync server room<br/>consistent hash on doc_id"]
+    log[("updates log<br/>append-only since the last snapshot")]
+    snap[("Object store<br/>compacted snapshots")]
+    pg[("Postgres<br/>metadata and permissions")]
+    aw["Awareness pub-sub<br/>in memory, TTL'd, never persisted"]
+    peer["Other clients in the room"]
+
+    ed --> |"keystroke applies at 0 ms, before any I/O"| doc
+    doc --> |"binary CRDT update, 50 to 100 B per op"| ws
+    doc -.-> |"every change, debounced"| idb
+    ws --> |"broadcast to the room, under 200 ms typical"| peer
+    ws ==> |"append"| log
+    log -.-> |"every N updates or T minutes"| snap
+    snap -.-> |"load: snapshot plus the tail"| doc
+    ws --> |"state vector exchange, so only the gap travels"| doc
+    ed -.-> |"cursor anchors at 5 to 10 Hz"| aw
+    aw -.-> |"ephemeral, dropped on disconnect"| peer
+    pg --> |"role check on join AND on every update"| ws
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    class ed,peer client
+    class ws,aw service
+    class log,snap,pg,idb store
+    class doc cache
+```
+
 Routing: all clients of one document must reach the **same room** — consistent hashing on
 `doc_id` to a sync node, with the session registry pattern from
 [../03-backend-cases/chat-messaging.md](../03-backend-cases/chat-messaging.md).
@@ -151,7 +188,39 @@ server can be down for a minute without the user noticing (offline queue drains 
 - Persist the local CRDT to IndexedDB on every change (debounced) so a browser crash loses
   nothing.
 - On reconnect: exchange state vectors, apply the diff both ways, converge. No conflict
-  dialog — that's the entire promise of the CRDT.
+  dialog — that's the entire promise of the CRDT. What that actually looks like for two
+  people who typed into the same gap an hour apart:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant SA as Alice's CRDT
+    participant S as Sync server
+    participant SB as Bob's CRDT
+    participant B as Bob
+
+    Note over SA,SB: both replicas hold "Hello world".<br/>Alice is offline on a train.
+
+    A->>SA: insert "brave " before "world"
+    SA-->>A: painted at 0 ms. No spinner, no server, no round trip.
+    B->>SB: insert "cruel " at the same position
+    SB->>S: update, op id (bob, 7), anchored after the space
+    S->>SB: ack, broadcast to everyone else in the room
+
+    Note over SA: Alice keeps typing for an hour. Her ops queue<br/>in IndexedDB and her document never blocks.
+
+    SA->>S: reconnect — here is my state vector
+    S-->>SA: only what you are missing: bob's ops
+    SA->>S: only what you are missing: alice's ops
+
+    Note over SA,SB: both sides now apply the SAME two concurrent inserts.<br/>They claim the same position, so the tie is broken by a<br/>total order on the op ids — deterministic, and identical<br/>on every replica. No transform chain, no server arbiter.
+
+    SA-->>A: "Hello brave cruel world"
+    SB-->>B: "Hello brave cruel world"
+
+    Note over A,B: nobody lost work and nobody saw a conflict dialog. The<br/>cost is the tombstone each delete leaves behind, which is<br/>exactly what the compaction job exists to collect.
+```
 - Edge case to raise: **permission revoked while offline.** The client happily merged edits it
   is no longer allowed to make. The server must reject the update and the client must show a
   meaningful "your changes couldn't be saved — export a copy" path. Volunteering this
