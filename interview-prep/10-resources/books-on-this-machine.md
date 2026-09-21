@@ -3,7 +3,7 @@ title: Books already on this machine
 type: resource
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-20
 tags: [books, library]
 ---
 
@@ -106,14 +106,19 @@ until these are read.
 
 ## Gaps worth filling (not currently in the library)
 
-- *System Design Interview vol. 1* (Alex Xu) — vol. 2 is here, vol. 1 is not; its chapters cover
-  URL shortener, feed, chat, typeahead, YouTube, Drive
-- *Database Internals* (Petrov) — deeper on storage engines than DDIA
-- *Site Reliability Engineering* (Google) — [free online](https://sre.google/books/)
-- *Understanding Distributed Systems* (Vitillo)
+| Gap | Fill it with |
+|---|---|
+| *System Design Interview* vol. 1 (Alex Xu) | Vol. 2 is here, vol. 1 is not. Its chapters (URL shortener, feed, chat, typeahead, YouTube, Drive) are all covered free by [system-design-primer](https://github.com/donnemartin/system-design-primer) `solutions/system_design/`. **Buy nothing** |
+| *Database Internals* (Petrov) — deeper on storage engines than DDIA | Free substitute available and arguably better: the [RocksDB wiki](https://github.com/facebook/rocksdb/wiki) plus [CMU 15-445](https://15445.courses.cs.cmu.edu/). Buy the book only if you want it linear |
+| *Site Reliability Engineering* + *The SRE Workbook* (Google) | Already free — [sre.google/books](https://sre.google/books/). The most-cited source in this corpus's frontmatter (8 pages). There is no gap here, only an unread book |
+| *Understanding Distributed Systems* (Vitillo) | Overlaps DDIA ch. 5–9 almost entirely. If the gap is formal grounding rather than breadth, [Kleppmann's Cambridge notes](https://www.cl.cam.ac.uk/teaching/2122/ConcDisSys/dist-sys-notes.pdf) are free and stricter |
+
+More free replacements, with the corpus's own citation counts: [primary-sources.md](primary-sources.md).
 
 ## Referenced by
 
 - [File conventions](../CONVENTIONS.md)
+- [GitHub repositories](github-repos.md)
+- [Primary sources](primary-sources.md)
 - [Repo index](../../INDEX.md)
 - [Resources index](README.md)

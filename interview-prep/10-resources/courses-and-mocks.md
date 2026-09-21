@@ -3,7 +3,8 @@ title: Courses and mock interviews
 type: resource
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-20
+sources: [own link + liveness audit 2026-09-20]
 tags: [courses, mocks]
 ---
 
@@ -18,7 +19,6 @@ only to fix a specific gap, and buy mocks before you buy courses.
 |---|---|---|
 | [ByteByteGo](https://bytebytego.com/) | Alex Xu's course + the case-study library | The most popular for a reason. Best diagrams. Redundant if you've read both his books |
 | [DesignGurus — Grokking the System Design Interview](https://www.designgurus.io/) | Structured course, interview-shaped | More structured than ByteByteGo, less visual. Good if you want a linear path |
-| [Educative](https://www.educative.io/) | Text-based interactive courses | Good for reading-first learners; broad catalogue |
 | [Exponent (Aced)](https://www.tryexponent.com/) | Courses **plus peer mocks** | The mocks are the real value |
 | [Hello Interview](https://www.hellointerview.com/) | Newer; strong worked examples and level guidance | Well regarded in 2026; good free content |
 | [Codemia](https://codemia.io/) / [Bugfree.ai](https://bugfree.ai/) | Practice-problem platforms with feedback | Useful for volume drilling |
@@ -35,8 +35,7 @@ reading material than you can finish.
 |---|---|---|
 | **[interviewing.io](https://interviewing.io/)** | $$ | Anonymous mocks with real FAANG interviewers, plus **free recorded real interviews**. The recordings alone are worth an afternoon |
 | **A friend or colleague** | Free | Give them §1–2 of a case file here and the reference; they play interviewer. Nearly as good as paid, if they'll push back |
-| **[Exponent](https://www.tryexponent.com/) peer mocks** | $ | Peer-to-peer; quality varies but volume is cheap |
-| **[Pramp](https://www.pramp.com/)** | Free | Peer mocks; variable quality, unbeatable price |
+| **[Exponent Practice](https://www.tryexponent.com/practice)** | Free | Peer-to-peer. **Pramp was folded into this in July 2024** — same free peer mocks, one site. Quality varies; volume is the point |
 | **Recording yourself** | Free | Underrated. Watch it back a day later with the rubric open. Ruthless and effective |
 
 ## Free resources that beat most paid ones
@@ -45,10 +44,13 @@ reading material than you can finish.
 |---|---|
 | [system-design-primer](https://github.com/donnemartin/system-design-primer) | The whole curriculum, free, with solutions |
 | [Google SRE books](https://sre.google/books/) | Free, and the best operations writing that exists |
-| [AWS Builders' Library](https://aws.amazon.com/builders-library/) | Free, written by people who operate it. Read *Timeouts, retries and backoff* and *Load shedding* |
+| [AWS Builders' Library](https://builder.aws.com/learn/topics/builders-library) | Free, written by people who operate it. **Moved off `aws.amazon.com/builders-library` — that path now redirects.** Read *Timeouts, retries and backoff with jitter* and *Using load shedding to avoid overload* |
 | [Jepsen analyses](https://jepsen.io/analyses) | How distributed databases actually behave under partition |
-| [interviewing.io recordings](https://interviewing.io/recordings) | Free real interviews — calibration you can't get elsewhere |
+| [interviewing.io mocks + recordings](https://interviewing.io/mocks) | Free real recorded interviews — calibration you can't get elsewhere. **`/recordings` now redirects here** |
+| [MIT 6.5840](https://pdos.csail.mit.edu/6.824/schedule.html) | **Free, and better than every paid course on this page.** Papers with reading questions, plus Go labs from MapReduce to a sharded fault-tolerant KV store. Finishing the Raft lab is the single strongest depth signal you can buy with time instead of money |
+| [CMU 15-445](https://15445.courses.cs.cmu.edu/) | Andy Pavlo on database internals, full video + assignments. The storage-engine half of the depth round |
 | Company engineering blogs | See [engineering-blogs.md](engineering-blogs.md) |
+| Papers, specs and official docs | See [primary-sources.md](primary-sources.md) |
 
 ## Spending guide
 
@@ -66,4 +68,5 @@ always collection, never scarcity.
 ## Referenced by
 
 - [Drills index](../07-drills/README.md)
+- [GitHub repositories](github-repos.md)
 - [Resources index](README.md)
