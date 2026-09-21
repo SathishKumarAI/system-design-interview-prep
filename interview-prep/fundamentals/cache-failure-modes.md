@@ -306,6 +306,8 @@ item. Cache failure modes are a cost-control topic here, not just an availabilit
 - [Caching](../02-primitives/caching.md)
 - [Caching strategies](caching-strategies.md)
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
+- [Design a news feed](../03-backend-cases/news-feed.md)
+- [Design an LLM serving platform](../06-ml-cases/llm-serving-platform.md)
 - [Fundamentals index](README.md)
 - [Tail latency](tail-latency.md)
 - [Topic manifest](../topics/manifest.md)

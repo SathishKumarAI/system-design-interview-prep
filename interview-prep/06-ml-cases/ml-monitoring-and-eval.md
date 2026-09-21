@@ -304,6 +304,9 @@ a trickle elsewhere — and compute the bill before you turn it on.
 
 ## Referenced by
 
+- [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
+- [Design a RAG assistant over company documents](rag-assistant.md)
+- [Design a recommender system](recommender.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

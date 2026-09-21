@@ -282,6 +282,7 @@ right.
 - [Backend cases index](README.md)
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a real-time dashboard (frontend)](../04-frontend-cases/realtime-dashboard.md)
+- [Design ML monitoring, evaluation and retraining](../06-ml-cases/ml-monitoring-and-eval.md)
 - [Design real-time analytics (ad click aggregation)](../05-data-cases/realtime-analytics.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Google interview style](../09-company-styles/google.md)
