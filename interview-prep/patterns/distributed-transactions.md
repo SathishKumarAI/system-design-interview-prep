@@ -227,6 +227,37 @@ in [../fundamentals/transaction-isolation-levels.md](../fundamentals/transaction
 - **Jepsen: MongoDB 4.2.6** — the reminder that transaction guarantees are a function of
   configuration and testing, not of the feature's existence.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **A managed cross-database 2PC** | **No direct equivalent.** There is no AWS transaction-coordinator service; the supported answer is to make the transaction single-partition, or to run a distributed SQL engine yourself | **Elastic database transactions** across Azure SQL Database or across SQL Managed Instance. "Elastic database transactions use two-phase commit"; "elastic database transactions don't require installing MSDTC" — the coordination is built into the service |
+| **Single-partition atomicity, which is the real answer** | DynamoDB `TransactWriteItems` — all-or-nothing over **up to 100 items, ≤4 MB, same AWS account and Region**, serializable against single-item reads and writes. Aurora/RDS local transactions otherwise | Cosmos DB transactional batch — **≤100 operations, ≤2 MB, one logical partition key**, ACID with snapshot isolation. Azure SQL local transactions otherwise |
+| **XA, if you insist** | Aurora and RDS for PostgreSQL support `PREPARE TRANSACTION`, "enabled by setting the `max_prepared_transactions` parameter to a non-zero value" — a parameter group change and a restart | **MSDTC on SQL Managed Instance only**, or T-SQL `BEGIN DISTRIBUTED TRANSACTION` between instances in a **server trust group**, over private endpoints, on ports 5024 and 11000–12000 |
+| **The availability cost, made visible** | Global tables give **no** cross-Region transaction: "Transactions aren't supported across Regions in global tables ... You may observe partially completed transactions" in the replica | Elastic transactions **cannot span Azure SQL Database and SQL Managed Instance**, and "other X/Open XA resource providers and databases outside of SQL Database can't participate" — so the DB-plus-broker XA misuse is structurally unavailable, which is a feature |
+| **In-doubt recovery** | `pg_prepared_xacts`, then `COMMIT PREPARED` or `ROLLBACK PREPARED` by hand — the heuristic decision of §Mechanics, performed by a human at 3am | `sys.dm_tran_active_transactions`; the **UOW column** carries the same value for every child transaction of one distributed transaction, which is how you find them all |
+| **The default that bites** | **`max_prepared_transactions` defaults to zero, which "disables the prepared-transaction feature"** and "can only be set at server start" — so XA fails outright until someone changes it. That is the *right* default: an orphaned prepared transaction holds a transaction ID, so "autovacuum cannot perform freezing and it can lead to transaction ID wraparound". The blocking window of §Mechanics, expressed as a database that eventually stops accepting writes | Microsoft calls elastic transactions "a good fit for transactions that involve fewer than 100 databases at a time" and then says **"These limits aren't enforced"**. The ceiling is a performance and success-rate cliff you meet in production, not an error you meet in staging |
+
+The contrast is the cleanest illustration of §Mechanics on this page. Azure ships the coordinator
+and it is genuinely useful inside one product family; AWS ships no coordinator and pushes you to
+the single-partition redesign that this page already says to try first. Both refuse XA across
+heterogeneous systems, which is the outcome the outbox pattern exists to produce anyway.
+
+## In an LLM deployment
+
+The arithmetic here settles a design argument people still have: **never put a model call inside a
+transaction.** This page's throughput ceiling is `1 / lock_hold_time`, so a 4-second generation
+inside a transaction that touches a contended row caps that row at **0.25 transactions per second**
+— two orders of magnitude worse than the cross-region 2PC the page already calls unacceptable, and
+no hardware changes it. Anything of the form "open a transaction, call the model, write the
+result" has this ceiling whether or not the word *distributed* is anywhere near it.
+
+The second point follows from §Mechanics rather than the numbers. A model call is a foreign state
+mutation with no compensator: the tokens are billed and, on a streaming endpoint, the answer has
+already reached the user. That makes it exactly the irreversible step a saga must place **last**,
+after every reversible step has committed — and it makes 2PC the wrong tool regardless, because a
+participant that cannot be rolled back cannot honour a prepare vote.
+
 ## Staff-level follow-ups
 
 1. Show the exact interleaving where a coordinator crash leaves participants blocked, and state
@@ -264,3 +295,11 @@ in [../fundamentals/transaction-isolation-levels.md](../fundamentals/transaction
 - [Thomson et al. — Calvin: fast distributed transactions for partitioned database systems (SIGMOD 2012)](https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf)
 - [X/Open XA specification and JTA in-doubt recovery](https://pubs.opengroup.org/onlinepubs/009680699/toc.pdf)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.9 — atomic commit and 2PC
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [Azure — distributed transactions across cloud databases](https://learn.microsoft.com/en-us/azure/azure-sql/database/elastic-transactions-overview) — elastic database transactions use 2PC without MSDTC, the "fewer than 100 databases" guidance, the unenforced limits, and the XA/cross-product exclusions
+- [AWS — DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html) — 100 items, 4 MB, same account and Region, no cross-Region transaction in global tables
+- [AWS — resolving vacuum blockers in RDS for PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Autovacuum_Monitoring.Resolving_Identifiableblockers.html) — prepared transactions need a non-zero `max_prepared_transactions`; orphaned ones block freezing and risk wraparound
+- [PostgreSQL — `max_prepared_transactions`](https://www.postgresql.org/docs/current/runtime-config-resource.html) — "Setting this parameter to zero (which is the default) disables the prepared-transaction feature"
+- [Azure — transactional batch in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/transactional-batch) — 100 operations, 2 MB, one logical partition key

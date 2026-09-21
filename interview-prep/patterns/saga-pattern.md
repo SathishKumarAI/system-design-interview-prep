@@ -227,6 +227,40 @@ and an apology".
 - **Payment authorisation and capture** — the card networks' own two-phase design, and the clearest
   real-world example of "reserve then commit" beating "do then undo".
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The orchestrator** | **AWS Step Functions** — state machines in Amazon States Language, with `Retry` and `Catch` per state. AWS documents the saga pattern as a first-class use case | **Azure Durable Functions** (and the standalone Durable Task SDKs) — the workflow is ordinary code; the runtime replays it from an event-sourced history |
+| **How the state survives** | The service holds it. **Standard workflows are exactly-once**, run up to **one year**, and keep full execution history for **90 days** | **Replay.** The orchestrator re-executes from the top on every resume, so orchestrator code must be *deterministic*: no `DateTime.Now`, no `Guid.NewGuid()`, no bindings, no static variables, no environment variables, no direct I/O, no `Task.Run` |
+| **Choreography instead** | EventBridge rules between services | Event Grid subscriptions, or Service Bus topics with subscription filter rules |
+| **Long-running and human-in-the-loop** | `.waitForTaskToken` parks a step on an external decision; Activities let a worker poll for work | **Durable timers** and `WaitForExternalEvent`; orchestrations are built to run "for days, months, years, or even indefinitely" |
+| **Semantic lock and TCC reservations** | DynamoDB `ConditionExpression` on a `status` attribute — the compare-and-set of §Mechanics; `TransactWriteItems` for a hold spanning up to **100 items, ≤4 MB, same account and Region** | Cosmos DB transactional batch — up to **100 operations, ≤2 MB, all under one logical partition key**; or a Service Bus session as the lock |
+| **The default that bites** | Choosing **Express** for the throughput. Express is **at-least-once** (asynchronous) or **at-most-once** (synchronous), capped at **five minutes**, captures **no execution history** unless you wire up CloudWatch Logs, and AWS states "Idempotency is not automatically managed". A saga is precisely the thing whose steps are not idempotent — and **the workflow type cannot be updated after you create a state machine** | The replay model turns ordinary code into a landmine: recording "now" into an order throws **`NonDeterministicOrchestrationException`** — except that Microsoft says the detection "won't catch all violations, and you shouldn't depend on it". A compensator written with a non-deterministic API therefore fails the first time it is exercised, which is during the incident it exists for |
+
+Both services remove the mechanics — durable state, timers, retries, reverse-order compensation —
+and neither removes the design. The compensators, the semantic locks, the alert on non-terminal
+age and the manual queue for a failed compensation are yours on either cloud. A `Catch` branch is
+not a compensating transaction; it is the place you put one.
+
+## In an LLM deployment
+
+A multi-step agent — retrieve, call a tool, write a record, notify — is a saga whose next step is
+chosen at runtime by a model, and that changes two things.
+
+**Step ordering stops being enforceable in code.** §Mechanics says to reorder so that irreversible
+steps go last; if the model can select `refund` before it has selected `verify`, there is no place
+that ordering can be expressed. It becomes a constraint on the *tool surface* instead — which tools
+exist, which are gated behind a confirmation, which require a token the earlier step returns.
+
+**The durations invert.** Tool calls are milliseconds and the model calls between them are seconds,
+so a five-step agent spends most of its wall-clock inside inference. That is why Step Functions
+**Express's five-minute ceiling** is the wrong home for one and Standard's **one year** is right,
+and why Durable Functions' determinism rule bites immediately rather than eventually: the model's
+output is non-deterministic by construction, so it must be produced inside an **activity** and
+replayed from history. Sample it in the orchestrator and every replay rewrites the plan — the saga
+compensates steps a previous incarnation never took.
+
 ## Staff-level follow-ups
 
 1. Take a four-step checkout and write the compensator for each step in business terms. Which one
@@ -263,3 +297,11 @@ and an apology".
 - [AWS — implement the saga pattern with Step Functions](https://docs.aws.amazon.com/step-functions/latest/dg/sample-saga-pattern.html)
 - [microservices.io — saga pattern and countermeasures](https://microservices.io/patterns/data/saga.html)
 - [Chris Richardson — Microservices Patterns, ch.4 (saga countermeasures: semantic lock, commutative updates, by-value)](https://microservices.io/book)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — choosing a Step Functions workflow type](https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html) — Standard exactly-once / one year / 90-day history; Express at-least-once or at-most-once, five minutes, no managed idempotency, type immutable
+- [AWS — DynamoDB transactions](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis.html) — 100 items, 4 MB, same account and Region
+- [Azure — durable orchestrator code constraints](https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-code-constraints) — determinism rules, `NonDeterministicOrchestrationException`, and its incomplete detection
+- [Azure — Durable Functions overview](https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview) — orchestrator/activity model, managed state, checkpoints and retries
+- [Azure — transactional batch in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/transactional-batch) — 100 operations, 2 MB, one logical partition key

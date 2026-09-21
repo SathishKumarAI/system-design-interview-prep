@@ -227,6 +227,40 @@ expecting a read-only integration and acquire a new way to fill the primary's di
 - **DynamoDB Streams / MongoDB change streams** — managed CDC where the outbox table is often
   unnecessary because the change stream is already ordered and durable.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The CDC relay** | AWS DMS with a CDC task, or Debezium hosted on **MSK Connect** | **No first-party Debezium host.** Run the connector yourself on Container Apps or AKS; Data Factory and Fabric cover the batch-shaped extraction, not the log-shaped one |
+| **The managed change feed that can replace the table** | **DynamoDB Streams** — "Each stream record appears exactly once in the stream", ordered per item, one shard per table partition, **24-hour retention** | **Cosmos DB change feed** — enabled by default on every container, ordered per partition key, read through the change feed processor with a lease container |
+| **What you must turn on first** | Aurora/RDS PostgreSQL: set **`rds.logical_replication` to 1** in the *cluster* parameter group. "This static parameter requires a reboot of the DB instance to take effect" | Azure Database for PostgreSQL flexible server: set `wal_level` to `logical`, raise `max_worker_processes` to **at least 16**, `ALTER ROLE <admin> WITH REPLICATION`, then restart |
+| **The replication slot that fills the disk** | Unchanged and unmanaged: an inactive slot retains WAL, blocks autovacuum on catalog tables and risks transaction-ID wraparound. DMS ships `HeartbeatEnable` — **default `false`** — specifically to keep `restart_lsn` moving | The platform intervenes, which is worse in one specific way: the server goes **read-only at 95% storage or under 5 GiB free**, and an unused slot is **automatically dropped** to release WAL. That saves the database and silently amputates your pipeline |
+| **Ordering downstream** | `aggregate_id` → Kinesis partition key, or the Kafka key on MSK | `aggregate_id` → Event Hubs partition key, or Service Bus `SessionId` |
+| **The default that bites** | **DynamoDB Streams retains 24 hours, full stop** — "data that is older than 24 hours is susceptible to trimming (removal) at any moment" and there is no setting to extend it. A relay down over a long weekend has lost events, with no error anywhere. Also: "No more than two processes at most should be reading from the same stream's shard" | **The default change feed mode does not capture deletes.** Latest-version mode gives "no indication whether a given change is from an insert or an update operation, and deletes aren't captured" — an outbox built on it silently drops every deletion. Capturing them needs *all versions and deletes* mode, which requires **continuous backups** configured and can only read inside that backup window |
+
+Both managed change feeds remove the outbox *table* and reintroduce the problem it was solving:
+they publish your row, not your event. The schema-coupling failure in §Failure modes therefore
+comes back in full, and the projection into an explicit, versioned event shape is still yours to
+write. The outbox table earns its keep exactly where consumers must not be coupled to the schema.
+
+## In an LLM deployment
+
+Keeping a vector index consistent with the source of record is this page's dual write, with a model
+on the second leg. Writing the row and calling the embedding API are two systems with no atomicity
+between them, and doing the call inline holds a database transaction open across a network request
+to an inference endpoint — which is both incorrect and slow. The outbox shape is the same: write
+the row and an `embed` outbox entry in one transaction, and let the relay call the model and upsert
+the vector.
+
+Two things change. First, the relay's at-least-once guarantee now costs money as well as
+correctness — a duplicate publish is a second billed embedding call, not just a second row. Second,
+and unusually, the problem gets *easier*: embeddings are deterministic for a fixed model and input,
+so an upsert keyed by `(document_id, model_version)` is naturally idempotent, and the dedup table
+this page's sibling warns about is unnecessary. What does not get easier is retention. DynamoDB
+Streams' **24 hours** is the entire window in which a stalled relay can be recovered before the
+fallback becomes a full re-embed — and at 1,000 documents/second a 10 M-document corpus is roughly
+**three hours** of continuous, billed inference to rebuild.
+
 ## Staff-level follow-ups
 
 1. Walk the id-gap failure in a polling relay with two concurrent transactions, then give the
@@ -264,3 +298,11 @@ expecting a read-only integration and acquire a new way to fill the primary's di
 - [PostgreSQL — logical decoding and replication slots](https://www.postgresql.org/docs/current/logicaldecoding.html)
 - [microservices.io — transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.11
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — DynamoDB Streams](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) — exactly once in the stream, per-item ordering, 24-hour retention, two readers per shard
+- [AWS — using a PostgreSQL database as a DMS source](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html) — `rds.logical_replication = 1` is static and needs a reboot; `HeartbeatEnable` defaults to `false`
+- [AWS — resolving vacuum blockers in RDS for PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.Autovacuum_Monitoring.Resolving_Identifiableblockers.html) — inactive slots retain WAL, block catalog autovacuum and risk wraparound
+- [Azure — logical replication and logical decoding on PostgreSQL flexible server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) — `wal_level = logical`, `max_worker_processes` ≥ 16, read-only at 95% storage, automatic drop of unused slots
+- [Azure — work with the Cosmos DB change feed](https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed) — latest-version mode captures no deletes; all-versions-and-deletes needs continuous backups
