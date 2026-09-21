@@ -111,18 +111,6 @@ older messages compacted into object storage with an index. Discord's well-known
 
 ## 6. Architecture
 
-```
-client ──WebSocket──→ [connection gateway tier: 1000 nodes, stateful]
-                             │  (session registry in Redis: user_id → node)
-                             ▼
-                      [chat service: seq assignment, persist, fanout]
-                             ├──→ messages store (Cassandra/Scylla)
-                             ├──→ Kafka (message_created) → receipts, search index, analytics
-                             └──→ delivery: for each member
-                                    online?  → route to their gateway node → push
-                                    offline? → push notification service + wait for sync
-```
-
 One socket per user, one partition per conversation:
 
 ```mermaid

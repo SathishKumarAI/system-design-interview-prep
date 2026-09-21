@@ -149,18 +149,6 @@ is the thing that breaks dark mode and multi-brand.
 
 ## 6. Architecture
 
-```
-tokens (JSON) ──build──→ css vars + TS constants + Figma variables
-                              ↓
-primitives (unstyled behaviour: focus, keyboard, ARIA — or wrap a headless library)
-                              ↓
-styled components (tokens applied) ──→ published package(s)
-                              ↓
-docs site (live examples, props table, a11y notes, do/don't) + Storybook
-                              ↓
-CI: unit + a11y (axe) + visual regression + bundle size budget per component
-```
-
 One source, three outputs, and two gates:
 
 ```mermaid

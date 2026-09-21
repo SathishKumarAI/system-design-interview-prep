@@ -105,25 +105,6 @@ partition.
 
 ## 6. Architecture
 
-```
-SDKs → edge collector (validate, enrich: geo/IP, UA parse, consent check) → Kafka (raw topic)
-                                                                              │
-                          ┌───────────────────────────────────────────────────┤
-                          ▼                                                   ▼
-              Flink: bronze sink                                    Flink: real-time aggregates
-              (checkpoint + 2PC → Iceberg bronze)                   (windowed counts → ClickHouse/Pinot)
-                          │                                                   └→ product features
-                          ▼
-              Flink/Spark: dedupe, clean, enrich → Iceberg silver
-                          │
-                          ▼
-              dbt/Spark scheduled: gold marts, sessionisation, attribution
-                          │
-                     Trino / warehouse ← BI      ML training ← silver/gold
-                          ▲
-              compaction + snapshot expiry jobs (continuous)
-```
-
 The same pipeline with the volumes and the freshness SLA on each hop:
 
 ```mermaid

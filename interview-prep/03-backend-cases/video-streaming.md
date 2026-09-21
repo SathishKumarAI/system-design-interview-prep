@@ -93,26 +93,6 @@ facts — the classic "big bytes in the object store, small facts in the databas
 
 ## 6. Architecture
 
-```
-UPLOAD & PROCESS
-client → presigned resumable upload → object store (raw)
-                                        ↓ event
-                          pipeline orchestrator (DAG, per-video workflow)
-        ┌────────────┬──────────────┬──────────────┬──────────────┐
-     validate    split into      transcode        thumbnails     captions (ASR)
-     + probe     GOP chunks    (fan-out per       + preview       + language ID
-                               rendition ×        sprite
-                               chunk, parallel)
-                                    ↓
-                          concatenate + package (HLS/DASH) + encrypt (DRM)
-                                    ↓
-                          publish manifests → warm CDN → mark ready
-
-PLAYBACK
-player → manifest (small, from API/CDN) → segments (CDN edge; origin shield behind it)
-       → ABR: measure throughput/buffer, switch rendition per segment
-```
-
 Batch work on the left, 30 Tbps of egress on the right, and almost nothing in between:
 
 ```mermaid

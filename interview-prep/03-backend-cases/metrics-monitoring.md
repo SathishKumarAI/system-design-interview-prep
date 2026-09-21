@@ -103,21 +103,6 @@ bits). Gorilla-style, ~1.3 bytes per point — a **10x+ saving**. Naming this is
 
 ## 6. Architecture
 
-```
-targets → collectors/agents (scrape or receive) → relabel/filter → remote write
-                                                         ↓
-                                    ingester tier (in-memory head block + WAL)
-                                                         ↓ every 2 h
-                                          compactor → immutable blocks → object storage
-                                                         ↓
-                            querier (fans out: head from ingesters, history from object store)
-                                                         ↓
-                                          dashboards        rule evaluator
-                                                                 ↓
-                                                          alert manager (group, dedupe,
-                                                          silence, route → page/slack)
-```
-
 ```mermaid
 flowchart LR
     t["Targets"]

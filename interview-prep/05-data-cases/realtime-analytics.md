@@ -97,22 +97,6 @@ on the fly from the finest materialised level. Roll up minute → hour → day o
 
 ## 6. Architecture
 
-```
-ad server → Kafka(ads.events) ──┬──→ Flink: dedupe (event_id, 5 min–1 h window)
-                                │         → windowed aggregate (event time, watermark)
-                                │         → upsert into Pinot/Druid (real-time segments)
-                                │         → HLL sketches per campaign
-                                │
-                                └──→ Iceberg bronze (raw, exactly-once via checkpoint+2PC)
-                                            │
-                                     nightly Spark/Flink batch:
-                                     full recompute for D-1 (and D-3, D-7 restatements)
-                                            → gold.ad_metrics_daily  (billing truth)
-                                            → backfill OLAP historical segments
-
-query API → OLAP store (recent, real-time segments) ∪ (historical, batch-corrected segments)
-```
-
 The handover boundary is the two edges into the query API:
 
 ```mermaid

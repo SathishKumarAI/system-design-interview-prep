@@ -93,16 +93,6 @@ Negatives are impressions without engagement, corrected for position and viewpor
 
 ## 6. Architecture
 
-```
-candidates (500) ─┐
-user features ────┼→ batched feature assembly (one columnar fetch, not 500 lookups)
-post features ────┘
-                  → ranking model (multi-task): p(click), p(like), p(share), p(hide), E[dwell]
-                  → value = Σ wᵢ · pᵢ         (weights set by the product, not by the model)
-                  → re-rank: diversity, author cap, freshness boost, integrity demotion
-                  → top N + logging
-```
-
 Every edge here is sized by the 75M-scorings-per-second arithmetic above:
 
 ```mermaid

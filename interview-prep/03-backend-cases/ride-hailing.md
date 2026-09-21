@@ -100,20 +100,6 @@ independently. It's also how the real systems do it.
 
 ## 6. Architecture
 
-```
-driver app ──location (4 s)──→ ingest gateway → in-memory geo index (per city shard)
-                                              └→ Kafka → trail store, analytics, ML features
-
-rider app ──request──→ ride service (state machine)
-                          → matching service:
-                               query geo index for candidate cells
-                               → filter (available, vehicle type, rating)
-                               → rank by ETA (routing service, not straight-line distance)
-                               → batch-optimise assignments
-                               → offer (compare-and-set driver_state)
-                          → on accept: ride → accepted; notify both; start live tracking
-```
-
 The write path and the match path are different systems, each sized for its own number:
 
 ```mermaid

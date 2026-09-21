@@ -100,22 +100,6 @@ appalling load balance and painful updates. Say you chose document partitioning 
 
 ## 6. Architecture
 
-```
-INDEXING (the 80%)
-source DB ──CDC/Kafka──→ enrichment (join attributes, ML features)
-                       → analysis (tokenize, lowercase, stem, synonyms, n-grams)
-                       → index writers → segment files → replicated to search nodes
-query log ──────────────→ aggregation → top-K per prefix → typeahead artefact
-
-QUERY
-client → CDN (short prefixes) → typeahead service (in-memory trie/FST)         [< 100 ms]
-client → search API → query understanding (spellcheck, synonyms, intent)
-                    → scatter to N shards → per-shard top-K (BM25)
-                    → gather + merge
-                    → re-rank top ~200 with a model (features: CTR, price, personalisation)
-                    → hydrate + facets → response                              [< 300 ms]
-```
-
 Indexing is 80% of the system and never touches the query path:
 
 ```mermaid

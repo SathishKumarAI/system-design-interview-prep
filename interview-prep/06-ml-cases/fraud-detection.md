@@ -104,19 +104,6 @@ regulatory requirement in most jurisdictions, and a strong thing to volunteer.
 
 ## 6. Architecture
 
-```
-payment request → risk API
-      ├→ rules engine (fast, deterministic, human-authored — blocklists, hard limits)
-      ├→ feature fetch: online store (entity aggregates) + inline features
-      ├→ model: GBDT ensemble → calibrated probability
-      ├→ policy layer: score + rules + segment → decision + reason codes
-      └→ decision log → Kafka
-
-Kafka → streaming aggregator (Flink) → online feature store  [seconds]
-      → lakehouse (decisions, features, outcomes)            [training + backtesting]
-labels (chargebacks, review outcomes) → label store → training pipeline → registry → canary
-```
-
 Drawn out, the loop from decision log back onto the hot path is the part worth seeing:
 
 ```mermaid

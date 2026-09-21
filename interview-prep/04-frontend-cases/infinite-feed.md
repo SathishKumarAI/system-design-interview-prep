@@ -97,17 +97,6 @@ in a profile page must not be two copies that can disagree.
 
 ## 6. Architecture
 
-```
-App shell (SSR or a cached static shell)  → instant paint, skeletons
-   └── Feed route (lazy-loaded chunk)
-         ├── useInfiniteQuery (cache, dedupe, retry, background refetch)
-         ├── Virtualizer (windowed rendering, dynamic measurement)
-         ├── PostCard (memoized, stable props)
-         │     ├── Media (IntersectionObserver: lazy load, autoplay when visible)
-         │     └── Actions (optimistic mutation + rollback)
-         └── Service worker: cache shell + last feed page for offline read
-```
-
 The same tree as a flow, with the budget each edge has to respect:
 
 ```mermaid

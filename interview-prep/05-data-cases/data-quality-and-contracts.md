@@ -104,22 +104,6 @@ themselves (this check has flaked 40 times this month → fix or delete it).
 
 ## 6. Architecture
 
-```
-producer CI ──schema/contract compatibility check──→ blocks incompatible merges
-                                                              (the cheapest possible gate)
-pipeline run:
-   extract → transform → WRITE to an Iceberg branch (not the main table)
-                              ↓
-                        AUDIT: run checks against the branch
-                              ↓
-                 pass → PUBLISH (fast-forward the branch into main, atomic)
-                 fail → do NOT publish; alert owner; consumers keep the last good snapshot
-                              ↓
-                        check_results → quality dashboard + SLA tracking
-lineage: parsed from dbt manifests / SQL ASTs / Spark plans → graph store
-incident: failed tier-1 check → page owner + notify downstream consumer owners automatically
-```
-
 Two gates, drawn: one in the producer's CI, one between the branch and the table.
 
 ```mermaid

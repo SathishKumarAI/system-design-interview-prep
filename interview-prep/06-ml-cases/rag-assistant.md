@@ -109,23 +109,6 @@ measure groundedness, and how you debug.
 
 ## 6. Architecture
 
-```
-INGESTION (continuous)
-sources → CDC/webhooks → parse (PDF/HTML/code) → clean → chunk (structure-aware)
-        → embed (batch) → upsert into vector index + lexical index (ACL carried on every chunk)
-        → dead-letter for parse failures
-
-QUERY
-user → auth → query understanding (rewrite follow-ups into standalone queries; classify intent)
-     → HYBRID retrieval, ACL-filtered:
-          dense (ANN over embeddings)  ─┐
-          lexical (BM25)               ─┴→ fusion (RRF) → top ~50
-     → rerank (cross-encoder) → top ~8
-     → assemble prompt (system + citations-required instructions + chunks + history)
-     → LLM (streaming) → post-process: verify citations resolve, apply guardrails
-     → response + citations + logs
-```
-
 The same two paths as components, with what crosses each edge:
 
 ```mermaid

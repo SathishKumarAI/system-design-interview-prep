@@ -102,17 +102,6 @@ O(log N) operation, sub-millisecond, and the cap bounds memory at 2.4 TB fleet-w
 
 ## 6. Architecture
 
-```
-publish → API → posts store → Kafka(post_created)
-                                 ↓
-                        fanout workers ── read followers ──→ push post_id into
-                                                              feed:{follower} (Redis)
-read   → API → ZREVRANGE feed:{uid} → hydrate posts (multi-get, cached)
-              → merge pull-list for celebrities followed
-              → filter (blocks, mutes, deleted, already-seen)
-              → rank → return page
-```
-
 The two halves of the hybrid, and the amplification between them:
 
 ```mermaid

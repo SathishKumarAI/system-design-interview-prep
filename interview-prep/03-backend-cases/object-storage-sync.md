@@ -107,16 +107,6 @@ integer. Do not compute diffs by comparing file trees.
 
 ## 6. Architecture
 
-```
-client (watcher + local index) ──metadata ops──→ metadata service → sharded DB
-                                                        ↓
-                                                 changelog append
-                                                        ↓
-                                        notification service → other devices (WS/long-poll)
-
-client ──chunk PUT/GET (presigned)──→ blob storage (erasure-coded, multi-AZ) → CDN for reads
-```
-
 Two planes that scale on different axes, and only small facts cross between them:
 
 ```mermaid

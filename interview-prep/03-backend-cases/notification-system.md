@@ -105,22 +105,6 @@ support team lives in.
 
 ## 6. Architecture
 
-```
-callers → ingest API ──(dedup check, validate, persist)──→ Kafka: notif.requested
-                                                                  │
-                                     ┌────────────────────────────┴───────────────┐
-                            preference/eligibility service               scheduler (send_at,
-                            (opt-out, quiet hours, caps, locale)          user-local time, digests)
-                                                │
-                   Kafka topics per channel × priority (push.txn, push.mkt, email.txn, sms.txn…)
-                                                │
-                      channel workers (rate-limited per provider, token bucket)
-                                                │
-                        provider adapters → APNs / FCM / SES / Twilio
-                                                │
-                              webhooks in ← delivery/bounce/open events → deliveries table
-```
-
 Every arrow into a provider is rate-limited, and every topic is a bulkhead:
 
 ```mermaid

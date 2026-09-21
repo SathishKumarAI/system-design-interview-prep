@@ -89,17 +89,6 @@ Return `cached_tokens` — tenants can only optimise prompt reuse if you tell th
 
 ## 5. Architecture
 
-```
-clients → gateway (auth, per-tenant rate limit + quota, routing, usage metering)
-        → router: model choice by tier/task; queue by priority (interactive > batch)
-        → inference tier (vLLM / SGLang / TensorRT-LLM):
-              prefill workers  ──KV cache transfer──▶  decode workers   (PD disaggregation)
-              continuous batching + PagedAttention + chunked prefill
-              prefix cache (shared system prompts, RAG contexts)
-        → response stream
-        observability: TTFT, ITL, queue depth, KV utilisation, tokens/s/GPU, $/1k tokens
-```
-
 Drawn out, with the rates and payloads on the edges:
 
 ```mermaid

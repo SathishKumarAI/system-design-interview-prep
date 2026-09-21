@@ -96,13 +96,6 @@ works to surprisingly high scale here because the query is a primary-key hit.
 
 ## 6. Architecture
 
-```
-create:  client → LB → API → [ID service] → KV store → cache warm
-redirect: client → CDN/edge (cache 302 for public links)
-                 → LB → redirect service → Redis → KV store
-                 → async: click event → Kafka → aggregator → clicks_daily
-```
-
 Two paths that share nothing, drawn at the ratio they actually run at:
 
 ```mermaid

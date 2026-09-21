@@ -98,17 +98,6 @@ ID assigned at prediction time, you cannot compute a single delayed metric.
 
 ## 6. Architecture
 
-```
-serving → async prediction log → Kafka
-                                   ├→ real-time aggregator (Flink): distributions, latency, null rates
-                                   ├→ lakehouse: full logs for analysis and training
-                                   └→ drift jobs (hourly): compare live vs reference window
-labels (various sources, various delays) → label store → join on request_id
-                                   → delayed metrics (AUC, precision@k, business KPI)
-alerts → owning team + dashboard
-registry ← training pipeline ← retraining trigger (schedule | drift | metric decay)
-```
-
 With the volumes and the sampling decisions on the edges:
 
 ```mermaid

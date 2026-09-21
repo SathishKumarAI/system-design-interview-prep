@@ -94,26 +94,6 @@ constant at inference, or with inverse-propensity weighting.
 
 ## 6. Architecture
 
-```
-OFFLINE (daily/hourly)
-interactions → feature pipelines → training data (point-in-time joins)
-             → two-tower model training → item embeddings → ANN index build
-             → ranker training (GBDT / DNN) → model registry → shadow eval
-
-ONLINE (per request)
-request → user features (online store)
-        → candidate generation (parallel sources):
-             ANN over user embedding      (personalised)
-             co-visitation / item-to-item (session-based)
-             trending / popular by segment (cold start + coverage)
-             editorial / business rules
-        → merge + dedup + filter (already seen, unavailable, blocked)  → ~1,000
-        → batched feature fetch for candidates
-        → ranking model → scores
-        → re-rank: diversity (MMR), freshness, business constraints
-        → top 20 + reasons → response + impression log
-```
-
 The same shape as components. Note that only the *user* tower is on the request path:
 
 ```mermaid

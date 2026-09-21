@@ -111,17 +111,6 @@ your training rows are at arbitrary timestamps.
 
 ## 6. Architecture
 
-```
-definitions (versioned, in Git, reviewed) ──compile──┐
-                                                     ├→ batch job (Spark)  → offline store
-                                                     └→ streaming job (Flink) → online store
-                                                                              └→ offline store
-                                                                                 (for training)
-training:  labels + event timestamps → point-in-time join over the offline store → training set
-serving:   model → get_online_features(batch) → features → prediction
-                                              └→ log served values → parity monitor
-```
-
 The single compiled definition is the whole point: two code paths written by hand *will* diverge,
 and the divergence is invisible until model quality quietly drops.
 

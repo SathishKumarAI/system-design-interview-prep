@@ -103,22 +103,6 @@ bounded. That compaction schedule is not optional.
 
 ## 6. Architecture
 
-```
-Postgres (logical replication slot) ─┐
-MySQL (binlog, ROW format)           ├→ Debezium connectors (Kafka Connect cluster)
-                                     │      → schema history topic (its own state)
-                                     ▼
-                            Kafka: one topic per table (key = PK)
-                                     │
-                      ┌──────────────┴────────────────┐
-             Flink/Spark: bronze sink         Flink/Spark: MERGE into silver
-             (append raw events)              (upsert current state + build SCD2)
-                                     │
-                            compaction + snapshot expiry
-                                     │
-                        Trino / warehouse / ML feature pipelines
-```
-
 Drawn out, the reconciliation loop back to the connector is the piece that makes this operable:
 
 ```mermaid

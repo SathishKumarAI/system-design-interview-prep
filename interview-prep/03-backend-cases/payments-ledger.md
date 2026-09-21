@@ -117,19 +117,6 @@ recomputable from scratch at any time. Never a mutable `balance` column as the s
 
 ## 6. Architecture
 
-```
-checkout → payment API (idempotency check, create intent, ledger: pending)
-              → PSP adapter (with idempotency key passed through)
-                    ├── success  → ledger: captured, publish payment.succeeded
-                    ├── failure  → ledger: failed (still recorded — failures are data)
-                    └── TIMEOUT  → state: unknown → reconciler resolves it
-              → Kafka: payment events → notifications, analytics, seller balances
-
-PSP webhooks → verify signature → idempotent handler (dedupe by event id) → state machine
-Daily settlement file from PSP → reconciliation job → discrepancy report → ops queue
-Payout scheduler → saga: check balance → create payout → PSP transfer → confirm/compensate
-```
-
 Every path that can write a ledger entry, including the three that run after the request is gone:
 
 ```mermaid

@@ -121,18 +121,6 @@ merged updates. Without this, load time grows linearly forever.
 
 ## 6. Architecture
 
-```
-client: editor view ← local CRDT document (source of truth for the UI)
-              ↑ apply local edit (0 ms) → produce update
-              └── update → WebSocket → sync server
-sync server (per-doc room, sticky by doc_id):
-      broadcast update to other clients in the room
-      append to updates log
-      periodically compact → snapshot in object storage
-persistence: Postgres (metadata, permissions) + object store (snapshots)
-presence/awareness: in-memory pub-sub only, TTL'd, never persisted
-```
-
 The same picture with what crosses each edge. Note that nothing on the render path waits
 on the network:
 

@@ -97,12 +97,6 @@ Counter TTL = window length × 2. Never let counters accumulate.
 
 Three placements, and you should name all three:
 
-```
-1. Edge/CDN          — crude IP limits, absorbs volumetric abuse before it costs you anything
-2. API gateway       — the main enforcement point: per key, per rule    ← primary
-3. Service-local     — protects a specific expensive downstream (bulkhead-style)
-```
-
 ```mermaid
 flowchart LR
     c["Clients<br/>1M rps"]

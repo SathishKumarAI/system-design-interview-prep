@@ -93,16 +93,6 @@ you think across the boundary.
 
 ## 6. Architecture
 
-```
-WebSocket → Web Worker (parse, validate, downsample, write into SharedArrayBuffer/ring buffers)
-                                   │
-                    requestAnimationFrame loop on the main thread
-                                   │  (reads latest state, once per frame)
-                    ┌──────────────┴──────────────┐
-               Canvas charts                  React widgets
-             (imperative draw)            (setState once per frame, memoized)
-```
-
 With the rates on the edges, the decoupling is the whole diagram:
 
 ```mermaid
