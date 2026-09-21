@@ -36,7 +36,7 @@ sources.
 | **Drills** | [07-drills/](interview-prep/07-drills/README.md) | 8-week plan, rubric, question bank, flashcards |
 | **Reference** | [08-reference/](interview-prep/08-reference/README.md) | Glossary; `tech-selection.md` is being retired into `comparisons/` |
 | **Company styles** | [09-company-styles/](interview-prep/09-company-styles/README.md) | Amazon/AWS, Meta, Google, others, startups |
-| **Resources** | [10-resources/](interview-prep/10-resources/README.md) | Books you own, repos, newsletters, blogs, mocks |
+| **Resources** | [10-resources/](interview-prep/10-resources/README.md) | The primary sources the corpus cites, books you own, repos, newsletters, blogs, mocks |
 | **Conventions** | [CONVENTIONS.md](interview-prep/CONVENTIONS.md) | How every file here is written |
 | **Templates** | [_templates/](interview-prep/_templates/) | Case, primitive, drill log, ADR |
 

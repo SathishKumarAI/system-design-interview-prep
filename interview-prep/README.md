@@ -33,7 +33,7 @@ This folder is the **interview layer** on top: framework, numbers, worked cases,
 | What do I practise this week? How do I score myself? | [07-drills/](07-drills/README.md) |
 | Term I forgot / which tech do I pick | [08-reference/](08-reference/README.md) |
 | What does Amazon / Meta / Google weight differently? | [09-company-styles/](09-company-styles/README.md) |
-| Books I own, repos, newsletters, blogs, mocks | [10-resources/](10-resources/README.md) |
+| The primary sources this corpus cites, books I own, repos, newsletters, blogs, mocks | [10-resources/](10-resources/README.md) |
 | How is every file here written? | [CONVENTIONS.md](CONVENTIONS.md) |
 | Templates to copy when adding a note | [_templates/](_templates/) |
 
