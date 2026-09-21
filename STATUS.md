@@ -54,6 +54,8 @@ fan-out or idempotency is a case that has not used the set.
 
 | Trap | What to do |
 |---|---|
+| **Python `write_text` turns a whole LF file CRLF on Windows** | A read-modify-write of a doc silently rewrites every line ending. Harmless here — `core.autocrlf=true`, so the committed blob is unaffected and `git diff` stays empty — but a byte-level diff of the working tree will look like the whole file changed. Write bytes, or pass `newline="
+"`, when that matters |
 | **`gen_backlinks.py` edits inside code fences** | It matches `## Referenced by` / `## Sources` textually. A fenced example containing those headings gets a generated backlink list injected into it. This happened to `CLAUDE.md` and `CONVENTIONS.md`; both contracts are tables now. **Never put those headings in a fence** |
 | **Run doc scripts from the repo root** | `gen_backlinks.py` scoped to a subfolder cannot see inbound links from outside it and strips them as though gone |
 | **`lint_docs.py --contract` false positive** | Reports "missing: Follow-up questions" on every staff page. The skill's generic name is `Follow-up questions`; this repo's contract says `Staff-level follow-ups`. Repo wins — ignore that line, do not rename the section |
