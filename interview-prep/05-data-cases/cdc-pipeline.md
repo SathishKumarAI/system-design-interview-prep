@@ -265,6 +265,43 @@ CDC that silently drifts is worse than no CDC, because people trust it.
 - **First thing I'd cut:** history (SCD2) for tables where nobody has ever queried it —
   measure before assuming.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | AWS DMS CDC tasks, or Debezium on MSK Connect → MSK/Kinesis (topic per table, key = PK) → Glue/EMR merge job → **S3 Tables** (Iceberg) with Glue Data Catalog; Athena and Redshift read it | **No first-party Debezium host.** Run the connector yourself on Container Apps or AKS → Event Hubs (Kafka protocol) → Fabric or Databricks merge job → Delta/Iceberg in ADLS Gen2. Data Factory and Fabric cover the batch-shaped extraction, not the log-shaped one |
+| **What you turn on first** | **`rds.logical_replication` in the DB *cluster* parameter group. "This static parameter requires a reboot of the DB instance to take effect"** — so the "zero impact on production" requirement starts with a scheduled restart. Setting it also raises `wal_level`, `max_wal_senders`, `max_replication_slots` and `max_connections`, which increases WAL generation | `wal_level = logical`, `max_worker_processes` to **at least 16** (or you get `WARNING: out of background worker slots`), then `ALTER ROLE <admin> WITH REPLICATION`, then **restart the server** |
+| **The default that bites** | DMS ships `HeartbeatEnable` specifically to stop an idle slot pinning old WAL — and its **default value is `false`**. A CDC task that is caught up and quiet lets `restart_lsn` sit still, which is the storage-full scenario this case's WAL-retention estimate is about, arriving through inactivity rather than lag | The platform intervenes, and that is worse in one exact way: the server **"automatically switches to read-only mode when the storage usage reaches 95 percent, or when the available capacity is less than 5 GiB"**, and an unused slot is then **automatically dropped**. That saves the database and silently amputates your pipeline — your resume point is gone and the answer is a full re-snapshot |
+| **The one nobody expects** | Streams have their own retention; a relay down over a long weekend against a 24-hour retention has lost events with no error anywhere | **On PostgreSQL 16 and earlier, "logical replication slots aren't preserved during failover events"** on an HA-enabled flexible server. A routine failover re-snapshots 5 B rows unless you run the PG Failover Slots extension; PostgreSQL 17+ syncs slots natively, and only for slots created with the failover option |
+| **The merge target** | **S3 Tables run maintenance for you** — "S3 continuously performs automatic maintenance operations, such as compaction, snapshot management, and unreferenced file removal." The merge-on-read compaction schedule this case calls mandatory becomes a configuration rather than a job you operate | Compaction on Delta/Iceberg in ADLS is yours: `OPTIMIZE`/`VACUUM` on a schedule you own and monitor |
+
+The WAL-retention risk this case names as *the* operational constraint appears on both clouds with
+opposite failure modes, and that contrast is the thing to carry into a room: **AWS lets the slot
+fill the disk and gives you an off-by-default heartbeat to prevent it; Azure protects the disk by
+deleting your slot.** One is a storage incident, the other is a silent data-loss incident, and the
+runbook is different for each.
+
+## In an LLM deployment
+
+CDC is the correct substrate for keeping a vector index current, and the case's existing shape
+needs almost nothing added: the change event already carries `op`, `before` and `after`, so
+`c`/`u` re-embeds the row and `d` deletes the vector. That last one matters more than it looks —
+**an embedding derived from a deleted row is a copy of that row**, so a GDPR erasure that does not
+propagate to the index has not erased anything. This case's §Deep dive C on deletes and tombstones
+becomes a compliance requirement for a second store.
+
+Two economics changes. A re-embed is a **billed model call**, so the at-least-once delivery that
+costs you a duplicate row today costs money tomorrow — key the vector on
+`(primary_key, source_lsn, model_version)` and the upsert is naturally idempotent, since
+embeddings are deterministic for a fixed model and input. And the **re-snapshot path stops being
+cheap**: a correction path that re-reads 5 B rows currently costs 14 hours of I/O; if every row
+must be re-embedded it is 5 B inference calls, which is a budget line, not an afternoon.
+
+The schema-evolution problem you do not control gets a new edge too. A column added upstream does
+not break the pipeline, but it silently changes what the embedded text *means* if your template
+concatenates columns. Pin the template to an explicit column list, version it alongside the model,
+and treat a template change as a full re-embed — because that is what it is.
+
 ## Referenced by
 
 - [Cache invalidation](../fundamentals/cache-invalidation.md)
@@ -281,3 +318,10 @@ CDC that silently drifts is worse than no CDC, because people trust it.
 - [Netflix — DBLog: a generic change-data-capture framework](https://netflixtechblog.com/dblog-a-generic-change-data-capture-framework-69351fb9099b)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.11 (change data capture)
 - [Apache Iceberg — row-level deletes, merge-on-read](https://iceberg.apache.org/docs/latest/)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — using a PostgreSQL database as an AWS DMS source](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.PostgreSQL.html) — `rds.logical_replication` is a static cluster parameter requiring a reboot and raises `wal_level`/`max_wal_senders`/`max_replication_slots`/`max_connections`; `HeartbeatEnable` defaults to `false` and keeps `restart_lsn` moving
+- [AWS — working with Amazon S3 Tables and table buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html) — Iceberg table buckets with continuous automatic compaction, snapshot management and unreferenced file removal
+- [Azure — logical replication and logical decoding on PostgreSQL flexible server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) — `wal_level = logical`, `max_worker_processes` ≥ 16, `ALTER ROLE … WITH REPLICATION` and a restart; read-only at 95% storage or under 5 GiB free; automatic drop of unused slots; slots not preserved across HA failover on PostgreSQL 16 and earlier
+- [AWS — DynamoDB Streams](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) — 24-hour stream retention, for the managed change-feed alternative

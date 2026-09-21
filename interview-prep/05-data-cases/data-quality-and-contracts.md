@@ -249,6 +249,46 @@ The technical part is a week; this is the system.
 - **First thing I'd cut:** distribution checks on tier-3 tables, and full-table checks in
   favour of partition-scoped ones.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **AWS Glue Data Quality** (built on the open-source DeeQu framework) with rules written in **DQDL**, attached either to a Glue Data Catalog table or inside a Glue ETL job; results to S3, EventBridge and CloudWatch; Step Functions or Airflow drives write-audit-publish | **Microsoft Purview Unified Catalog** data quality — no-code/low-code rules over six dimensions (completeness, consistency, conformity, accuracy, freshness, uniqueness) with profiling and AI-generated rule suggestions; scans scheduled per data product. Databricks/dbt tests carry the in-pipeline gate |
+| **What you configure** | A ruleset per table, its entry point (Catalog vs ETL), anomaly-detection analyzers, and whether the ETL job fails or routes bad rows | A data source connection (**managed identity only**), profiling scope, rules per column, scan schedule, and alert thresholds per data product |
+| **The default that bites** | **The two entry points have complementary holes.** Rule *recommendations* are "Supported" for the Data Catalog and "Not supported" for ETL jobs; *identifying the records that failed* is "Not supported" for the Data Catalog and "Supported" for ETL jobs. So you get suggestions where you cannot see the bad rows, and the bad rows where you must write every rule by hand. Also: "Data quality rules can't evaluate nested or list-type data sources" — flatten first | **A maximum of 200 data quality rules per data asset**, and the Purview account and the data source **must be in the same Azure region**. Concurrency is capped too: **10 concurrent manual scans, 25 scheduled, 10 profiling jobs, 10 rule-suggestion jobs** — against this case's 2,000 tables, a full cycle is a queue, not a sweep |
+| **What it costs you** | 2,000 rules per ruleset and a **65 KB ruleset size**; statistics are capped at **100,000 per account** and retained a maximum of two years — which is the ceiling on the historical baseline your anomaly rules compare against | Scans run on **Apache Spark 3.5 and Delta Lake 3.2.1**, billed per Data Governance Processing Unit. The 12,000-checks-per-cycle estimate in §3 is a compute bill with a concurrency ceiling in front of it |
+| **Where neither helps** | Ownership. Neither service has an opinion about who gets paged | Purview has the catalog half — owners, domains, data products — and none of the CI half. **The contract in the producer's repo, failing the producer's build, is not a cloud feature on either side** |
+
+The table makes the case's own thesis concrete: both clouds sell you the *checks*, which this page
+calls the easy part, and neither sells you the gate in the producer's CI or the tiering that keeps
+alerts un-muted. The one genuinely useful platform fact is AWS's split entry points — pick the
+wrong one and you have built a detector that cannot tell you which rows are bad.
+
+## In an LLM deployment
+
+Two things change, one of them badly.
+
+**Rule authoring gets cheaper and is already a product on both clouds.** Glue recommends rules from
+a profile; Purview generates them with "AI-generated rules" and AI-assisted profiling. This is the
+right use: a model proposes 2,000 tables' worth of starting rules in an afternoon, and a human
+tiers and prunes them. But note what it multiplies — this case's central number is that **1% flake
+across 12,000 checks is 120 false alarms a day**, and a generator that cheerfully produces six
+plausible rules per table is a flake factory unless every generated rule is reviewed before it can
+page anyone. Generated rules should land at tier 3 (dashboard only) by default and be promoted by a
+human, never the reverse.
+
+**The consumers change, and the contract has to notice.** `consumers: [finance.revenue_daily,
+ml.demand_forecast]` now includes a retrieval index and a fine-tuning set, and those fail
+*silently*: a schema drift that breaks a dashboard throws an error, while the same drift feeding a
+prompt template produces confident wrong answers with a 200 status code. Add the derived artefacts
+to the contract's consumer list so lineage-based impact analysis reaches them, and add two checks
+that are new here — **a freshness SLA on the derived index** (not just the table), and a
+**distribution check on the model's inputs**, because the failure you are trying to catch is
+drift, not a null.
+
+One rule survives intact: a model may propose a rule, and may never be the rule. A check whose
+verdict is non-deterministic is a check you will mute.
+
 ## Referenced by
 
 - [Data platform cases index](README.md)
@@ -263,3 +303,8 @@ The technical part is a week; this is the system.
 - [Great Expectations](https://greatexpectations.io/)
 - [Iceberg — branching and write-audit-publish](https://iceberg.apache.org/docs/latest/branching/)
 - Repo notes: [../../data%20engineering/AWS/data%20testing/](../../data%20engineering/AWS/data%20testing/)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Glue Data Quality](https://docs.aws.amazon.com/glue/latest/dg/glue-data-quality.html) — built on DeeQu, DQDL, 25+ out-of-the-box rule types, the Data Catalog vs ETL feature matrix (recommendations vs failed-record identification), no nested or list-type sources, 2,000 rules and 65 KB per ruleset, 100,000 statistics per account retained up to two years
+- [Azure — data quality in Microsoft Purview Unified Catalog](https://learn.microsoft.com/en-us/purview/unified-catalog-data-quality) — six dimensions, AI-generated rules and AI-assisted profiling, 200 rules per data asset, same-region requirement, managed-identity-only scans, concurrency limits (10 manual / 25 scheduled / 10 profiling / 10 rule-suggestion), Apache Spark 3.5 and Delta Lake 3.2.1, DGPU billing

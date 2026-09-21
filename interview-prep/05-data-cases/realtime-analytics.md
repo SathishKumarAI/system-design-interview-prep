@@ -255,6 +255,42 @@ for dashboard queries (which repeat constantly).
 - **First thing I'd cut:** materialised cuboids nobody queries (measure with query logs), and
   minute-granularity retention 30 → 7 days.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | Kinesis Data Streams or MSK → Managed Service for Apache Flink (dedup + event-time windows) → **two sinks**: an OLAP store for the sub-second serving layer, and S3 Tables (Iceberg) for the nightly authoritative recompute | Event Hubs → Stream Analytics / Fabric Eventstream or Databricks → **Azure Data Explorer (Kusto)** for serving, plus Delta/Iceberg in ADLS for the nightly recompute |
+| **The serving layer** | **No first-party Pinot/Druid equivalent.** Redshift and Athena are warehouse-shaped, not sub-second-interactive at this cardinality, so the real answer is ClickHouse, Pinot or Druid that you run — on EKS, EC2 or a vendor's managed offering in the Marketplace | **Azure Data Explorer is exactly this product**, first-party: columnar, time-series-native, built for interactive aggregation over streaming ingest, queried with KQL. This is the sharpest first-party advantage Azure has in the whole case set |
+| **What you configure** | Flink checkpoint interval (the exactly-once boundary), watermark lag, RocksDB state backend sizing for the ~150 M-key dedup window | ADX ingestion batching policy, update policies for the roll-up cuboids, caching (hot) vs retention (cold) period per table, materialized views |
+| **The default that bites** | Kinesis is **1 MB/s *or* 1,000 records/s per shard, whichever comes first**. At 500 k events/s of 500-byte records the *record* limit binds long before the byte limit — 500 shards for 250 MB/s of actual data. Sizing on bytes is the mistake | **Kusto truncates every query result at 500,000 records and 64 MB**, failing with `E_QUERY_RESULT_SET_TOO_LARGE` rather than paginating. An advertiser export of minute-granularity data crosses it in under a year of one campaign; the fix is `.export`, a `summarize`, or explicitly raising `truncationmaxrecords` |
+| **What it costs you** | The dedup state is yours to operate: 150 M keys in RocksDB, checkpointed to S3, restored on every restart. Restore time is a real recovery number and nobody measures it until an incident | Query timeout defaults to **4 minutes and can be raised only to 1 hour**; memory per query operator tops out at **30 GB per node**; and request concurrency defaults to **cores-per-node × 10**. The 86 B-row table this case warns about is not a storage problem on ADX, it is a per-query memory problem, and the answer is the same pre-aggregation the case argues for |
+
+Both clouds enforce the same discipline from opposite directions: the dimensional explosion has to
+be solved by choosing cuboids, because neither the query engine's memory budget nor the result cap
+will let you compute it at read time. The one thing to say out loud is the serving-layer asymmetry —
+on Azure you name Azure Data Explorer and move on; on AWS you are naming a product you will run.
+
+## In an LLM deployment
+
+Billing-grade counting and a probabilistic model are a bad combination, and the boundary is the
+answer: **the model may generate the query, never the number.** Natural-language reporting
+("clicks for campaign X by country last week") compiles to a KQL or SQL query against the
+pre-aggregated cuboids, and the count that reaches the advertiser comes from the same authoritative
+path as the invoice. Cache the generated query per question shape; the same ten questions are
+asked all day.
+
+Two guards make that safe rather than just nice. **Bound the generated query before you run it** —
+a `query_range` a model wrote over 86 B rows is a denial of service, and this is exactly what the
+30 GB per-operator and 500,000-record caps above exist to stop, arriving as a partial query failure
+rather than as a refusal. Validate the time range, the granularity and the group-by cardinality in
+your own code first. **Show the query.** An advertiser looking at a spend figure must be able to
+see what was summed, because "the model said" is not an answer to a billing dispute.
+
+Where a model earns its place with no correctness risk at all is the **cuboid decision** this case
+says to make from query logs. Clustering a month of query logs to find the four combinations
+actually asked for is a batch job whose output is a configuration change a human approves —
+cheap, reversible, and the single highest-leverage decision on the page.
+
 ## Referenced by
 
 - [Batch vs streaming](../comparisons/batch-vs-streaming.md)
@@ -270,3 +306,10 @@ for dashboard queries (which repeat constantly).
 - [Flink — event time and watermarks](https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/time/)
 - [HyperLogLog paper](https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf)
 - Related: [../03-backend-cases/metrics-monitoring.md](../03-backend-cases/metrics-monitoring.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — 1 MB/s or 1,000 records/s per shard, whichever binds first
+- [AWS — working with Amazon S3 Tables and table buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html) — Iceberg table buckets with automatic maintenance, for the batch recompute layer
+- [Azure — Kusto query limits](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/querylimits) — 500,000-record and 64 MB result truncation with `E_QUERY_RESULT_SET_TOO_LARGE`, 4-minute default query timeout raisable to 1 hour, 30 GB `maxmemoryconsumptionperiterator`, request concurrency of cores-per-node × 10
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — throughput units and partition limits for the ingest tier

@@ -255,6 +255,43 @@ engine.
 - **First thing I'd cut:** raw retention 90 → 30 days for high-volume, low-value events, and
   the real-time path for metrics nobody watches live.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | `/v1/collect` on API Gateway or an ALB → Kinesis Data Streams or MSK → Managed Service for Apache Flink → **S3 Tables** (Iceberg) with Glue Data Catalog; Athena, EMR and Redshift read bronze/silver/gold | Collect endpoint on Container Apps → Event Hubs (Kafka protocol) → Fabric Eventstream / Stream Analytics or Databricks Structured Streaming → Delta or Iceberg in ADLS Gen2; Fabric and Synapse read it |
+| **What you configure** | Shard count or on-demand mode, checkpoint interval (the exactly-once commit boundary), Iceberg partition spec, maintenance settings per table | Throughput units or processing units, partition count, checkpoint interval, `OPTIMIZE`/`VACUUM` schedules |
+| **The default that bites** | On-demand Kinesis "**have 4 MB/s of write … throughput**" to start and scales to 10 GB/s **only in N. Virginia, Oregon and Ireland — 200 MB/s everywhere else.** At 2 M events/s × 1 KB you need ~2 GB/s, so outside those three Regions on-demand mode **cannot carry this pipeline at all** and you are in provisioned mode with 2,000+ shards | Event Hubs Standard is **40 throughput units at 1 MB/s each** — 40 MB/s against a 2 GB/s peak. Premium caps at 16 PUs. This pipeline is a **Dedicated** cluster (1,024 partitions per event hub, 2,000 per CU), which is a different purchase, not a slider |
+| **What it costs you** | The small-file problem is the one place a managed service genuinely removes work: "S3 continuously performs automatic maintenance operations, such as compaction, snapshot management, and unreferenced file removal." The 288,000 files/day this case fears is a table-bucket setting rather than a compaction job you staff | Compaction stays yours. Delta `OPTIMIZE` with Z-ordering, or Iceberg rewrite jobs, on a schedule you own — and the case's central operational claim (small-file management is the heart of a streaming lakehouse) stays literally true |
+| **The seven-day late event** | Kinesis retention is configurable up to **8,760 hours (365 days)**, so replay for late data is a retention setting, not an archive restore | Event Hubs retention is **1 day on Basic, 7 on Standard, 90 on Premium and Dedicated** — the 7-day mobile buffering window sits exactly on the Standard limit, which is the wrong place for a limit to sit |
+
+The two clouds diverge on which half of this pipeline is bought. AWS sells you the *table
+maintenance* and leaves the stream sizing to you; Azure leaves the maintenance to you and makes the
+stream sizing a tier decision you cannot grow into gradually. Either way the 2 M/s peak is a
+capacity purchase that has to be made before the traffic arrives.
+
+## In an LLM deployment
+
+Clickstream is where the training data comes from, and two things change the moment a model is
+downstream of it.
+
+**The dedup key becomes a correctness boundary for a bill, not just for a count.** Silver already
+deduplicates on client-generated `event_id`; a feature pipeline that feeds an embedding or a
+generation must consume silver, never bronze, or every duplicated mobile retry is a second billed
+inference. The case's ±0.1% tolerance for product analytics is not a tolerance here.
+
+**Event-time semantics leak into training.** A 7-day-late mobile event rewrites an old event-time
+partition — which is exactly what Iceberg snapshot isolation is for — but a model trained from that
+partition three days ago saw a different, smaller dataset. Pin training to an **Iceberg snapshot
+id**, not to a date range, and the training set becomes reproducible; without it "retrain on last
+week" is a different dataset every time you run it, and nobody can reproduce a regression.
+
+The volume reframes what is even possible. **50 B events/day is not something you send to a
+model** — at any realistic per-call price that is an absurd number, and the only workable shapes are
+(a) aggregate first and let the model see sessions or summaries, or (b) run a small model in the
+stream for classification and reserve the large one for the tail. Sessionising 50 B events into
+gold and embedding *sessions* is three orders of magnitude fewer calls for most of the signal.
+
 ## Referenced by
 
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
@@ -270,3 +307,10 @@ engine.
 - [The state of streaming to Apache Iceberg (2026)](https://dev.to/alexmercedcoder/the-state-of-streaming-to-apache-iceberg-in-july-2026-every-path-its-latency-and-what-to-do-when-i6p)
 - Repo notes: [../../data%20engineering/AWS/Clickstream%20data%20ingestion/](../../data%20engineering/AWS/Clickstream%20data%20ingestion/)
 - Local book: `DE/Fundamentals/Big Book of Data Engineering.pdf`
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — on-demand starting and maximum throughput by Region, per-shard limits, retention up to 8,760 hours
+- [AWS — working with Amazon S3 Tables and table buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html) — continuous automatic compaction, snapshot management and unreferenced file removal on Iceberg table buckets
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — throughput unit definition, 40 TUs on Standard, 16 PUs on Premium, retention by tier, partitions per event hub and per CU
+- [Azure — common query patterns in Azure Stream Analytics](https://learn.microsoft.com/en-us/azure/stream-analytics/stream-analytics-stream-analytics-query-patterns) — Fabric Eventstream runs the same runtime as Stream Analytics
