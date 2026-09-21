@@ -148,6 +148,42 @@ infrastructure to deliver batch-shaped latency.
 - **dbt + a warehouse on a schedule** — the batch answer that quietly serves the large majority of
   "analytics in real time" requirements at a fraction of the cost.
 
+## On AWS and Azure
+
+The freshness ladder, in services you can provision.
+
+| | AWS | Azure |
+|---|---|---|
+| **Batch** | AWS Glue (Spark), Amazon EMR, Athena over S3 | Azure Databricks, Microsoft Fabric / Synapse Spark, with Data Factory as the scheduler |
+| **Micro-batch** | **AWS Glue streaming ETL** — Spark Structured Streaming against Kinesis, Kafka or MSK | Databricks Structured Streaming with a trigger interval |
+| **True streaming** | **Amazon Managed Service for Apache Flink** — real Flink, event time, watermarks, savepoints | **Azure Stream Analytics** — SQL over streams, sized in streaming units. **No first-party managed Flink**; running Flink means running it yourself |
+| **Kappa's precondition, replay** | Kinesis retention up to **365 days**; MSK tiered storage for a log that outlives broker disk | Event Hubs **7 days Standard, 90 Premium/Dedicated**; Capture archives to Blob/ADLS, which is a file, not a replayable log |
+| **State and recovery** | Flink checkpoints and savepoints, with the state backend and restore time yours to size | Managed entirely. No state backend to tune, and no rescaling procedure to rehearse — which is the whole trade |
+| **Who can debug it** | A Flink job needs a Flink person; a Glue streaming job needs a Spark person | Stream Analytics is a SQL query, which is the honest argument for it and the reason to reach for it before Flink |
+| **The default that bites** | Managed Flink's `ConfigurationType: DEFAULT` pins the checkpoint interval at **60,000 ms** and the minimum pause at **5,000 ms**, and AWS states those values are used "even if they are set to other values ... by setting the values in the application code". Separately, a Glue streaming job left with a blank timeout **restarts itself after 7 days** | **Stream Analytics aggregates in processing time unless you ask it not to.** Arrival time "is used by default"; without a `TIMESTAMP BY` clause you get the irreproducible mode this page calls fatal for anything audited, chosen by writing nothing. Out-of-order tolerance then defaults to **00:00** and late arrival to **5 seconds** — which Microsoft's own guidance calls "likely too small" and suggests starting at 5 minutes |
+
+The ladder maps, but the rung this page recommends stopping at is the one with the least
+first-party support. Micro-batch is a Spark job on either cloud — Glue streaming's **100-second**
+default window, or a Databricks trigger interval — so the step from "a scheduler" to "minutes of
+freshness" costs a cluster on both, which is exactly the decision the page wants named out loud.
+
+## In an LLM deployment
+
+The freshness ladder exists for models too, and here it comes with the price printed on it. **Azure
+OpenAI's Batch API targets a 24-hour turnaround at 50% of global-standard cost**, taking up to
+**100,000 requests per 200 MB input file**; **Bedrock batch inference** runs asynchronously from S3
+to S3. So this page's strongest question — *what decision changes if this is a day old instead of a
+second old?* — now has an answer denominated in money: half.
+
+Classification, enrichment, summarisation and the nightly re-embed belong on the batch side of that
+line; only the answer a user is waiting on belongs on the streaming side. The asymmetry that makes
+the decision architectural rather than operational is that the batch path is **a different endpoint
+with different capabilities**, not merely a slower schedule — Bedrock's batch mode "does not support
+tool calling (function calling) or structured output", and each record "is processed independently
+without multi-turn interaction". A pipeline that leans on tools cannot be moved to batch after the
+fact to halve its bill; it has to have been designed for it. That is a stronger version of the
+Lambda-by-accident warning above: two code paths, and this time the platform enforces the split.
+
 ## Staff-level follow-ups
 
 1. A stakeholder asks for "real-time" dashboards. Give the three questions that determine whether
@@ -183,3 +219,13 @@ infrastructure to deliver batch-shaped latency.
 - [Akidau et al. — The Dataflow Model (VLDB 2015)](https://research.google/pubs/pub43864/)
 - [Apache Flink — event time and checkpointing](https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/time/)
 - [Spark — Structured Streaming programming guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-20):
+
+- [AWS — fault tolerance in Managed Service for Apache Flink](https://docs.aws.amazon.com/managed-flink/latest/java/how-fault.html) — `ConfigurationType: DEFAULT` overrides application code; 60,000 ms / 5,000 ms
+- [AWS — streaming ETL jobs in AWS Glue](https://docs.aws.amazon.com/glue/latest/dg/add-job-streaming.html) — 100-second default window, checkpoints not bookmarks, 7-day restart with a blank timeout
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — 365-day maximum retention
+- [AWS — Bedrock batch inference](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html) — asynchronous S3-to-S3; no tool calling or structured output
+- [Azure — time handling in Stream Analytics](https://learn.microsoft.com/en-us/azure/stream-analytics/stream-analytics-time-handling) — arrival time by default, 00:00 reorder tolerance, 5-second late arrival
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — retention by tier
+- [Azure — global batch with Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/batch) — 24-hour target, 50% of global standard, 100,000 requests per 200 MB file

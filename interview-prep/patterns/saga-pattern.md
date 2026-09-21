@@ -254,10 +254,11 @@ that ordering can be expressed. It becomes a constraint on the *tool surface* in
 exist, which are gated behind a confirmation, which require a token the earlier step returns.
 
 **The durations invert.** Tool calls are milliseconds and the model calls between them are seconds,
-so a five-step agent spends most of its wall-clock inside inference. That is why Step Functions
-**Express's five-minute ceiling** is the wrong home for one and Standard's **one year** is right,
-and why Durable Functions' determinism rule bites immediately rather than eventually: the model's
-output is non-deterministic by construction, so it must be produced inside an **activity** and
+so a 5-step agent spends most of its wall-clock inside inference — five 4-second generations is
+20 seconds of a budget measured in minutes, before a single retry. That is why Step Functions
+**Express's 5-minute ceiling** is the wrong home for one and Standard's **1-year** ceiling is
+right, and why Durable Functions' determinism rule bites immediately rather than eventually: the
+model's output is non-deterministic by construction, so it must be produced inside an **activity** and
 replayed from history. Sample it in the orchestrator and every replay rewrites the plan — the saga
 compensates steps a previous incarnation never took.
 
