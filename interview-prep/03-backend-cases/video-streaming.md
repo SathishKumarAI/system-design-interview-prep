@@ -236,6 +236,41 @@ windows. Say those four differences and you've covered it.
 - **First thing I'd cut:** the highest rendition for content nobody watches at 4K, and
   renditions for the cold tail generated on demand instead of eagerly.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | S3 (source) → AWS Elemental MediaConvert on a queue → S3 (renditions) → MediaPackage for packaging/DRM → CloudFront. Step Functions or your own orchestrator drives the per-video DAG | Blob Storage (source) → **a partner encoder** (Bitmovin, MediaKind or Ravnur, all Azure Marketplace) → Blob → Front Door. Durable Functions drives the DAG |
+| **What you configure** | Queue type (on-demand vs reserved), the ABR ladder as output groups, segment duration, cache policy and TTLs at the edge | Whatever the partner exposes; on Azure the encoding tier is a vendor contract, not a service configuration |
+| **The default that bites** | CloudFront's **150 Gbps and 250,000 requests/second per distribution** are per-distribution defaults. 30 Tbps is **200 distributions' worth of the default quota** before you ask for an increase — the egress number is not just a bill, it is a quota conversation | **Azure Media Services was retired on 30 June 2024.** "Media Services will stop streaming on all your Azure Media Services accounts and your accounts will become read-only for approximately 90 days until they are automatically deleted", and "the creation of new Media Services accounts is blocked in all Azure regions." Azure Media Player was retired the same day |
+| **What it costs you** | The 50 GB maximum cacheable file size means segments, not files — which you were doing anyway; and Origin Shield is the thing that keeps a cold popular title from stampeding the origin | **There is no first-party Azure equivalent for encode, package or DRM.** The answer is a partner product, and Microsoft's own retirement guide says partner solutions "will be available in a more limited set of regions than Media Services." Azure Video Indexer survived the retirement and covers analysis, not delivery |
+
+This is the sharpest "no direct equivalent" in the whole set, and it is worth knowing cold: a video
+pipeline on Azure in 2026 is Blob + Front Door + a third party, and an interviewer who last touched
+this in 2023 will expect you to name a service that no longer exists. On AWS the pipeline is
+first-party end to end, and the design question is still the one this case makes — the CDN
+economics, not the encoder.
+
+## In an LLM deployment
+
+Video is where the model work is *batch and enormous*, and the pipeline this case already describes
+is the right place to put it. Every upload already fans out into six renditions; add transcription,
+translation, chapter segmentation, thumbnail selection and moderation, and you are running five
+models per video on the same GOP-split, spot-instance, priority-queued fabric. The arithmetic is
+brutal in a familiar way: **30,000 hours/day of ingest** means 30,000 hours/day of ASR even at
+faster-than-realtime, and that cost lands next to the 7,500 cores of transcoding rather than
+instead of it.
+
+Two structural consequences. **The transcode DAG becomes the ML DAG** — same orchestrator, same
+retries, same idempotency key (the content hash), and the same rule that a failed stage must not
+block publication, because "processing" with captions pending is a better product than no video.
+And **the derived artefacts are the search index**: transcripts are what make a 44 PB/year video
+library retrievable at all, which is the only place in this design where a model changes what the
+product *is* rather than what it costs.
+
+Nothing about delivery changes. Segments are still bytes on a CDN, and 30 Tbps of egress is
+untouched by any of it.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -250,3 +285,9 @@ windows. Say those four differences and you've covered it.
 - [Netflix Open Connect](https://openconnect.netflix.com/en/)
 - [Netflix — per-title encode optimization](https://netflixtechblog.com/per-title-encode-optimization-7e99442b62a2)
 - Primitives: [networking-and-edge](../02-primitives/networking-and-edge.md), [cost-engineering](../02-primitives/cost-engineering.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — CloudFront quotas](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) — 150 Gbps and 250,000 requests/second per distribution (both adjustable), 50 GB maximum cacheable file size
+- [AWS — CloudFront Origin Shield](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html) — request consolidation at the origin
+- [Azure — Azure Media Services retirement guide](https://learn.microsoft.com/en-us/previous-versions/azure/media-services/latest/azure-media-services-retirement) — 30 June 2024 retirement, read-only then deletion after ~90 days, new account creation blocked in all Regions, partner migration path (Bitmovin, MediaKind, Ravnur), Azure Media Player retired, Video Indexer not retired

@@ -249,6 +249,40 @@ sequenceDiagram
   saves more than any infrastructure change.
 - **First thing I'd cut:** open/click event retention, and SMS as a default channel.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | EventBridge or an ingest API → SQS FIFO per priority tier → renderer → SNS (mobile push), SES (email), End User Messaging (SMS); DynamoDB for `dedup` and `deliveries` | Event Grid or an ingest API → Service Bus queues per priority tier → renderer → Notification Hubs (push), Azure Communication Services (email + SMS); Cosmos DB for `dedup` and `deliveries` |
+| **What you configure** | `MessageDeduplicationId` and `MessageGroupId` on the FIFO queue, visibility timeout, redrive policy to a DLQ, per-provider concurrency via Lambda reserved concurrency | `MessageId` plus `RequiresDuplicateDetection`, the duplicate-detection history window, max delivery count and dead-letter-on-expiry |
+| **The default that bites** | SQS FIFO deduplicates within a **5-minute window**, full stop — not configurable. Your `dedup_key` and a 7-day table are still required; the queue's guarantee covers a retry loop, not a re-run tomorrow. And **"messages within the same message group are always processed one at a time"**, so making `user_id` the group to preserve per-user order caps that user at one in-flight message: priority tiering has to be separate *queues*, never separate groups | The duplicate-detection window **defaults to 10 minutes** (minimum 20 seconds, maximum 7 days) and can only be set at entity creation. A campaign retried the next morning is *not* a duplicate to Service Bus — the 7-day dedup this case's `dedup` table does is yours to own regardless |
+| **What it costs you** | The 14 k/s campaign burst hits FIFO throughput first: **300 TPS unbatched / 3,000 TPS batched** on a normal FIFO queue. High-throughput mode raises it to **70,000 unbatched / 700,000 batched in N. Virginia, Oregon and Ireland but only 2,400 / 24,000 in most other Regions** — a 30× regional difference in the same setting. SES out of the sandbox is 200 emails/24 h at 1/s until you request an increase | SMS is capped **per number**: toll-free **200 messages/minute**, short code **6,000/minute**, alphanumeric sender ID **600/minute per resource**. Email on a *custom* verified domain defaults to **30 per minute and 100 per hour per subscription**; on an Azure-managed domain it is **5 per minute, 10 per hour, and not raisable** |
+
+The 100 M campaign does not fit in either cloud's defaults, and that is the point: the system's job
+is exactly the burst absorption this case describes, because the managed egress is a narrow, quota'd
+pipe on both sides. Azure's per-number SMS ceilings make the number pool a capacity unit, which is
+the one thing the design has to model that a queue depth chart will never show you.
+
+## In an LLM deployment
+
+Generated notification copy moves an expensive, non-idempotent step *before* the send, and that is
+the whole change. The dedup key must be computed from the trigger — `order_shipped:A123:u1`,
+exactly as this case specifies — and never from the rendered text, because two runs of the same
+model on the same input can differ and a hash of the output would make every retry a new
+notification. Set `temperature: 0` and you narrow the gap; you do not close it.
+
+Latency and cost both move the work off the send path. A transactional notification has a 10-second
+p99 budget end to end, and a generation is seconds of it, so personalised copy is rendered ahead of
+time into the `notifications` row and the send path only reads. For the campaign that means 100 M
+generations, not 100 M template fills: at Azure OpenAI's Standard ratio of **10 RPM per 1,000 TPM**
+on current `gpt-chat-latest` versions, a campaign's generation phase is quota-bound for hours
+before the SMS pipe ever becomes the constraint — and unlike the SMS pipe, that one is billed per
+token whether or not the user opens it.
+
+One rule survives unchanged and gets sharper: **never let the model decide whether to send.** An
+irreversible side effect behind a non-deterministic gate is how you send 100 M people something
+twice.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -260,3 +294,13 @@ sequenceDiagram
 - Local book: Alex Xu vol. 1 ch.10 (notification system)
 - [AWS Builders' Library — Avoiding fallback in distributed systems](https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/)
 - Primitives: [messaging-and-streams](../02-primitives/messaging-and-streams.md), [transactions-and-idempotency](../02-primitives/transactions-and-idempotency.md), [reliability-patterns](../02-primitives/reliability-patterns.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Amazon SQS endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/sqs-service.html) — 300/3,000 TPS FIFO, high-throughput FIFO regional figures, 256 KB message size, 120,000 in-flight
+- [AWS — using the message deduplication ID in Amazon SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html) — 5-minute deduplication window
+- [AWS — using the message group ID with SQS FIFO queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html) — one message at a time per group
+- [AWS — service quotas in Amazon SES](https://docs.aws.amazon.com/ses/latest/dg/quotas.html) — sandbox 200 emails per 24 hours at 1/s, message size and recipient limits
+- [Azure — Service Bus duplicate detection](https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection) — 10-minute default window, 20 s minimum, 7-day maximum; unsupported on Basic
+- [Azure — service limits for Azure Communication Services](https://learn.microsoft.com/en-us/azure/communication-services/concepts/service-limits) — SMS per-number rates, email rates for custom vs Azure-managed domains
+- [Azure OpenAI quotas and limits](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits) — RPM-per-1,000-TPM ratios on Standard deployments

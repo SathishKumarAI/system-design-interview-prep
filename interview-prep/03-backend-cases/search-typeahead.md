@@ -236,6 +236,39 @@ sequenceDiagram
 - **First thing I'd cut:** replica count on the cold index tier, and the re-rank candidate
   set (200 → 100).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **Search:** OpenSearch Service, document-partitioned, fronted by your query service. **Typeahead:** a precomputed artefact in ElastiCache or in-process, behind CloudFront. **Indexing:** Kinesis/MSK → a transform → bulk API | **Search:** Azure AI Search with an indexer or the push API. **Typeahead:** its built-in **Suggester** plus autocomplete, or the same precomputed artefact in Azure Managed Redis. **Indexing:** Event Hubs → Functions → push API |
+| **What you configure** | Shards per index, replicas, instance family, refresh interval, `cluster.max_shards_per_node` | Replicas and partitions (search units), the single **suggester per index**, analyzers per language, indexer schedule |
+| **The default that bites** | The shard ceiling moved and stopped being tunable: **1,000 shards per node on Elasticsearch 7.x and OpenSearch up to 2.15, changeable via `cluster.max_shards_per_node` — but on OpenSearch 2.17 and above it is "1000 per every 16 GB of heap to a max of 4000" and "the default limit can't be changed."** A 1 B-document index planned around the old knob gets a different answer after an upgrade. Heap is also capped: **50% of memory, maximum 32 GiB** | **Maximum one suggester per index**, and **the minimum indexer schedule is 5 minutes** — so "index freshness < 60 s" is unreachable with a scheduled indexer and requires the push API. In the shared execution environment an indexer run is also capped at **2 hours** |
+| **What it costs you** | Shard size is capped at **65 GiB** on most instance families with Multi-AZ standby, so a 400 GB index is ≥ 7 shards before replicas, and node counts are bounded per instance family (**default 80 nodes**, up to 400–1002 on modern families) | Capacity is bought in fixed blocks, not scaled: **S1 is 12 partitions × 160 GB and 12 replicas, capped at 36 search units total**, with a **maximum 50 indexes**. There is no autoscale — you resize a service. Query throttling is "varies by SU count and query complexity", which is not a number you can plan against |
+
+The honest split: OpenSearch gives you the knobs this case is about (shards, replicas, refresh) and
+makes you own them; Azure AI Search hides them behind search units and takes typeahead off your
+plate with a suggester you did not build. The 100 k qps typeahead target fits neither product's
+search path — it fits the precomputed, memory-resident artefact this case already recommends, on
+both clouds.
+
+## In an LLM deployment
+
+Two things join the index and one thing leaves it. **Vectors join:** hybrid retrieval means the
+same documents carry embeddings, and the vector index is memory-resident and separately quota'd —
+Azure AI Search enforces a vector quota **per partition** (35 GB per partition on a current S1,
+so 6 partitions is 210 GB) as a hard limit, and "further indexing attempts once the limit is
+exceeded result in failure." **A re-ranker joins** the tail of the pipeline, which is the one place
+a cross-encoder or an LLM earns its latency, because it only ever sees the top ~50. **The trie
+does not leave**: for a 100 ms p99 on every keystroke, no model is fast enough, and typeahead stays
+a precomputed artefact — a genuinely useful thing to say out loud, because it is the obvious place
+an interviewer expects you to reach for one.
+
+The indexing pipeline gets the expensive new stage: every document change now means an embedding
+call, and the "80% of the system is the indexing pipeline" claim gets more true and more billed.
+At 10 M document changes/day that is 10 M embeddings/day forever, plus a **full re-embed of 1 B
+documents whenever the embedding model version changes** — which is the migration nobody budgets
+and the reason `(content_hash, model_version)` belongs in the key from day one.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -250,3 +283,8 @@ sequenceDiagram
 - [Elasticsearch — near real-time search](https://www.elastic.co/guide/en/elasticsearch/reference/current/near-real-time.html)
 - [Lucene FST / suggesters](https://lucene.apache.org/)
 - Primitives: [storage-and-databases](../02-primitives/storage-and-databases.md), [messaging-and-streams](../02-primitives/messaging-and-streams.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Amazon OpenSearch Service quotas](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/limits.html) — shard-count quotas by engine version, 65 GiB maximum shard size, node limits by instance family, Java heap capped at 50% of memory up to 32 GiB
+- [Azure AI Search — service limits for tiers and SKUs](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — partitions, replicas and the 36-SU cap, 160 GB partitions and 50 indexes on S1, one suggester per index, 5-minute minimum indexer schedule, 2-hour indexer run, per-partition vector quota and hard-limit behaviour

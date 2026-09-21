@@ -240,6 +240,26 @@ everywhere without a consistency story.
 (410), a malware/phishing check on creation (async, with a quarantine state), and rate limits
 per account. Interviewers notice when you bring this up unasked.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | CloudFront + a CloudFront Function for the redirect; DynamoDB for `urls`; Lambda or ECS behind API Gateway for creation; Kinesis → S3 → Athena for clicks | Front Door + Functions for the redirect; Cosmos DB for NoSQL (or Table storage) for `urls`; Functions behind APIM for creation; Event Hubs → Blob → Fabric/Synapse for clicks |
+| **What you configure** | Cache policy and TTL on the 302, `ConsistentRead` on the lookup (leave it off — this is the textbook eventually-consistent read), DynamoDB on-demand vs provisioned | Front Door caching rules, Cosmos consistency level (**Session by default**; Eventual is enough here), partition key `/code` |
+| **The default that bites** | A CloudFront Function is capped at **10 KB of code and 2 MB of memory**, and "restricts access to the network, file system, environment variables, and timers" — so the edge can rewrite and redirect but **cannot look a code up**. Either the mapping lives in a CloudFront KeyValueStore (**5 MB per store**, 1 KB per value) or the request goes to the origin | Cosmos DB's per-request consistency override **can only relax, never strengthen** — fine here, but it means read-your-writes on creation depends on the account-level default being Session, which it is. Don't set the account to Eventual to save RUs and then wonder why a creator gets a 404 |
+| **What it costs you** | 350 k redirects/s against a **250,000 requests/second per distribution** default (adjustable) and **150 Gbps** per distribution: peak traffic needs a quota increase or a second distribution, which nobody plans for on the case that "looks trivial" | A single Cosmos logical partition is **10,000 RU/s**, so the hot-key tail this case warns about is capped per code, not per account — a viral link is a hot logical partition and the answer is the same in-process LRU the design already has |
+
+The whole design collapses into "cache and CDN" on both clouds, exactly as the case argues — and
+then the edge turns out to be the one place that cannot do a key lookup for free. That constraint,
+not the database, is what decides whether the 302 is served at the edge or at the origin.
+
+## In an LLM deployment
+
+**It does not meaningfully change.** A URL shortener serving a model-backed product is still a
+point lookup behind a CDN. The one thing worth saying: if short codes are ever *generated* by a
+model — vanity aliases, say — the uniqueness check stays in the database with a conditional write,
+because a model that has seen the existing codes is not an index and will collide.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -251,3 +271,11 @@ per account. Interviewers notice when you bring this up unasked.
 - Local book: Alex Xu, *System Design Interview* vol. 1 ch.8 (not in the local library — vol. 2 is at `AI/ML-Foundations/`)
 - Vendor: `10-resources/vendor/system-design-primer/solutions/system_design/pastebin/`
 - Primitives: [caching](../02-primitives/caching.md), [storage](../02-primitives/storage-and-databases.md), [networking](../02-primitives/networking-and-edge.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — restrictions on CloudFront Functions](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-function-restrictions.html) — no network, file system, environment variable or timer access
+- [AWS — CloudFront quotas](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) — 10 KB function size, 2 MB function memory, 5 MB key value store, 250,000 requests/s and 150 Gbps per distribution
+- [Azure — Cosmos DB consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — Session is the account default
+- [Azure — manage consistency in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency) — per-request overrides can only relax
+- [Azure — partitioning and horizontal scaling in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) — 10,000 RU/s per logical partition

@@ -241,6 +241,40 @@ sequenceDiagram
 - **First thing I'd cut:** version history 30 → 7 days for free tiers; cold-tier anything
   untouched for 90 days.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **Data plane:** S3 with presigned URLs, fronted by CloudFront. **Metadata plane:** Aurora or DynamoDB for `files`/`versions`/`chunks`, a per-namespace `changelog`, and an API tier issuing the presigns | **Data plane:** Blob Storage with SAS URLs, fronted by Front Door. **Metadata plane:** Azure SQL / Cosmos DB for the same tables, same changelog |
+| **What you configure** | Multipart part size, prefix layout (content-addressed hashes spread perfectly by construction), storage class transitions, `x-amz-checksum-*` on upload | Block size on `Put Block`, blob naming (see below), access-tier lifecycle rules, `Content-MD5` on upload |
+| **The default that bites** | The **3,500 PUT / 5,500 GET per second per partitioned prefix** limit is per *prefix*, and S3 scales to a new rate **"gradually and not instantaneously" — you will see 503 (Slow Down) while it does.** A dedup-driven upload burst against a freshly created prefix is throttled on the way up, which reads as a client bug | Blob Storage's partition key **is the account + container + blob name concatenated**, so "sequential or append-only naming schemes can concentrate traffic on a single partition" and you get 503/500 **before the account approaches its documented limits**. Content-addressed chunk names are accidentally the right answer; a `{namespace}/{seq}` changelog blob is accidentally the wrong one |
+| **What it costs you** | Multipart is **10,000 parts, 5 MiB–5 GiB each, 48.8 TiB maximum object** — a 50 GB file is comfortable, but a chunk size chosen for dedup (4 MB) is *below* the 5 MiB part minimum, so chunking for dedup and parting for upload are two different splits | A storage account defaults to **5 PiB capacity, 40,000 requests/s and 60 Gbps ingress** in the larger Regions (**20,000/s and 25 Gbps elsewhere**), all raisable by support request. At 10 EB logical, this design is thousands of storage accounts, and the account becomes a sharding unit with its own directory |
+
+The two-plane split this case insists on is enforced by the platform: neither object store will hold
+your metadata at these rates, and neither metadata store will hold your bytes. What changes between
+clouds is where the sharding unit lives — an S3 *prefix* on AWS, a whole *storage account* on Azure.
+
+## In an LLM deployment
+
+Sync a corpus and you have signed up for a second, derived plane: every committed version has to be
+chunked, embedded and upserted into a vector index, and that pipeline has its own failure modes and
+its own bill. The delta-sync design pays off enormously here — **only changed chunks are
+re-embedded**, and content-addressed chunk hashes make the embedding cache trivially correct, since
+the same bytes under the same model version always produce the same vector. Key the vector on
+`(content_hash, model_version)` and re-embedding becomes idempotent for free.
+
+The staleness that results is not a consistency-level problem and cannot be fixed with one. A
+document commits, the row is correct, and retrieval keeps returning the old text because the
+*vector* is still the old vector. Azure AI Search's indexer has a **minimum schedule interval of
+5 minutes** and a **2-hour maximum run** in the shared execution environment, so a scheduled
+refresh has a staleness floor three orders of magnitude above the 5-second device-to-device
+notification this case promises. If "I uploaded it and it must be findable now" is a requirement,
+the commit path pushes to the index synchronously; a schedule will never get there.
+
+And permissions get harder, not easier. The `shares` table is enforced per request today; a
+retrieval system that has already embedded everything must filter **at query time by the caller's
+ACL**, or the index becomes a way to read documents you cannot open.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -255,3 +289,12 @@ sequenceDiagram
 - Repo note: [../../basic/advanced/designs%20%28needs%20update%20as%20we%20go%29/Video%20Stream/how%20we've%20scaled%20Dropbox.md](../../basic/advanced/designs%20%28needs%20update%20as%20we%20go%29/Video%20Stream/how%20we've%20scaled%20Dropbox.md)
 - [Dropbox — Inside the Magic Pocket](https://dropbox.tech/infrastructure/inside-the-magic-pocket)
 - Primitives: [storage-and-databases](../02-primitives/storage-and-databases.md), [cost-engineering](../02-primitives/cost-engineering.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — best practices design patterns: optimizing S3 performance](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html) — 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD per partitioned prefix per second; gradual scaling and 503 (Slow Down)
+- [AWS — Amazon S3 multipart upload limits](https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html) — 48.8 TiB object, 10,000 parts, 5 MiB–5 GiB part size
+- [Azure — Blob Storage scalability and performance targets](https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets) — 50,000 blocks × 4,000 MiB, hot-partition behaviour and the account+container+blob partition key
+- [Azure — scalability targets for standard storage accounts](https://learn.microsoft.com/en-us/azure/storage/common/scalability-targets-standard-account) — 5 PiB capacity, 40,000/20,000 requests per second, 60/25 Gbps ingress
+- [Azure AI Search — schedule indexer execution](https://learn.microsoft.com/en-us/azure/search/search-howto-schedule-indexers) — 5-minute minimum interval
+- [Azure AI Search — service limits](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — 2-hour maximum indexer run in the public execution environment

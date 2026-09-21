@@ -230,6 +230,38 @@ fail closed. Paying customer's normal traffic: fail open. Say that you'd tag eac
   abusive load before it reaches expensive services.
 - **First thing I'd cut:** central sync frequency (1 s → 5 s), which trades accuracy for cost.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | CloudFront + WAF rate-based rules at the edge; API Gateway usage plans and account throttle in the middle; your own token bucket over ElastiCache for anything business-shaped | Front Door + WAF custom rate-limit rules at the edge; API Management `rate-limit-by-key` in the middle; your own bucket over Azure Managed Redis |
+| **What you configure** | Evaluation window (60/120/300/600 s, **default 300**), rate limit (minimum 10), aggregation key (IP, header, custom keys); API Gateway account throttle **10,000 RPS with a 5,000 burst bucket** | `calls` and `renewal-period` (**maximum 300 seconds**) with an arbitrary `counter-key` expression; Front Door WAF threshold with a window of **one minute or five minutes only** |
+| **The default that bites** | AWS WAF "is not intended for precise request-rate limiting": it estimates the rate, so **"it's possible for requests to be coming in at too high a rate for up to several minutes before AWS WAF detects and rate limits them."** Worse, editing any rate setting **resets the counts and pauses limiting for up to a minute** — tuning a limit under attack removes it | APIM "tracks calls independently at each gateway where it is applied… It doesn't aggregate call data across the entire instance." A multi-region APIM deployment therefore enforces N × your limit, silently. The docs say plainly: **"rate limiting is never completely accurate"** |
+| **What it costs you** | Nothing global. Every managed option is per-edge or per-account, so the "global budget" half of this design is still a Redis cluster you run, and the hot key is still yours | Front Door counts per edge server: **"for a low threshold (for example, less than about 200 requests per minute), you might see some requests above the threshold get through."** It is also a *fixed* window — once breached, all matching traffic is blocked for the remainder, so a 5-minute window is a 5-minute ban |
+
+This is the case where the managed answer is weakest, and naming why is the point: both clouds give
+you an approximate, edge-local limiter tuned for volumetric abuse, and neither gives you a global
+counter. That is deliberate — a globally exact limiter is a globally shared bottleneck — and it is
+the same trade this case makes in §Deep dive B, arriving as a product decision instead of yours.
+
+## In an LLM deployment
+
+The unit stops being the request. A model endpoint's real budget is **tokens per minute**, and both
+clouds enforce it that way: Azure OpenAI Standard deployments allocate TPM with a fixed
+requests-per-minute ratio bolted on — **10 RPM per 1,000 TPM** for `gpt-chat-latest` versions
+`2026-05-05` through `2026-06-24`, **1 RPM per 1,000 TPM** for `2026-08-06` — so the same quota
+supports a tenth as many calls depending on a model *version* you did not choose. Amazon Bedrock
+meters on token usage too, and notes that "some models use tokens at a higher rate."
+
+Three consequences for the design on this page. **The cost is not known at admission.** A request's
+token count is only known after generation, so the token bucket has to be debited on an *estimate*
+at entry and reconciled on completion — which means a limiter that can go negative, and a policy
+for what happens when it does. **A single request can exhaust a window.** One 100 k-token prompt is
+worth ten thousand ordinary API calls, so a per-request limit is not a limit at all; cap input
+tokens as a separate rule. **Fail-open is the wrong default here.** The case's `on_error:
+fail_open` is right when the downstream is cheap; when a breach means billed GPU-seconds, an
+unavailable limiter should fail *closed*, and that flip is the one line worth saying out loud.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -246,3 +278,13 @@ fail closed. Paying customer's normal traffic: fail open. Say that you'd tag eac
 - [Stripe — Scaling your API with rate limiters](https://stripe.com/blog/rate-limiters)
 - [Cloudflare — How we built rate limiting capable of scaling to millions of domains](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/)
 - Primitives: [reliability-patterns](../02-primitives/reliability-patterns.md), [caching](../02-primitives/caching.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — rate-based rule high-level settings](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html) — evaluation windows 60/120/300/600 s with 300 default, minimum limit 10
+- [AWS — rate-based rule caveats](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-caveats.html) — estimation, multi-minute detection delay, counts reset on a settings change
+- [AWS — API Gateway quotas](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html) — 10,000 RPS account throttle with a 5,000-request burst bucket
+- [Azure — `rate-limit-by-key` policy reference](https://learn.microsoft.com/en-us/azure/api-management/rate-limit-by-key-policy) — 300-second maximum renewal period; counters are per gateway, never aggregated; accuracy caveat
+- [Azure — WAF rate limiting for Azure Front Door](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit) — one- or five-minute windows, per-edge counters, fixed-window blocking
+- [Azure OpenAI quotas and limits](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits) — TPM allocation and RPM-per-1,000-TPM ratios
+- [AWS — quotas for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html) — inference controlled by token-usage quotas

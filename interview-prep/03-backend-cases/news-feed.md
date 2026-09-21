@@ -250,6 +250,41 @@ fresh ones. Details in [../06-ml-cases/feed-ranking.md](../06-ml-cases/feed-rank
   post storage is noise. Active-user-only fanout is the biggest single saving.
 - **First thing I'd cut:** feed depth 800 → 300 (most users never scroll past 50).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | ALB or API Gateway → ECS/EKS; `posts` + `followers` in DynamoDB; `post_created` onto Kinesis Data Streams; fan-out workers `ZADD` into ElastiCache; media via CloudFront | Front Door → AKS/Container Apps; `posts` + `followers` in Cosmos DB for NoSQL; `post_created` onto Event Hubs; fan-out workers into Azure Managed Redis; media via Front Door |
+| **What you configure** | Shard count on the fan-out stream, DynamoDB partition-key design, Redis `maxmemory-policy` and cluster mode | Event Hubs partition count and throughput units, Cosmos partition key, Redis clustering policy and SKU |
+| **The default that bites** | **One DynamoDB partition is capped at 1,000 write units/s and 3,000 read units/s.** The celebrity's `followers` partition is exactly this case's hot shard, and adaptive capacity does not lift a single partition above it — the fix is the same write-sharding you would do by hand | **Azure Cache for Redis "announced its retirement timeline for all SKUs"**; Microsoft's guidance is to move to Azure Managed Redis. The feed cache on Azure is a migration decision before it is a sizing one |
+| **What it costs you** | 700 k feed writes/s needs ~700 Kinesis shards at 1,000 records/s each. The default shard quota is **20,000 per account** only in N. Virginia, Oregon and Ireland — **1,000 or 6,000 in every other Region**, so outside those three the fan-out topic alone can consume the Region's quota | Event Hubs Standard is fixed at **32 partitions per event hub and 40 TUs** (1 TU = 1 MB/s *or* 1,000 events/s), i.e. 40 MB/s — celebrity fan-out needs Premium (200 partitions per PU, 16 PUs max) or Dedicated. And the 2.4 TB feed cache exceeds every generally available Azure Managed Redis size: **350 GB is the largest GA in-memory SKU**, everything above it is in preview |
+
+Both clouds make the hybrid mandatory rather than optional. The push path is bounded by a
+per-partition write ceiling on the store *and* a per-shard record ceiling on the stream, so the
+celebrity tier is not a refinement you add later — it is the only way the numbers fit.
+
+## In an LLM deployment
+
+Only the ranker changes, and it changes the whole latency budget. The case allows ~10 ms to rank a
+few hundred candidates; a cross-encoder or an LLM re-ranker is 50–500 ms for a handful, so the
+model can only ever see the top ~20 after a cheap first-pass scorer. That is the standard
+retrieve-then-rerank split, and it is forced by arithmetic, not taste: at 150 k feed reads/s, one
+model call per read is 150 k inferences/s.
+
+The quota is what actually stops you. Azure OpenAI Standard deployments allocate throughput as
+tokens per minute with a fixed requests-per-minute ratio attached — for `gpt-chat-latest` versions
+`2026-05-05` through `2026-06-24` it is **10 RPM per 1,000 TPM**, and version `2026-08-06` is
+**1 RPM per 1,000 TPM** — so a feed that needs many small ranking calls burns its RPM long before
+its TPM, and the fix is a Provisioned Throughput deployment rather than a bigger token quota.
+Amazon Bedrock splits quotas the same way, per model and per endpoint, and tracks the
+`bedrock-runtime` and `bedrock-mantle` endpoints **against separate quotas even for the same
+underlying model**.
+
+The other change is the cache. A ranked feed cached in Redis is a *model output* cached in Redis,
+so a model version bump invalidates 2.4 TB at once — the invalidation storm from
+[cache-failure-modes](../fundamentals/cache-failure-modes.md), triggered on purpose by a deploy.
+Version the key namespace with the model version and let the old generation age out.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -270,3 +305,13 @@ fresh ones. Details in [../06-ml-cases/feed-ranking.md](../06-ml-cases/feed-rank
 - Vendor: `10-resources/vendor/awesome-scalability/README.md` — feed architectures
 - [Twitter — the infrastructure behind Timelines](https://blog.twitter.com/engineering/en_us/topics/infrastructure)
 - Primitives: [caching](../02-primitives/caching.md), [messaging](../02-primitives/messaging-and-streams.md), [replication-and-partitioning](../02-primitives/replication-and-partitioning.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — best practices for partition keys in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html) — 3,000 read units/s and 1,000 write units/s per partition
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — 1 MB/s or 1,000 records/s per shard; regional shard quotas
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — throughput unit definition, 32 partitions and 40 TUs on Standard, 200 partitions per PU on Premium
+- [Azure — What is Azure Cache for Redis?](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) — retirement announced for all SKUs
+- [Azure — What is Azure Managed Redis?](https://learn.microsoft.com/en-us/azure/redis/overview) — tier sizes; in-memory tiers above 350 GB are in preview
+- [Azure OpenAI quotas and limits](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits) — RPM-per-1,000-TPM ratios
+- [AWS — quotas for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html) — separate quotas per inference endpoint

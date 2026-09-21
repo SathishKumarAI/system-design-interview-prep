@@ -243,6 +243,40 @@ sequenceDiagram
 - **First thing I'd cut:** raw retention 15 → 7 days, and default scrape interval 10 s → 30 s
   (3x saving across the board, and almost nobody needs 10-second resolution beyond a day).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | ADOT collectors → Amazon Managed Service for Prometheus (remote-write); Amazon Managed Grafana for dashboards; alert rules and Alertmanager inside the AMP workspace | Azure Monitor agent / managed Prometheus scrape → an **Azure Monitor workspace**; Azure Managed Grafana for dashboards; Prometheus rule groups on the managed Ruler |
+| **What you configure** | Workspace active-series and ingestion-rate quotas, `labelset_limits`, rule groups and evaluation interval (**30 s minimum**, adjustable) | Data collection rules (scrape config), rule groups and evaluation interval (**1 minute to 24 hours**, default 1 minute) |
+| **The default that bites** | Samples **older than 1 hour are refused**, and out-of-order samples get a window that **defaults to 60 seconds** (configurable to 600). A collector that buffers through an outage and replays loses everything past the hour — the "lossless under normal load" requirement has a hard edge | **20 rules per rule group, and that limit cannot be increased.** Ten thousand alert rules means 500 rule groups, which is exactly the **500 rule groups per Azure Monitor workspace** default. This case's rule count sits precisely on both ceilings at once |
+| **What it costs you** | The cardinality story has an actual number: **50,000,000 active series per workspace by default**, adjustable to a documented **maximum of 1.5 billion**, with ingestion pinned to 1/30 of it (up to 1,666,666 samples/s). Capacity also auto-scales, and **throttles if you more than double your 30-minute baseline** — a bad deploy that adds a label is throttled, not absorbed | **1,000,000 active time series per Azure Monitor workspace** (increase on request) — **fifty times smaller than AWS's default**, and this case's 100 M series needs a hundred workspaces or a hundred-fold increase. Queries are also capped at a **32-day time range**, which makes the 13-month retention unqueryable in one span |
+
+The honest read: this case's 100 M series is above the default on both clouds and above Azure's
+documented per-workspace shape by two orders of magnitude. Cardinality is not a thing you monitor
+here, it is the thing the platform prices and partitions on — and the 50 M vs 1 M default gap is
+the single biggest architectural difference between the two.
+
+## In an LLM deployment
+
+The label that kills you changes identity but not behaviour. Nobody adds `user_id` any more; they
+add `model_version`, `prompt_template_id`, `tenant` and `finish_reason`, and the product of those
+four is the same cardinality explosion with a respectable name. Four labels at 20 × 50 × 500 × 5
+values is 2.5 M series **per metric**, which on Azure's 1 M-series workspace default is one metric.
+
+Two measurements are genuinely new and neither is a counter. **Token counts are a distribution**,
+not a rate: input and output tokens are wildly skewed, and a mean tokens-per-request is useless
+where a p99 is 100× the median — histograms, and AMP caps a native histogram at **200 buckets**,
+reducing resolution past that. **Quality is not observable from the serving path at all.** A
+model that starts answering wrongly emits perfect latency, perfect error rate and perfect
+saturation; see [ml-monitoring-and-eval](../06-ml-cases/ml-monitoring-and-eval.md) for the system
+that catches it, because this one structurally cannot.
+
+The alerting rule of thumb inverts too. Metrics here are cheap relative to the workload — a
+GPU-hour dwarfs a million samples — so the instinct to trim cardinality for cost is usually wrong,
+and the instinct to trim it because a *single* bad label can 100× your series count overnight is
+right.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -261,3 +295,9 @@ sequenceDiagram
 - [Prometheus — storage and TSDB design](https://prometheus.io/docs/prometheus/latest/storage/)
 - Local book: `DevOps/Observability/Observability with Grafana ...pdf`
 - Primitives: [observability-and-delivery](../02-primitives/observability-and-delivery.md), [storage-and-databases](../02-primitives/storage-and-databases.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Amazon Managed Service for Prometheus service quotas](https://docs.aws.amazon.com/prometheus/latest/userguide/AMP_quotas.html) — 50 M default active series and 1.5 B maximum, ingestion rate 1/30 of active series, 150 labels per series, 30 s minimum rule interval, samples older than 1 hour refused, 60 s default out-of-order window, 200 native-histogram buckets, auto-scaling and throttling behaviour
+- [Azure — Azure Monitor service limits](https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/service-limits) — 1,000,000 active time series and 1,000,000 events/minute per Azure Monitor workspace, 500 rule groups, 20 rules per rule group (not increasable), 1 min–24 h evaluation interval, 32-day query time range, 18-month retention
+- [Azure — overview of Azure Monitor with Prometheus](https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/prometheus-metrics-overview) — the Azure Monitor workspace as the Prometheus store

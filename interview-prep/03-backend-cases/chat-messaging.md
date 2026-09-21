@@ -265,6 +265,40 @@ is recoverable from the log; a lost message is not.
 encrypted copy per recipient device (fanout cost × devices), and you lose server-side search,
 ranking, and spam classification. That trade — not the crypto — is the interview answer.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | API Gateway WebSocket API → Lambda or ECS; `messages` in Keyspaces or DynamoDB; DynamoDB for the connection registry; SQS/SNS for delivery fan-out; S3 for media | Azure Web PubSub (or SignalR Service) → AKS/Container Apps; `messages` in Cosmos DB for NoSQL; Service Bus for delivery fan-out; Blob Storage for media |
+| **What you configure** | Route selection expression, `@connections` callback URL, connection-registry TTL, per-conversation sequence via a DynamoDB atomic counter | Hubs and groups (a group *is* a conversation), event handler vs `sendToGroup` mode, Cosmos partition key on `conversation_id` |
+| **The default that bites** | **A WebSocket connection is terminated at 7,200 seconds, and that quota cannot be increased.** Every client reconnects at least every two hours whether or not anything is wrong, so the reconnect storm this case worries about is not an incident — it is the steady state. Idle timeout is a separate 600 s, also fixed | A Web PubSub frame is capped at **1 MB**, and the service **stores no customer data** — history, receipts and catch-up are entirely yours to build. There is no "since_seq" the platform can replay |
+| **What it costs you** | 100 M concurrent connections against a **500 new connections/second per account per Region** ceiling (adjustable, burst also 500): at 500/s a cold start of the whole fleet takes **over 55 hours**. Frames are capped at 32 KB and messages at 128 KB | Cosmos DB caps a logical partition at **20 GB** and a physical partition at **10,000 RU/s**. Partitioning by `conversation_id` — which this case argues for on ordering grounds — makes a long-lived busy channel hit the 20 GB wall; hierarchical partition keys (`conversation_id`/`month`) are the documented escape |
+
+The reconnect arithmetic is the whole operational story on AWS: with a fixed two-hour connection
+life and a default 500/s admission rate, the sustainable steady state is 500 × 7,200 = **3.6 M
+connections**. Past that the managed WebSocket tier is not the answer and you are back to NLB plus
+your own connection servers — which is what every system this case names actually runs.
+
+## In an LLM deployment
+
+Chat-with-a-model looks like this system and is not. Two things invert. First, the fan-out
+disappears: a conversation has one human and one assistant, so the 50-recipient delivery
+amplification is replaced by a single **streaming** response, and the connection is now held open
+for the length of a generation rather than the length of a session. Second, the per-conversation
+sequence number stops being cheap — each turn resends the whole history as the prompt, so a
+20-turn conversation at 500 tokens/turn is a **10,000-token prefill on every message**, and the
+transcript is not a log you append to, it is an input you re-pay for.
+
+That is what makes prefix caching the load-bearing optimisation rather than a nicety. vLLM's
+automatic prefix caching keeps the KV blocks for the shared prefix so turn *n+1* only prefills the
+new tokens; provider-side caching does the same with a **5-minute sliding TTL** (a 1-hour option
+exists), which is roughly a human's think-time — a user who steps away for a coffee pays full
+prefill on their next message.
+
+The API Gateway limits above then bite in a new place: **128 KB per message** is comfortably under
+a long context window, so a client that sends its own transcript back, rather than a conversation
+id the server expands, hits a transport limit before a model limit. Send the id.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -282,3 +316,12 @@ ranking, and spam classification. That trade — not the crypto — is the inter
 - [Discord — Maintaining performance in a distributed presence system](https://discord.com/blog/)
 - Vendor: `10-resources/vendor/awesome-scalability/README.md` — messaging section
 - Primitives: [networking-and-edge](../02-primitives/networking-and-edge.md), [transactions-and-idempotency](../02-primitives/transactions-and-idempotency.md), [replication-and-partitioning](../02-primitives/replication-and-partitioning.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — API Gateway endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/apigateway.html) — WebSocket connection duration 7,200 s (not adjustable), idle timeout 600 s, 32 KB frame, 128 KB message payload, 500 new connections/s per account per Region
+- [Azure — Web PubSub service internals](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/concept-service-internals) — 1 MB maximum message size, hubs and groups, `sendToGroup` mode
+- [Azure — Web PubSub FAQ](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/resource-faq) — the service stores no customer data
+- [Azure — partitioning and horizontal scaling in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) — 20 GB per logical partition, 10,000 RU/s per physical partition, hierarchical partition keys
+- [vLLM — automatic prefix caching](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html)
+- [Anthropic — prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching) — 5-minute sliding TTL, 1-hour option

@@ -271,6 +271,42 @@ idempotent.
   shows you understand what the system is *for*.
 - **First thing I'd cut:** nothing on the correctness path. Cut analytics retention instead.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | API Gateway → ECS/Lambda; `ledger_entries` and `idempotency_keys` in Aurora PostgreSQL; Step Functions for the payout saga; EventBridge + SQS for PSP webhooks; S3 + Athena for settlement-file reconciliation | APIM → Container Apps; the same tables in Azure SQL Database, **with ledger tables**; Durable Functions or Logic Apps for the saga; Event Grid + Service Bus for webhooks; Blob + Fabric for reconciliation |
+| **What you configure** | A `UNIQUE` constraint on `idempotency_key` and `SERIALIZABLE`/`REPEATABLE READ` where balances are computed; saga timeouts and compensations as Step Functions states | Append-only or updatable **ledger tables** per table, and automatic digest publication to immutable Blob Storage or Azure Confidential Ledger |
+| **The tamper-evidence** | Yours to build: append-only by convention, enforced by permissions and review. Nothing in the managed store stops a privileged user rewriting a row | **Built in.** Ledger tables hash modified rows into a Merkle tree per transaction, chain the blocks, and publish a **database digest** outside the database; verification recomputes and "reports all inconsistencies that it has detected." It protects "from any attacker or high-privileged user, including database administrators… and cloud administrators" |
+| **The default that bites** | A Step Functions Standard execution stops at **25,000 history events** and *fails* — a saga that polls a PSP in a retry loop can hit it. And **state transitions are throttled at 5,000/s in N. Virginia, Oregon and Ireland but 800/s everywhere else**, a 6× regional difference in the same state machine | A ledger database **cannot be converted back to a regular database**, and in a ledger *database* every table is a ledger table with no opt-out. That is the right default for this case and a trap for the reporting tables that end up in the same schema |
+| **What it costs you** | Nothing about volume — 600 tps is small. The cost is that correctness is entirely in your schema and your review process, and the audit story is "read the code" | The digest storage is a second system with its own retention and its own access policy; tamper-evidence that anyone can rewrite is tamper-evidence you do not have |
+
+This is the rare case where the two clouds genuinely differ in kind rather than in naming. Azure
+ships a tamper-evident ledger as a table property; AWS expects you to build append-only semantics
+yourself on Aurora. Say that, and say which you would pick and why — the answer is usually "still
+Postgres, because double-entry and reconciliation are the controls that matter, and a Merkle tree
+does not catch a wrong journal entry, only a rewritten one."
+
+## In an LLM deployment
+
+**It changes very little, and the reason is the interesting part.** Everything on this page is
+about a deterministic, auditable, exactly-once money movement, and a model is none of those things.
+The rule that falls out is worth saying in a room: **a model may never be on the write path of a
+ledger.** It can classify a dispute, draft a chargeback narrative, summarise a reconciliation break
+or rank which of 4,000 unmatched rows a human should look at first — all reads, all advisory, all
+reversible.
+
+Two places it does touch the design. **Reconciliation is the genuine fit**: matching your ledger
+against a PSP settlement file is fuzzy string-and-amount matching, and a model proposes matches
+that a deterministic rule then confirms and a human approves above a threshold. **Idempotency
+covers the model call too** — an LLM call is a billed, non-idempotent side effect, so the
+`idempotency_keys` table this case already has should store the model's response the same way it
+stores the API's, or a retried webhook re-bills you for the same summary.
+
+The audit obligation extends rather than changes. If a model influenced a decision a regulator can
+ask about, the prompt, the model version and the output are part of the record for the same seven
+years as the entries.
+
 ## Referenced by
 
 - [Backend cases index](README.md)
@@ -294,3 +330,8 @@ idempotent.
 - [Martin Kleppmann — Designing Data-Intensive Applications](https://dataintensive.net/) — local copy at `DE/System-Design/`
 - [microservices.io — Saga pattern](https://microservices.io/patterns/data/saga.html)
 - Primitives: [transactions-and-idempotency](../02-primitives/transactions-and-idempotency.md), [consistency-and-consensus](../02-primitives/consistency-and-consensus.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [Azure — ledger overview](https://learn.microsoft.com/en-us/sql/relational-databases/security/ledger/ledger-overview) — updatable and append-only ledger tables, SHA-256 Merkle tree and block chaining, database digests in immutable storage or Azure Confidential Ledger, protection from high-privileged users, ledger databases cannot be converted back
+- [AWS — Step Functions service quotas](https://docs.aws.amazon.com/step-functions/latest/dg/limits-overview.html) — 25,000 execution-history events, 1-year Standard execution limit, 5,000 vs 800 state transitions per second by Region, 256 KiB maximum input/output
