@@ -12,17 +12,28 @@ set -euo pipefail
 
 VENDOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/vendor"
 
+# Verdicts, licences and last-push dates for every repo below: github-repos.md.
 REPOS=(
-  donnemartin/system-design-primer
-  ByteByteGoHq/system-design-101
+  # run something (github-repos.md §3)
+  jepsen-io/maelstrom
+  ept/hermitage
+  # learn a mechanism (§1)
+  aphyr/distsys-class
+  theanalyst/awesome-distributed-systems
+  pingcap/awesome-database-learning
+  asatarin/testing-distributed-systems
   ashishps1/awesome-system-design-resources
-  karanpratapsingh/system-design
-  alirezadir/Machine-Learning-Interviews
-  chiphuyen/machine-learning-systems-design
+  # real architectures and real failures (§2)
+  danluu/post-mortems
+  upgundecha/howtheysre
   eugeneyan/applied-ml
   binhnguyennus/awesome-scalability
+  # drill cases (§4)
+  donnemartin/system-design-primer
+  ByteByteGoHq/system-design-101
+  karanpratapsingh/system-design
+  alirezadir/AIMLInterviews          # renamed from Machine-Learning-Interviews
   yangshun/front-end-interview-handbook
-  checkcheckzz/system-design-interview
 )
 
 if [[ "${1:-}" == "--clean" ]]; then
@@ -32,6 +43,20 @@ fi
 
 mkdir -p "$VENDOR_DIR"
 cd "$VENDOR_DIR"
+
+# Prune anything no longer in REPOS — this is what removes a dropped repo, and what
+# handles an upstream rename (the old directory name simply stops being listed).
+for dir in */; do
+  name="${dir%/}"
+  keep=""
+  for repo in "${REPOS[@]}"; do
+    [[ "$(basename "$repo")" == "$name" ]] && keep=1 && break
+  done
+  if [[ -z "$keep" ]]; then
+    printf 'pruning  %-42s ' "$name"
+    rm -rf -- "$name" && echo "ok"
+  fi
+done
 
 for repo in "${REPOS[@]}"; do
   name="$(basename "$repo")"

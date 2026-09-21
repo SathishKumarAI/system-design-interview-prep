@@ -3,7 +3,7 @@ title: Resources index
 type: index
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-20
 tags: [index, resources]
 ---
 
@@ -16,6 +16,7 @@ a bookmark folder.
 |---|---|
 | What books do I already own, and which chapter do I read? | [books-on-this-machine.md](books-on-this-machine.md) |
 | Which GitHub repos, and what are they good for? | [github-repos.md](github-repos.md) |
+| Which paper / spec / official doc does this corpus actually cite? | [primary-sources.md](primary-sources.md) |
 | What do I subscribe to? | [newsletters-substack.md](newsletters-substack.md) |
 | Which subreddits and communities? | [reddit-communities.md](reddit-communities.md) |
 | Which engineering blogs, and which posts? | [engineering-blogs.md](engineering-blogs.md) |
@@ -30,20 +31,33 @@ and **never edited** — refresh with:
 bash interview-prep/10-resources/fetch-references.sh
 ```
 
-Currently vendored:
+The script **prunes** any directory not in its `REPOS` list, so removing a repo from the list is
+enough to remove it from disk on the next run.
+
+Currently vendored (16 repos, 100 MB measured, 2026-09-20):
 
 | Repo | Use it for |
 |---|---|
+| `maelstrom` | **Implement a replicated KV store and have Jepsen break it.** The one runnable thing here |
+| `hermitage` | The SQL that produces each isolation anomaly, with per-database results |
+| `distsys-class` | Kingsbury's consistency-model notes |
+| `post-mortems` | Annotated public postmortems, grouped by failure class |
+| `howtheysre` | Company-by-company SRE practice |
+| `testing-distributed-systems` | How distributed systems get verified: Jepsen, TLA+, DST |
+| `awesome-distributed-systems` | A short papers-and-talks list |
+| `awesome-database-learning` | The storage-engine reading path, in order |
 | `system-design-primer` | The canonical free curriculum + worked exercises |
 | `system-design-101` | ByteByteGo's visual explanations |
 | `awesome-system-design-resources` | Curated index of everything else |
 | `system-design` (karanpratapsingh) | Clean written course |
-| `Machine-Learning-Interviews` | ML system design framework + questions |
-| `machine-learning-systems-design` | Chip Huyen's ML design question set |
+| `AIMLInterviews` | ML system design framework + questions (renamed from `Machine-Learning-Interviews`) |
 | `applied-ml` | Real company ML case studies, by topic |
 | `awesome-scalability` | Architecture case studies by scale problem |
 | `front-end-interview-handbook` | Frontend system design |
-| `system-design-interview` (checkcheckzz) | Older but dense link collection |
+
+Dropped 2026-09-20: `machine-learning-systems-design` (superseded by the author's own book, on
+this machine) and `system-design-interview` (checkcheckzz) (2017-era link dump, last push
+2023-04). Reasons in [github-repos.md](github-repos.md) §5.
 
 ## How to use resources without wasting time
 
@@ -61,6 +75,10 @@ Currently vendored:
 3. DDIA chapters 5–9 (you own it — see [books-on-this-machine.md](books-on-this-machine.md))
 4. Your target company's engineering blog
 5. Everything else
+
+**If you have a weekend rather than an hour:** `vendor/maelstrom`. Reading about linearizability
+and watching a checker reject your own implementation are different kinds of knowing, and only
+one of them survives a follow-up question.
 
 ## Referenced by
 
