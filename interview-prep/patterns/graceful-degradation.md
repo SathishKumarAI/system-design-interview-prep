@@ -211,6 +211,33 @@ current scale is an unknown-duration recovery**, not a known one.
 - **Read-only mode during failover** — the standard degraded mode for a lost database primary:
   browsing works, writes are refused with a clear message rather than timing out.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Feature flags with a safe rollout** | **AWS AppConfig**: feature-flag and free-form profiles, validators that block a syntactically bad config, gradual deployment strategies, and **automatic rollback when a CloudWatch alarm fires** | **Azure App Configuration**: feature flags plus **snapshots**, which are immutable — so "roll back" means redeploying the last-known-good snapshot rather than editing keys under load |
+| **Static stability for the config dependency** | **AppConfig Agent** runs beside your process and caches the deployed configuration; the application reads a *local* endpoint, so a control-plane blip does not reach the request path | App Configuration providers ship "automatic replica discovery, replica failover, startup retries with customizable timeouts, configuration caching"; geo-replication gives each replica its own request quota |
+| **Removing the runtime dependency entirely** | Bake configuration into the deployment artifact and treat AppConfig as the override channel | Microsoft says it outright: pull config "during build or release time and include it with your application" if you "prefer to avoid a runtime dependency on App Configuration altogether" |
+| **Serving stale instead of failing** | CloudFront error-caching TTL per status code, and origin failover to a second origin | Front Door rules engine on response status, and priority-ordered origins in an origin group |
+| **The default that bites** | An ALB **fails open**: "if the load balancer doesn't have enough healthy targets, it automatically sends traffic to all registered targets." Your unconfigured degraded mode is *traffic to hosts that just failed their health check*, until you set `target_group_health.unhealthy_state_routing.minimum_healthy_targets.*`. Meanwhile `waf.fail_open.enabled` defaults to **`false`**, so the security control fails **closed**. Both defaults are right, and they are opposite — which is this page's auth row, shipped | **Azure Front Door does not support custom error pages.** When your origin is down or slow, the degraded experience your users see is Front Door's page, not yours — and Front Door's 5-second client header timeout and 90-second keep-alive are both non-configurable, so a merely-slow origin is cut before your fallback logic runs |
+
+## In an LLM deployment
+
+Degrading a model service has a rung an ordinary service does not: you can serve a **cheaper answer** rather than
+no answer. The usual ladder is frontier model → smaller model in the same family → a retrieved or cached answer →
+a templated response, and each step down is roughly an order of magnitude cheaper in GPU-seconds, so the degraded
+path is also the one that survives a capacity crunch. API Management's priority-based backend pool implements
+exactly this shape: lower-priority backends are used "only when all backends in higher priority groups are
+unavailable because circuit breaker rules are tripped".
+
+Two rules on this page get sharper. **The fallback must be cheaper than the primary** — falling back from one
+frontier model to another frontier model in a second region is not degradation, it is the same bill somewhere
+else, and during a provider-wide capacity event it is the same outage too. And **silent degradation is worse
+here than anywhere**: a smaller model returns fluent, confident, plausible prose, so neither the user nor the
+error-rate dashboard can tell that quality dropped. Emit the model, the prompt version and the decoding
+parameters that actually served each request as first-class fields — without them the failure mode is serving the
+cheap model for a week and finding out from a customer.
+
 ## Staff-level follow-ups
 
 1. Write the dependency table for a service you know: criticality, degraded behaviour, staleness
@@ -247,3 +274,12 @@ current scale is an unknown-duration recovery**, not a known one.
 - [Google SRE Book — Addressing cascading failures (degraded modes)](https://sre.google/sre-book/addressing-cascading-failures/)
 - [MDN — `Cache-Control: stale-if-error`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control)
 - [Netflix — fallbacks and resilience engineering](https://netflixtechblog.com/fault-tolerance-in-a-high-volume-distributed-system-91ab4faae74a)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [What is AWS AppConfig?](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html) — feature flags, validators, deployment strategies, CloudWatch-alarm rollback, the caching Agent
+- [ALB — edit target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html) — target group health settings and the fail-open behaviour
+- [Application Load Balancers — load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html) — `waf.fail_open.enabled` default false
+- [Azure App Configuration — best practices](https://learn.microsoft.com/en-us/azure/azure-app-configuration/howto-best-practices) — snapshots, provider resiliency features, geo-replication, including config in the build
+- [Azure Front Door FAQ](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-faq) — no custom error pages, 5 s header timeout, 90 s keep-alive
+- [Azure API Management — backends](https://learn.microsoft.com/en-us/azure/api-management/backends) — priority-based backend pools

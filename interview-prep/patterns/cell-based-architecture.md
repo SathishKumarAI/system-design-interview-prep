@@ -231,6 +231,39 @@ amount of cell counting changes it.
 - **Cortex / Loki shuffle sharding** — the same technique inside an open-source multi-tenant
   system, so the mechanics are readable rather than described.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **What it is called** | Cell-based architecture, with shuffle sharding as the combinatorial variant | The **Deployment Stamps pattern**: "Each copy is called a *stamp*, or sometimes a *service unit*, *scale unit*, or *cell*" — search for "stamp", not "cell" |
+| **The router** | Push it to DNS with Route 53 so there is no request-path router to fail | Azure Front Door in front of per-region **API Management**, which looks up the tenant→stamp mapping in geo-replicated **Cosmos DB** and rewrites the target with `set-backend-service`. Microsoft notes the router "might itself be an instance of the Geode pattern" |
+| **The zonal axis inside a cell** | **Zonal shift** in Amazon Application Recovery Controller: move a cell's traffic out of one AZ for 1 minute to 72 hours. Armed by `zonal_shift.config.enabled` on an NLB, default **`false`** | Zone-redundant resources fail over automatically; a **zonal** resource is isolated from other zones' faults but "Microsoft doesn't manage the process for you" — multi-zone is your deployment, not the platform's |
+| **Deploy waves** | One cell, soak, a few cells, the rest — enforced in the pipeline | Stamps as **deployment rings**: group tenants who tolerate frequent updates separately from the risk-averse ones and deploy at different cadences |
+| **The default that bites** | **AZ names are randomised per account.** AWS: "the Availability Zone `us-east-1a` for *your* AWS account might not represent the same physical location as `us-east-1a` for a different AWS account." Pin cells to **AZ IDs** (`use1-az1`), which name the same physical zone in every account, or your "one cell per AZ" diagram is fiction the moment a second account is involved | Azure has the identical trap in a different place: zone numbers are **logical**, and "different subscriptions might have a different mapping order" to physical zones. Print the real mapping with `az account list-locations --query "[?availabilityZoneMappings]"` before you claim two subscriptions' "zone 1" is one zone |
+| **Minimum cell count** | — | "Deploy at least two stamps of your solution. If you deploy only a single stamp, you can easily hard-code assumptions into your code or configuration that don't apply when you scale out" |
+
+Both vendors put the tenant-move problem where this page does. Microsoft: "moving tenants between stamps can be
+difficult. Your application needs custom logic ... This process might require a backplane to communicate between
+stamps." That is the procedure nobody builds until rebalancing or a whale forces it, and it is much harder to
+retrofit. Cross-stamp reporting gets the same treatment — query every stamp and aggregate, or publish into one
+warehouse; never let a cell depend on the aggregate.
+
+## In an LLM deployment
+
+Cells behave differently when the expensive resource in a cell is a GPU. The fixed overhead per cell is normally
+a control plane and a replica set; here it is a *model*, resident in HBM, and it does not shrink as the cell
+does. If a large model needs an 8-GPU node, that node is the floor for one cell — so the usual blast-radius
+arithmetic stops being free: halving cell size to halve impact doubles the number of copies of the weights you
+pay to keep warm, at GPU-hour prices rather than instance-hour prices.
+
+That pushes the design toward the other axis. **Shuffle sharding across a pool of inference replicas is cheap**
+— it is a routing change, and the retry-across-your-shard requirement is easy to satisfy because a generation
+request is safely retryable elsewhere — while many small complete cells usually is not. The complication is that
+prefix-cache locality pulls against random assignment: routing a tenant consistently to the same replicas keeps
+their long system prompt's KV blocks warm and can turn a multi-second prefill into a cache hit, so the assignment
+wants to be *sticky*, which narrows the isolation the combinatorics were meant to buy. Pick which of the two you
+are optimising and say so, because you cannot have both on the same routing key.
+
 ## Staff-level follow-ups
 
 1. Enumerate every dependency of one cell in a system you know and identify the ones shared across
@@ -265,3 +298,11 @@ amount of cell counting changes it.
 - [AWS — Reducing the scope of impact with cell-based architecture (whitepaper)](https://docs.aws.amazon.com/wellarchitected/latest/reducing-scope-of-impact-with-cell-based-architecture/reducing-scope-of-impact-with-cell-based-architecture.html)
 - [Slack engineering — cellular architecture](https://slack.engineering/slacks-migration-to-a-cellular-architecture/)
 - [Cortex — shuffle sharding documentation](https://cortexmetrics.io/docs/guides/shuffle-sharding/)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [AWS RAM — Availability Zone IDs for your AWS resources](https://docs.aws.amazon.com/ram/latest/userguide/working-with-az-ids.html) — random per-account AZ-name mapping, and AZ IDs as the stable identifier
+- [Amazon Application Recovery Controller — zonal shift](https://docs.aws.amazon.com/r53recovery/latest/dg/arc-zonal-shift.html)
+- [Network Load Balancers — load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html) — `zonal_shift.config.enabled` default false
+- [Azure Architecture Center — Deployment Stamps pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/deployment-stamp) — stamps, traffic routing via Front Door + APIM + Cosmos DB, minimum two stamps, tenant moves
+- [What are Azure availability zones?](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) — logical-to-physical zone mapping per subscription, zonal vs zone-redundant

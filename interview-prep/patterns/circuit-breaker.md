@@ -204,6 +204,33 @@ ask what happens when that call is also affected.
 - **Nygard, *Release It!*** — where the pattern was named, alongside bulkheads, timeouts and the
   broader stability-patterns vocabulary.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The managed breaker** | **None for a service calling a dependency.** The AWS feature named "circuit breaker" is the **ECS deployment circuit breaker**, which rolls back a failing *deployment* — same word, different mechanism, and conflating them in an interview is a tell | **API Management backend circuit breaker**, configured on the backend entity: `circuitBreaker.rules` with `failureCondition.count`, `interval`, `statusCodeRanges`, `errorReasons`, plus `tripDuration` and `acceptRetryAfter`. Tripped, APIM returns **503** to the caller |
+| **The closest runtime equivalent** | ALB **Automatic Target Weights** — anomaly detection on target 5xx and connection failures, always on, needs ≥3 healthy targets, reweights every **5 seconds**. It ejects *hosts*, not dependencies, so it is outlier detection rather than a breaker | APIM **load-balanced backend pool**: up to **30** backends, round-robin / weighted / priority-based. "The service uses backends in lower priority groups only when all backends in higher priority groups are unavailable because circuit breaker rules are tripped" — the breaker *is* the failover trigger |
+| **The fallback** | Listener rules to a second target group, or a fixed-response action; static objects at CloudFront | `set-backend-service` inside a `choose`, or the pool's own priority fallback |
+| **What you configure** | ECS: `deploymentCircuitBreaker={enable,rollback}`, `resetOnHealthyTask` (default **`true`**, so only *consecutive* failures count), `thresholdConfiguration` type `BOUNDED_PERCENT` (default) with value **50** | Exactly **one** circuit-breaker rule per backend. Not supported in the **Consumption** tier |
+| **The default that bites** | `BOUNDED_PERCENT` clamps the failure threshold to a minimum of **3** and a maximum of **200**. A 400-task service therefore tolerates **200** failed tasks before the deployment is marked `FAILED` — the safety net is far looser than "50%" sounds. And ALB anomaly *mitigation* only acts under `weighted_random`, while the default algorithm is `round_robin`: detection runs, nothing happens | APIM breaker state is **per gateway instance**: "Different instances of the gateway don't synchronize and apply circuit breaker rules based on the information on the same instance." With N units across a multi-region deployment, the effective trip threshold is roughly **N×** the number you configured, and the breaker trips late everywhere |
+
+## In an LLM deployment
+
+The breaker's shape changes because the dependency tells you when to come back and the number can be enormous.
+Microsoft's guidance for an Azure OpenAI backend behind API Management is explicit: the service returns
+`429 Too Many Requests` with a `Retry-After` header "with a value that can be large (for example, 1 day)", and
+the recommendation is to trip the breaker on 429 and set `acceptRetryAfter: true` so it honours that interval. A
+breaker tuned the conventional way — open for 30 seconds, then probe — would hammer a provider that has already
+said it has nothing for you until tomorrow, and every probe burns quota you no longer have.
+
+What counts as a failure also moves. Latency is a terrible trip signal when a healthy response legitimately
+takes 40 seconds, so the trip condition is a status-code rule (429 and 5xx) rather than a timeout rule. And the
+fallback is almost never a cached value, because prompts are near-unique: the degraded paths that work are a
+smaller or cheaper model, a lower `max_tokens`, a second region in the same priority pool, or a queued
+`202 Accepted`. The breaker's real job here is not saving your threads — it is stopping your service from
+holding request slots open against a provider that is out of capacity, and making the switch to the cheap model
+fast enough that users see a worse answer instead of no answer.
+
 ## Staff-level follow-ups
 
 1. A dependency's p99 goes from 20 ms to a 10 s timeout. Using `L = λW`, show what happens to your
@@ -240,3 +267,10 @@ ask what happens when that call is also affected.
 - [Envoy — outlier detection](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier)
 - [Michael Nygard — Release It! (stability patterns)](https://pragprog.com/titles/mnee2/release-it-second-edition/)
 - [Martin Fowler — CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [Amazon ECS — how the deployment circuit breaker detects failures](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html) — `resetOnHealthyTask`, `thresholdConfiguration`, the 3/200 clamp
+- [ALB — edit target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html) — Automatic Target Weights, the `round_robin` default, the `weighted_random` requirement for mitigation
+- [Azure API Management — backends](https://learn.microsoft.com/en-us/azure/api-management/backends) — circuit-breaker rules, per-instance approximation, load-balanced pools, and the Azure OpenAI `Retry-After` caution
+- [Azure API Management — `retry` policy](https://learn.microsoft.com/en-us/azure/api-management/retry-policy) — switching backends on 429
