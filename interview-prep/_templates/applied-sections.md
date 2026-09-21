@@ -82,3 +82,7 @@ plausible service names that do not exist.
 - A claim you cannot verify does not get softened — it gets **cut**.
 - Say "no direct equivalent" freely. A page with one honest cloud column beats a page with two
   columns where one is invented.
+
+## Referenced by
+
+- [File conventions](../CONVENTIONS.md)
