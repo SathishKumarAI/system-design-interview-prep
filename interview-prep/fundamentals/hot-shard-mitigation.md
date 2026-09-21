@@ -233,6 +233,29 @@ C++ engine to remove GC from the tail-latency equation.
 - **CDN edge caching** — the same idea one layer out: a viral object is served from thousands of
   edge caches rather than the origin. "Replicate the hot thing" is the whole family.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Detection** | **CloudWatch Contributor Insights for DynamoDB** — *"a diagnostic tool for identifying the most frequently accessed and throttled keys in your table or index"*. Per-table opt-in, billed at CloudWatch rates, and **not** synchronised across global-table replicas | **Normalized RU Consumption (%) by `PartitionKeyRangeId`** in Azure Monitor Insights. 100% means at least one partition key range used all its RU/s in some second of the interval |
+| **Automatic mitigation** | Adaptive capacity *"automatically and instantly increasing throughput capacity for partitions that receive more traffic"*, plus split-for-heat | Physical-partition split at 50 GB of storage. There is **no** per-partition throughput boost — RU/s stays divided evenly |
+| **The ceiling it cannot cross** | *"DynamoDB can deliver throughput up to the partition maximum of 3,000 RCUs and 1,000 WCUs to that single item's primary key."* One key, one partition, one ceiling | A logical partition maps to exactly one physical partition, so **10,000 RU/s is the hard ceiling for one partition-key value** no matter what the container is provisioned at |
+| **The documented fix** | Write sharding — a random or calculated suffix on the partition key, with an N-way read | Hierarchical partition keys, or redistributing throughput across partitions |
+| **What blocks the platform's own defence** | **A local secondary index.** *"Adaptive capacity will not split item collections across multiple partitions of the table when there is a local secondary index on the table."* An LSI can only be created with the table and never added or removed afterwards | Low cardinality at the **first** level of a hierarchical key. HPK deliberately colocates everything sharing the first-level key on one physical partition to keep prefix queries cheap |
+| **The default that bites** | The LSI. It is chosen at table-creation time for query convenience by someone who has never read this page, and it silently disables split-for-heat for the life of the table. The symptom is throttling the platform "should" have fixed | Five tenants under a `TenantId` first-level key means **one physical partition** until it reaches 50 GB and splits — and the docs put a clock on the recovery: those splits *"can take between 4-6 hours to complete."* The feature marketed as the fix for hot partitions is, at low first-level cardinality, the thing that creates one |
+
+That Azure row is the most surprising thing in this section, because it inverts the usual advice. Hierarchical partition keys are the documented answer to the 20 GB logical-partition limit, and the same colocation that makes prefix queries cheap makes a low-cardinality first level strictly worse than a synthetic key — which is exactly what the docs then recommend instead: *"If your first level doesn't have high cardinality... we suggest using a synthetic partition key instead of a hierarchical partition key."*
+
+Both platforms agree with this page's central claim by construction: neither offers any mechanism that divides a single partition-key value. Adaptive capacity moves throughput *to* the hot partition and stops at the ceiling; Cosmos does not move it at all. Everything past that ceiling is salting, caching, coalescing or a key change — your code, not the platform's.
+
+## In an LLM deployment
+
+The mitigation ladder survives the move almost intact, except for the rung this page calls the highest-leverage one: **single-flight does not work on generation.** Two identical prompts at any temperature above zero are not the same request, so coalescing them means returning one sampled answer to two callers — a product decision, not an optimisation. Set `temperature: 0` and coalescing comes back; leave it non-zero and rung 2 is simply unavailable, which moves caching and routing up the list.
+
+Salting is meaningless here too, so the ladder collapses to two real options: **replicate the hot thing** (keep the popular prefix's KV blocks resident on more than one replica) and **route to where it already is** (send a conversation to the replica holding its prefix). That is the same "replicate the hot thing" family as the CDN row in *Real-world examples*, one layer further in.
+
+What is genuinely new is that the hot key is **self-sustaining while hot and cliff-edges when the burst ends**. A provider prompt cache's TTL resets on each hit — Bedrock's default is 5 minutes, with a 1-hour option — so a viral document stays free as long as it is touched at least every 5 minutes, and the moment the burst thins below that rate, every subsequent request pays a full prefill again. The cost curve is therefore not proportional to traffic: it is cheap while very hot, cheap while cold, and worst in the long tail on the way down, which is precisely when nobody is watching the dashboard.
+
 ## Staff-level follow-ups
 
 1. A single partition key receives 40× the average traffic. Walk through your decision procedure,
@@ -277,3 +300,9 @@ C++ engine to remove GC from the tail-latency equation.
 - [AWS — burst and adaptive capacity, split for heat](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/burst-adaptive-capacity.html)
 - [AWS — using write sharding to distribute workloads evenly](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html)
 - [Google Cloud Bigtable — schema design and row-key anti-patterns](https://cloud.google.com/bigtable/docs/schema-design)
+- [AWS — CloudWatch Contributor Insights for DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/contributorinsights.html) — most accessed and most throttled keys, CloudWatch charges apply
+- [AWS — Best practices for designing and using partition keys](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html) — 3,000 read / 1,000 write units per partition, verified 2026-09-20
+- [Azure — Partitioning and horizontal scaling in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) — 10,000 RU/s per physical partition, even division of provisioned throughput
+- [Azure — Hierarchical partition keys](https://learn.microsoft.com/en-us/azure/cosmos-db/hierarchical-partition-keys) — first-level cardinality trap, 4–6 hour splits
+- [Azure — Monitor Normalized RU Consumption](https://learn.microsoft.com/en-us/azure/cosmos-db/monitor-normalized-request-units) — per-`PartitionKeyRangeId` hot-partition detection
+- [AWS — Amazon Bedrock prompt caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html) — TTL resets on each cache hit

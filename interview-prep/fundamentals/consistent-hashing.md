@@ -202,6 +202,31 @@ it changes rarely under human control.
 - **memcached clients (ketama)** — the ring implementation most engineers have actually deployed,
   usually with 160 vnodes per server.
 
+## On AWS and Azure
+
+The honest framing for this section: on both clouds the ring is **inside** a managed service, and what you choose is not the hash function but how much of the placement you are allowed to see.
+
+| | AWS | Azure |
+|---|---|---|
+| **Where a slot map is actually exposed** | ElastiCache cluster mode enabled — Redis Cluster's 16 384 hash slots over **1 to 500 shards**, with online resharding that moves slots while serving | **Azure Managed Redis** with the **OSS cluster policy**: the same Redis Cluster API and slot space, and the client connects directly to each shard |
+| **The proxy alternative** | Cluster mode disabled: one shard, up to 5 replicas, **no partitioning at all** | **Enterprise cluster policy**: one endpoint, a proxy routes internally. Simpler clients, and the docs name the cost — *"the single node proxy can be a bottleneck in either compute utilization or network throughput"* |
+| **How much you control** | Shard count and slot assignment are both yours; `CLUSTER SLOTS` shows the map | **You can't.** *"You can't manually change the number of shards"* — the SKU fixes it, and scaling down isn't supported at all |
+| **Stream placement** | Kinesis: **MD5** of the partition key → a 128-bit integer → the owning shard's hash-key range. Resharding is an explicit split or merge you perform | Event Hubs: the partition key goes through *"a static hashing function"*; no key means round-robin assignment |
+| **Membership change cost** | A Kinesis split or merge changes which shard a key lands on, and a sequence number is only unique per partition-key within a shard | Event Hubs partition count is immutable outside Premium/Dedicated, where increasing it means *"the mapping of partition keys to partitions changes"* |
+| **The default that bites** | Cluster mode **disabled** is the shape most teams pick, and it is not a cluster: one shard, vertical scaling only, five replicas maximum. "We're on Redis Cluster" is frequently not true, and there is no ring to rebalance when the node gets hot | The Enterprise policy makes a clustered cache **look** unclustered, so multi-key commands appear to work until they hit a `CROSSSLOT` error. Only `DEL`, `MSET`, `MGET`, `EXISTS`, `UNLINK` and `TOUCH` are allowed across slots; everything else must be same-slot, and you discover which is which in production |
+
+Both clouds land on the same conclusion this page's *Trade-offs* section already argues: the industry chose **a fixed slot map over a hash ring** wherever membership changes under human control. 16 384 slots, an explicit assignment, and a rebalance you schedule. The ring survives where membership changes autonomously — which on these platforms is inside the service, not in your code.
+
+## In an LLM deployment
+
+Placement for a vector index is the same problem with one property removed: you cannot cache your way out of a bad one, because every query is a different vector and the hit rate of an exact-match cache in front of it is approximately zero.
+
+The constraint is memory, and it is enforced per shard. **Azure AI Search applies its vector-index quota per partition** — 35 GB per partition on S1, 150 GB on S2, up to 12 partitions — and it is a hard wall, not a degradation: *"Further indexing attempts once the limit is exceeded result in failure."* A 1,536-dimension float32 vector is 6 KB before graph overhead, so one S1 partition holds low single-digit millions of chunks and then stops accepting writes. That is the number that forces a placement decision, and it arrives as a failed indexer run rather than a latency graph.
+
+The placement decision itself splits along the line this page draws between key count and load. Hashing chunks across shards balances *storage* perfectly and makes every query a fan-out to all twelve partitions, each returning an approximate top-k that you merge — so you must over-fetch from each shard to recover the global top-k, and the recall you benchmarked on one node is not the recall you get on twelve. Sharding by tenant instead routes each query to one partition and restores the exact single-shard recall, at the price of putting the whale tenant back on one node: the hot-key problem this page hands to [hot-shard-mitigation.md](./hot-shard-mitigation.md), arriving through the front door.
+
+The one place a ring is still the right instinct is routing *requests* rather than data: hash on the prompt **prefix** rather than the session id, so a conversation lands on the replica that already holds its KV blocks. That is consistent hashing used for cache affinity, and bounded loads is the variant it needs — prefix popularity is power-law, so a plain ring will balance prefixes evenly and GPU-seconds terribly (own analysis).
+
 ## Staff-level follow-ups
 
 1. Compute the origin load spike when one node is lost from a 20-node cache tier, under `hash % N`
@@ -239,3 +264,8 @@ it changes rarely under human control.
 - [Eisenbud et al. — Maglev: a fast and reliable software network load balancer (NSDI 2016)](https://research.google/pubs/pub44824/)
 - [DeCandia et al. — Dynamo: Amazon's highly available key-value store (SOSP 2007)](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
 - [Cassandra — virtual nodes and token allocation](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html)
+- [AWS — ElastiCache cluster mode disabled vs enabled](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Replication.Redis-RedisCluster.html) — 1 shard vs 1–500 shards, online resharding
+- [Azure — Azure Managed Redis architecture](https://learn.microsoft.com/en-us/azure/redis/architecture) — OSS vs Enterprise cluster policy, `CROSSSLOT` command list, shard count not user-settable
+- [AWS — Kinesis Data Streams concepts](https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html) — MD5 partition-key hashing into shard hash-key ranges
+- [Azure — Event Hubs scalability](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability) — static hashing of partition keys, partition-count immutability
+- [Azure — AI Search service limits](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — vector index quota enforced per partition, verified 2026-09-20

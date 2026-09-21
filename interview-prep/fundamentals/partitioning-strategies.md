@@ -231,6 +231,28 @@ a new class of incident. The order of escalation:
 - **Elasticsearch** — primary shard count fixed at index creation; the community's standard
   advice is "shard for rebuild time, not for size", which is the same 10–100 GB heuristic.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The primitive** | DynamoDB partition key, optionally plus a sort key. One key, chosen at table creation, unchangeable | Cosmos DB partition key — or a **hierarchical partition key** (`MultiHash`, `version: 2`) of up to **three levels**. Also unchangeable: *"Once you select your partition key, you can't change it in place"* |
+| **Per-partition throughput ceiling** | **3,000 read units/s and 1,000 write units/s per partition**, independent of the table's provisioned or on-demand capacity | **10,000 RU/s per physical partition** — and because a logical partition maps to exactly one physical partition, *"logical partitions also have a 10,000 RU/s limit"* |
+| **Per-partition size ceiling** | 10 GB per item collection, but **only when an LSI exists**; otherwise partitions split freely | **20 GB per logical partition** — a hard stop, not a slowdown. Physical partitions hold 50 GB and split automatically |
+| **How capacity is divided** | Adaptive capacity moves throughput toward hot partitions automatically, up to the per-partition ceiling | *"Provisioned throughput for a container divides evenly among physical partitions."* 100,000 RU/s over 10 partitions is 10,000 each, and a hot logical partition gets no more than its slice |
+| **The escape hatch for a big key** | Write sharding: append a suffix to the partition key and fan the read out over the suffixes | Hierarchical partition keys — prefixes *"can exceed 20 GB and 10,000 request units per second (RU/s)"* — but only on a **new container**; there is no in-place migration, only a container-copy job |
+| **Stream partition counts** | Kinesis shards: 1 MB/s or 1,000 records/s in, 2 MB/s out, resized by explicit split/merge | Event Hubs: ~1 MB/s ingress per partition on Standard; count is **fixed at creation** except on Premium/Dedicated, where raising it changes the key→partition mapping |
+| **The default that bites** | DynamoDB **on-demand reads as infinitely elastic and is not.** A new table sustains 4,000 writes/s and 12,000 reads/s; after that it *"instantly accommodates up to double the previous peak"* — and exceeding double **within 30 minutes** throttles. Above that sits an account default of **40,000 table-level read and write units**. A product launch is exactly that traffic shape, and the docs' own advice is to pre-warm or spread growth over 30 minutes | The even division of RU/s means a container can sit at 10% average utilisation and return `429`s continuously. The **Normalized RU Consumption** metric shows 100% when *any single* partition key range exhausts its slice in *any single second* — so the correct alert is per-`PartitionKeyRangeId`, and the aggregate chart is the one that hides the problem |
+
+The two clouds disagree in an instructive way. DynamoDB's answer to skew is automatic and invisible (adaptive capacity moves throughput to the hot partition, up to a fixed ceiling); Cosmos's is manual and visible (you get an even split, a metric that names the hot range, and a schema feature to fix it). Neither removes the ceiling, and both make the same demand of the design: **the per-partition limit, not the table limit, is the number you size against.** The AWS figures also confirm what this page's *Numbers that matter* table already claims — 3,000 RCU / 1,000 WCU per partition, and a 10 GB item-collection cap that only exists because of an LSI.
+
+## In an LLM deployment
+
+Partitioning a retrieval corpus is the same decision with a harsher failure mode, because the store is memory-resident and the usual escape hatch is closed: you cannot cache the hot partition, since every query is a different vector.
+
+Run the three tests from *Mechanics* against a multi-tenant RAG corpus and both obvious keys fail one of them. `hash(chunk_id)` spreads writes perfectly and makes *"everything this tenant is allowed to see"* a fan-out over every shard — and unlike a row store, the merge is not just slow, it is **lossy**: each shard returns an approximate top-k and the union is not the global top-k unless you over-fetch. `tenant_id` colocates the filter and puts the whale tenant on one node. The composite key is the same shape Discord landed on — `(tenant_id, corpus_version)` or `(tenant_id, doc_bucket)` — for the same reason.
+
+The ceiling arrives as a wall rather than a slope. **Azure AI Search enforces its vector-index quota per partition** — 35 GB on S1, 150 GB on S2, 12 partitions maximum — and exceeding it fails the write outright: *"Further indexing attempts once the limit is exceeded result in failure."* A 1,536-dimension float32 vector is 6 KB before HNSW graph overhead, so 35 GB is low single-digit millions of chunks per partition. At 400 tokens a chunk, that is a corpus of a few billion tokens per partition, and the arithmetic to do out loud in a design review is `chunks × dims × 4 B × (1 + graph overhead)` against that quota — before anyone argues about which embedding model is better.
+
 ## Staff-level follow-ups
 
 1. You are asked to shard a messages table. Give the key, then state which query you have just
@@ -273,4 +295,11 @@ a new class of incident. The order of escalation:
 - [AWS — key range throughput exceeded (hot partitions)](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/throttling-key-range-limit-exceeded-mitigation.html) and [burst & adaptive capacity](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/burst-adaptive-capacity.html)
 - [Redis Cluster specification](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/) — 16 384 hash slots
 - [Vitess — resharding](https://vitess.io/docs/user-guides/configuration-advanced/resharding/)
+- [AWS — Best practices for designing and using partition keys](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html) — 3,000 read / 1,000 write units per partition, verified 2026-09-20
+- [AWS — DynamoDB on-demand capacity mode](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/on-demand-capacity-mode.html) — 4,000 writes/s and 12,000 reads/s initially, double-previous-peak scaling, 30-minute rule, 40,000 account default
+- [Azure — Partitioning and horizontal scaling in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) — 20 GB logical partition, 50 GB / 10,000 RU/s physical partition, even RU division
+- [Azure — Hierarchical partition keys](https://learn.microsoft.com/en-us/azure/cosmos-db/hierarchical-partition-keys) — three levels, scaling past 20 GB, new containers only
+- [Azure — Event Hubs scalability](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability) — per-partition throughput, immutable partition count
+- [AWS — Kinesis Data Streams concepts](https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html) — per-shard limits
+- [Azure — AI Search service limits](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — vector index quota per partition
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.6
