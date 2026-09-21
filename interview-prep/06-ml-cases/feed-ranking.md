@@ -231,6 +231,49 @@ stateDiagram-v2
 - **First thing I'd cut:** candidate count and the number of features (feature importance is
   extremely long-tailed — half of them usually earn nothing).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | Ranking service on EKS/ECS (the model is *in-process*, not behind an endpoint); features from ElastiCache and DynamoDB; seconds-tier counters from Kinesis → Managed Service for Apache Flink; training on SageMaker, artefacts in the Model Registry | Ranking service on AKS; features from Azure Managed Redis and Cosmos DB; seconds-tier counters from Event Hubs → Stream Analytics or Databricks; training in Azure ML, artefacts in its registry |
+| **What you configure** | Batch size for the forward pass, model server threads, feature-fetch fan-out, the Flink watermark for the 10-second counter tier | The same, plus AKS node pools sized for the CPU model rather than GPU |
+| **The default that bites** | **SageMaker's managed endpoint is not where this model goes.** `InvokeEndpoint` caps the request body at **6,291,456 bytes** and states that "a customer's model containers must respond to requests within 60 seconds" — fine per se, but the per-Region **10,000 InvokeEndpoint requests/second** ceiling is below this case's 150 k rps before you count the network hop. Ranking runs in-process | **An Azure ML managed online endpoint is capped at 500 requests per second and 5 MBPS of total bandwidth**, both per endpoint and both raisable only by support ticket. At 150 k rps with 75 k feature values per request, that is off by about three orders of magnitude on each axis |
+| **What it costs you** | 75 M item-scorings/second is a fleet-sizing problem no managed inference product solves: the arithmetic only works because all 500 candidates go through one batched forward pass in the same process that fetched the features | Same. The cloud contribution here is the *streaming* tier and the *training* tier, not the serving tier |
+| **The seconds tier** | Kinesis is **1 MB/s or 1,000 records/s per shard**, whichever binds first — engagement events are small, so the record limit binds and the shard count is set by event rate, not bytes | Event Hubs **1 TU = 1 MB/s or 1,000 events/s**, Standard capped at 40 TUs and 32 partitions; the sub-10-second counter tier is where the partition count actually matters |
+
+The useful thing to carry from the table is negative and specific: **every managed inference
+product on both clouds is built for a request-per-prediction shape, and this case is
+500-predictions-per-request at 150 k rps.** Naming the endpoint quotas is how you show you know
+why the model is co-located with the feature fetch instead of behind an HTTP hop.
+
+## In an LLM deployment
+
+Nothing in the 50 ms budget becomes a language model, and the reason is arithmetic that is already
+on the page: 75 M scorings/second against a model that costs milliseconds per *item* is impossible
+by four orders of magnitude. What changes is where the *representations* come from.
+
+**Embeddings move upstream and get better.** A post's content embedding — computed once, offline,
+by a large model at publish time — is a feature like any other: 128–1024 floats in the candidate
+payload, fetched in the same batched read, scored by the same small network. That is the standard
+way an LLM shows up in ranking: as a **precomputed feature**, never as an online call. It also
+fixes cold start for content, since a three-minute-old post with no engagement history now has a
+content vector even though its counters are empty.
+
+**The seconds tier stays exactly as it is, and that matters.** Early engagement velocity is still
+the strongest signal on a new post, and no embedding substitutes for it. Resist the temptation to
+replace a streaming counter with a model.
+
+Two new obligations. **A model-version bump is a full feature backfill**: every item embedding must
+be recomputed, and until it is, the ranker is comparing vectors from two different spaces — which
+is silently wrong, not loudly broken. Version the embedding field and keep both during the
+migration. And **the logging contract grows**: `feature_snapshot_ref` must now pin the *embedding
+model version* alongside the ranker version, or training–serving skew becomes undetectable for
+exactly the features that carry the most information.
+
+Where a large model earns its cost outright is offline: labelling content topics and quality,
+generating the evaluation sets, and explaining ranking decisions to the humans tuning the
+multi-objective weights. All batch, all off the 50 ms path.
+
 ## Referenced by
 
 - [Design a news feed](../03-backend-cases/news-feed.md)
@@ -245,3 +288,11 @@ stateDiagram-v2
 - [Meta engineering — how the feed is ranked](https://engineering.fb.com/)
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — ch. on features and monitoring
 - Backend counterpart: [../03-backend-cases/news-feed.md](../03-backend-cases/news-feed.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — `InvokeEndpoint` API reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html) — 6,291,456-byte maximum request body, model containers must respond within 60 seconds
+- [AWS — SageMaker endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/sagemaker.html) — 10,000 `InvokeEndpoint` requests per second per Region (not adjustable)
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — 500 requests/s and 5 MBPS per managed online endpoint, 180-second request timeout
+- [AWS — Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html) — 1 MB/s or 1,000 records/s per shard
+- [Azure — Event Hubs quotas and limits](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas) — throughput units, 40 TUs and 32 partitions on Standard

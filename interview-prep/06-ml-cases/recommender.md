@@ -237,6 +237,50 @@ models later.
 - **First thing I'd cut:** candidate count (1,000 → 400) and recomputation frequency for
   inactive users.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | Two-tower training on SageMaker; item embeddings into **OpenSearch Serverless** (or Aurora `pgvector`) as the ANN index; features from ElastiCache/DynamoDB; ranker in-process on ECS/EKS; interaction log to S3/Iceberg | Two-tower training in Azure ML or Databricks; item embeddings into **Azure AI Search** (vector index) or Cosmos DB for NoSQL vector search; features from Azure Managed Redis; ranker in-process on AKS; interaction log to ADLS Gen2 |
+| **What you configure** | ANN algorithm and parameters (HNSW `m`/`ef_search`), embedding dimensionality and quantisation, shard/replica count, refresh interval for new items | Vector profile and algorithm, dimensions, partitions and replicas (search units), indexer schedule or push-API writes |
+| **The default that bites** | The ANN index is a **shard-count and heap decision, not a slider**. OpenSearch caps shard size at **65 GiB** on most families with Multi-AZ standby, Java heap at **50% of memory up to 32 GiB**, and — on OpenSearch 2.17 and above — shards at **"1000 per every 16 GB of heap to a max of 4000", with a default that "can't be changed."** A 51 GB fp32 embedding set is a cluster-sizing exercise before it is a recall exercise | **Azure AI Search enforces a vector quota per partition as a hard limit** — 35 GB per partition on a current S1 — and "further indexing attempts once the limit is exceeded result in failure." The 51 GB fp32 index needs 2 partitions on S1 or int8 quantisation; 13 GB at int8 fits one. Quantisation stops being an optimisation and becomes a provisioning decision |
+| **What it costs you** | The ANN index is a cluster you size, patch and re-shard; new-item freshness is a refresh-interval trade against query latency | Capacity is fixed blocks: **S1 is 12 partitions × 160 GB and 12 replicas, capped at 36 search units**, and there is no autoscale. The "new item searchable within an hour" SLA collides with the **5-minute minimum indexer schedule** only if you use an indexer — push new items directly |
+| **The part neither sells you** | Feature fetch for 1,000 candidates inside 50 ms. This case names it as the real risk, and it is a batched columnar read from your own online store on both clouds | Same, with the added note that an Azure ML managed online endpoint (**500 rps, 5 MBPS**) is not where the ranker goes |
+
+The split is consistent with the rest of the ML track: both clouds sell a good vector index and
+neither sells the ranking tier. The genuinely different fact is *how* the index is sized — a
+cluster with shard and heap ceilings on AWS, a fixed quota per partition that fails writes on
+Azure — and it decides whether you quantise before you have measured recall.
+
+## In an LLM deployment
+
+The two-stage shape survives; what changes is where the embeddings come from and what cold start
+costs.
+
+**Content embeddings solve the item cold-start problem outright.** A brand-new item has no
+interactions, so collaborative signal is empty — but its title, description and thumbnail produce a
+vector immediately, and it lands in the same ANN index the collaborative embeddings live in. That
+is the single biggest thing a large model adds to this design, and it is entirely offline. The
+user side does not get the same gift: a new user has no history to embed, and the honest answer is
+still popularity plus onboarding signals.
+
+**"Because you watched X" becomes generated rather than templated** — and this is where the design
+has to be careful. The explanation must be derived from the *actual* retrieval reason (the nearest
+neighbour that produced the candidate), not asked of a model that has only seen the final list, or
+you are shipping plausible fabrications about your own system. Pass the reason; let the model
+phrase it.
+
+**The re-embedding migration is the real operational cost.** Changing the embedding model means
+recomputing 100 M item vectors and rebuilding the ANN index, during which two vector spaces coexist
+and cannot be compared. Run the new index alongside the old, shadow-evaluate recall, and cut over —
+the same shadow pattern [ml-monitoring-and-eval](ml-monitoring-and-eval.md) prescribes for models,
+applied to an index.
+
+One thing gets worse. The feedback loop this case already warns about tightens: if generated
+descriptions or model-chosen thumbnails influence what gets clicked, the model is now shaping the
+training data for the next model. Keep a holdback that never sees generated presentation, or you
+lose the ability to tell whether recommendations improved or the copy just got better.
+
 ## Referenced by
 
 - [Design video streaming (YouTube / Netflix)](../03-backend-cases/video-streaming.md)
@@ -251,3 +295,9 @@ models later.
 - [YouTube — Deep Neural Networks for YouTube Recommendations](https://research.google/pubs/pub45530/)
 - [Netflix Tech Blog — recommendations](https://netflixtechblog.com/)
 - Related: [feed-ranking.md](feed-ranking.md), [feature-store.md](feature-store.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — Amazon OpenSearch Service quotas](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/limits.html) — 65 GiB maximum shard size, Java heap 50% of memory up to 32 GiB, shard-count quota by engine version and the non-adjustable default on OpenSearch 2.17+
+- [Azure AI Search — service limits for tiers and SKUs](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — vector quota per partition as a hard limit with indexing failure on exceeding it, 35 GB per partition on a current S1, 12 partitions × 160 GB and 36-SU cap, 5-minute minimum indexer schedule
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — 500 requests/s and 5 MBPS per managed online endpoint

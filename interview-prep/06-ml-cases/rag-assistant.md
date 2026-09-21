@@ -283,6 +283,54 @@ instructions, and never let retrieved text trigger tool calls in v1), PII redact
 out-of-scope questions, and output filtering. Say prompt injection unprompted — retrieved content
 is attacker-controllable in any system where users can create documents.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **Amazon Bedrock Managed Knowledge Base** — connectors for S3, SharePoint, Confluence, Google Drive, OneDrive and a web crawler; Bedrock manages "embedding, re-ranking, and reasoning with service-managed models by default"; or a **customer-managed** knowledge base over OpenSearch Serverless / Aurora `pgvector` that you assemble yourself | **Azure AI Search** as the retrieval layer (hybrid BM25 + vector, semantic ranker, integrated vectorization), indexed by an indexer or the push API, with Azure OpenAI for generation |
+| **What you configure** | Chunking and parsing strategy, embedding model, reranker, metadata filters, sync schedule per data source | Index schema and vector profile, analyzers, semantic configuration, suggester, indexer schedule or push writes, permission filters |
+| **Permissions — the one that ends the project** | Managed Knowledge Bases offer "**document-level permission filtering using Access Control Lists (except for Web Crawler) at retrieval time**". The trap is in the other column of the same doc: **third-party connectors and document-level permissions "are only available for Managed Knowledge Bases"** — build the customer-managed version for control and you have opted out of ACL filtering | Four approaches, and only one is GA: **security filters** (string comparison, API-agnostic, generally available), while **POSIX-like ACL/RBAC scopes, Purview sensitivity labels and SharePoint ACLs are all preview**. Query-time enforcement passes the user's Entra token in `x-ms-query-source-authorization` and trims results server-side |
+| **The default that bites** | An ACL is captured at ingestion. A permission revoked in the source is not revoked in the index until the next sync | Stated explicitly, and it is the sentence to remember: **"Permission changes in the source system … are only reflected in search results after that metadata is synchronized to the index."** A revoked group membership stays effective in retrieval until the indexer runs — and the minimum indexer schedule is **5 minutes**, with runs capped at **2 hours** in the shared environment. Your "zero leaks" requirement has a synchronisation window, and you must size it deliberately |
+| **What it costs you** | Generation is metered per model per Region in **tokens per minute combining input and output**, shared across every inference API for that model; output tokens burn down at a model-specific rate and `max_tokens` affects the deduction — so a generous `max_tokens` consumes quota the answer never used | **Vector quota is per partition and is a hard limit**: 35 GB per partition on a current S1, and "further indexing attempts once the limit is exceeded result in failure." The 41 GB int8 index needs 2 partitions; the 164 GB fp32 index needs 5. Generation quota is TPM with a **version-dependent RPM ratio** (10 RPM per 1,000 TPM on some `gpt-chat-latest` versions, 1 RPM per 1,000 TPM on others) |
+| **Freshness** | Sync per data source on a schedule you set | The **5-minute minimum indexer interval** is a hard floor under the 15-minute freshness SLA — comfortable, but push directly from the commit path for anything that must be findable immediately |
+
+The honest read on permissions, which is what this case says gets people fired: **both clouds now
+ship document-level filtering, and on both it is only as current as the last sync.** That is a
+different guarantee from the one the source system makes, and the design has to say so — either
+you accept a bounded staleness window and document it, or you re-check ACLs against the source for
+the handful of chunks you are about to cite, which is cheap because there are only eight of them.
+
+## In an LLM deployment
+
+This case *is* the LLM deployment, so the section's job is to name the second-order effects the
+main design does not cover.
+
+**The 15-minute freshness SLA and the permission model are the same clock.** A document reindexed
+for freshness also reindexes its ACL, so the two requirements share one pipeline and one failure —
+if the indexer is stuck, answers are stale *and* permissions are stale, and only one of those
+pages anyone. Alert on indexer lag as a security signal, not just a quality one.
+
+**Cost is a routing problem and the numbers are already on this page.** At roughly $0.04 per answer
+and 50 k answers/day, the levers in order of effect are: fewer and smaller chunks in the context;
+a small model for the majority of questions with escalation to a frontier model on low retrieval
+confidence; caching the stable system prompt (provider-side caches expire on a **5-minute sliding
+TTL**, with a 1-hour option, which is roughly the rhythm of a working session); and answer reuse
+for the repeated questions that dominate an internal corpus. **Put everything that varies at the
+END of the prompt** — a timestamp or a user id above the system prompt gives you a permanent 0%
+cache hit rate at full price.
+
+**Evaluation is the part that has to exist before launch, and it is a second system.** A golden set
+of questions with known answers and known *sources*, scored for groundedness and citation accuracy,
+re-run on every prompt, chunking or model change — treated with the versioning discipline of
+[ml-monitoring-and-eval](ml-monitoring-and-eval.md), including the judge model's own version.
+Without it, a chunk-size change is indistinguishable from an improvement.
+
+**The adversarial surface is the corpus.** Any document a user can write is a document that can
+contain instructions, and retrieval puts it in the prompt. Treat retrieved content as data, never
+as instruction; never let the assistant take actions (this case's v1 is read-only, which is the
+right call); and remember that the citation requirement is also a defence — a fabricated claim
+with no source is visibly unsupported.
+
 ## Referenced by
 
 - [8-week study plan](../07-drills/8-week-plan.md)
@@ -304,3 +352,12 @@ is attacker-controllable in any system where users can create documents.
 - [Engineering the RAG Stack: architecture and trust frameworks (arXiv 2026)](https://arxiv.org/pdf/2601.05264)
 - [Harmonia: End-to-End RAG Serving Optimization (arXiv)](https://arxiv.org/pdf/2505.07833)
 - Related: [llm-serving-platform.md](llm-serving-platform.md), [../03-backend-cases/search-typeahead.md](../03-backend-cases/search-typeahead.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — retrieve data and generate AI responses with Amazon Bedrock Knowledge Bases](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html) — Managed vs customer-managed knowledge bases, connector list, document-level permission filtering using ACLs at retrieval time (except Web Crawler), and that document-level permissions are available only for Managed Knowledge Bases
+- [AWS — quotas for the `bedrock-runtime` endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — per-model per-Region TPM combining input and output, shared across inference APIs, output burndown rates and the effect of `max_tokens`
+- [Azure AI Search — document-level access control](https://learn.microsoft.com/en-us/azure/search/search-document-level-access-overview) — four approaches with security filters GA and ACL/RBAC scopes, Purview labels and SharePoint ACLs in preview; `x-ms-query-source-authorization` query-time enforcement; permission changes reflected only after synchronization to the index
+- [Azure AI Search — service limits for tiers and SKUs](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — vector quota per partition as a hard limit with indexing failure, 35 GB per partition on a current S1, 5-minute minimum indexer schedule, 2-hour indexer run in the shared execution environment
+- [Azure OpenAI quotas and limits](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits) — TPM allocation with version-dependent RPM ratios
+- [Anthropic — prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching) — 5-minute sliding TTL with a 1-hour option

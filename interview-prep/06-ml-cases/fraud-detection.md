@@ -253,6 +253,47 @@ sequenceDiagram
 segments, avoid proxies for protected attributes, keep reason codes explainable (SHAP or a
 monotonic model where regulation requires it), and retain decisions for audit.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | Risk API on ECS/EKS with the GBDT in-process or on a SageMaker endpoint; entity aggregates in SageMaker Feature Store or DynamoDB; velocity counters from Kinesis → Managed Service for Apache Flink; decision log to S3/Iceberg; Neptune for the entity graph | Risk API on Container Apps/AKS with the model in-process or on an Azure ML managed online endpoint; aggregates in Azure Managed Redis; counters from Event Hubs → Stream Analytics or Databricks; decision log to ADLS Gen2; Cosmos DB for Gremlin for the entity graph |
+| **What you configure** | Window sizes on the Flink aggregator, feature TTLs, endpoint instance type and autoscaling, the fail-open/fail-closed policy per segment | The same, plus the endpoint request timeout and per-deployment instance count |
+| **The default that bites** | **A SageMaker model container "must respond to requests within 60 seconds"**, and the endpoint round trip is a network hop inside a 100 ms budget with only ~40 ms of slack. The quota that actually constrains you is upstream: **2,400 read units/s per Feature Store record identifier**, and a busy merchant or a shared device fingerprint is exactly a hot key — the entity types this case builds its velocity features on are the ones most likely to concentrate | **An Azure ML managed online endpoint's default request timeout is 180 seconds** — an eternity against a 100 ms p99, so the timeout that protects the payment flow has to be *yours*, on the client. And the endpoint is capped at **500 requests/s**: this case's 10 k tps needs 20 endpoints, or the model in-process |
+| **What it costs you** | Sub-25 ms feature fetch across card / device / IP / account / merchant is four or five keyed reads, so the per-key ceiling above is hit per *entity type*, not per transaction. Shard hot entities (`merchant_id#bucket`) exactly as the DynamoDB write-sharding guidance says | `5 MBPS` of bandwidth per endpoint is the other hard stop; feature payloads at 10 k tps cross it long before the CPU does |
+| **The audit obligation** | Decision log in Iceberg with the feature snapshot, model version and rules fired — the schema this case already specifies, which is also the training set | Same, plus Purview lineage if the estate is governed there |
+
+Both clouds push the model into your own process for the same reason: a 100 ms inline budget does
+not survive an HTTP hop to a managed endpoint with a 60–180 second timeout designed for a different
+shape of workload. The managed products earn their place in *training*, *registry* and *streaming
+aggregation* — not on the decision path.
+
+## In an LLM deployment
+
+The hot path stays a GBDT, and saying so confidently is the right answer: 10 k tps at a 100 ms p99
+with a reason code and a reproducible audit trail is the opposite of what a generative model
+offers. But three places around it change materially.
+
+**Entity resolution and narrative features.** A model is genuinely good at the fuzzy joins this
+case's graph store exists for — "is this shipping address the same as that one", "is this merchant
+descriptor the same business" — run offline, materialised as a feature, never called inline.
+
+**The label delay gets a partial workaround, not a fix.** Chargebacks take 30–90 days; a model
+reading the manual-review analyst's notes can convert hours-old review outcomes into structured
+fast labels at scale, which is the one place this case says fast labels exist. It does not make
+the adversary slower, and the maturity-window discipline stays.
+
+**Reason codes are the trap.** A regulator-facing explanation generated *after the fact* by a model
+that did not make the decision is a plausible story about a decision, not a reason for it. Reason
+codes must be derived from the model's actual attributions and the rules that fired; a model may
+render them into a sentence for the customer, and may never author them. This is the same boundary
+[payments-ledger](../03-backend-cases/payments-ledger.md) draws around the write path.
+
+And one new attack surface: **an adversary who knows a model reads free text will write to it.**
+Merchant descriptors, memo fields and support messages are attacker-controlled inputs; if any of
+them reaches a prompt, prompt injection is now a fraud vector. Treat every such field as untrusted
+data, never as instruction, and keep the decision in the deterministic path.
+
 ## Referenced by
 
 - [ML and GenAI cases index](README.md)
@@ -264,3 +305,10 @@ monotonic model where regulation requires it), and retain decisions for audit.
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — imbalance, delayed labels, drift
 - Vendor: `10-resources/vendor/applied-ml/README.md` — fraud/abuse case studies
 - Related: [feature-store.md](feature-store.md), [../03-backend-cases/payments-ledger.md](../03-backend-cases/payments-ledger.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — `InvokeEndpoint` API reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html) — model containers must respond within 60 seconds, 6,291,456-byte maximum body
+- [AWS — SageMaker Feature Store quotas](https://docs.aws.amazon.com/sagemaker/latest/dg/feature-store-quotas.html) — 2,400 read units/s and 500 write units/s per record identifier, `BatchGetRecord` limits
+- [AWS — using write sharding to distribute workloads evenly](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html) — per-partition ceilings and the sharded-key remedy
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — 180-second default endpoint request timeout, 500 requests/s and 5 MBPS per managed online endpoint

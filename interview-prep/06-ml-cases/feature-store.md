@@ -259,6 +259,45 @@ serving app, once in the training notebook). The definition must own them too.
 - **First thing I'd cut:** unused feature views, and the freshness tier of features whose models
   don't actually need seconds.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **SageMaker Feature Store** — online store + offline store in S3 (Iceberg or Glue table) from one feature-group definition; Kinesis/Flink writes streaming features; Glue/EMR backfills; `BatchGetRecord` on the serving path | **Azure ML managed feature store** over an online store (Azure Managed Redis) and an offline store (ADLS Gen2, Delta); Spark feature-set definitions materialised to both; Databricks or Fabric for backfill |
+| **What you configure** | Feature group per entity, TTL, online store type (Standard vs InMemory), provisioned vs on-demand RCU/WCU, whether the offline store is Iceberg | Feature set specs with `source_lookback` and `temporal_join_lookback`, materialisation schedules per set, online/offline store connections |
+| **The default that bites** | **A single record identifier is capped at 2,400 read units/s and 500 write units/s.** A shared entity — a popular merchant, a hot campaign — is a hot key with a hard per-key ceiling, and no amount of provisioned capacity on the feature group lifts it | **Azure Cache for Redis "announced its retirement timeline for all SKUs"**, so the managed online store's default backing service is mid-migration to Azure Managed Redis. Plan the online store on Managed Redis and note that its in-memory SKUs above **350 GB are in preview** |
+| **What it costs you** | The serving arithmetic does not fit the managed API. `BatchGetRecord` "can contain as many as 100 records and can query up to 100 feature groups" against a **soft limit of 500 TPS** — this case wants **250,000 batched calls/s of 200 entities each**. That is 500× the API quota and 2× the per-call record cap, so the online path is your own columnar service over Redis/DynamoDB, with Feature Store as the registry and offline half | Azure ML **managed online endpoints cap at 500 requests/s and 5 MBPS of bandwidth per endpoint** (both raisable by support ticket) — so a feature service fronted by one is off by orders of magnitude too. The online store is read directly by the serving process, never through an endpoint |
+| **The limits worth knowing** | 100 feature groups per account (soft), **2,500 feature definitions per feature group**, 350 KB record, 40,000 RCU/WCU per feature group and 80,000 per Region | 100 endpoints and 500 deployments per subscription per Region; **180-second maximum request timeout** at endpoint level |
+
+The honest conclusion, and it is the same on both clouds: **the managed feature store is a
+definition registry, a materialisation engine and an offline store — the 10 M-values/second online
+path is yours.** Say that, and say why: the per-key and per-API ceilings are set for hundreds of
+models doing thousands of lookups, not for fifty models doing a quarter of a million batched
+fetches a second.
+
+## In an LLM deployment
+
+A feature store and a vector index are the same architecture with a different value type, and the
+point-in-time rule transfers exactly: **the embedding you retrieve for a training example must be
+the embedding that existed at the label's timestamp**, or you have leaked the future into the
+training set in a way no schema check will catch. If an item's description was rewritten last
+Tuesday and you re-embedded it, a training row from last Monday that retrieves today's vector is
+leaking. Version the vector by `(entity_id, model_version, valid_from)` and the historical join is
+the same as-of join this case already specifies.
+
+Online/offline parity gets a new and worse failure mode. Today parity breaks when two
+implementations of the same transformation disagree; with embeddings it breaks when the **model
+version**, the **tokeniser**, or even the **truncation length** differ between the batch job and
+the serving path — and the symptom is not an exception, it is slightly worse retrieval that nobody
+notices for a month. Pin the embedding model version in the feature definition, serve it from the
+same artefact, and add cosine similarity between the online and offline vector for the same entity
+to the parity monitor alongside the value comparison.
+
+The economics change one operational habit. A backfill here is "recompute one feature over 2 years
+of history", which this case rightly says must be routine; re-embedding 100 M entities is a
+**billed inference job**, so it is routine in the sense of rehearsed, not routine in the sense of
+cheap. Budget it before you promise a feature owner they can change an embedding model at will.
+
 ## Referenced by
 
 - [Data engineering design playbook](../05-data-cases/data-playbook.md)
@@ -277,3 +316,10 @@ serving app, once in the training notebook). The definition must own them too.
 - [Uber — Michelangelo ML platform](https://www.uber.com/blog/michelangelo-machine-learning-platform/)
 - [Feast — feature store docs](https://docs.feast.dev/)
 - Related: [ml-playbook.md](ml-playbook.md), [../05-data-cases/data-playbook.md](../05-data-cases/data-playbook.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — SageMaker Feature Store quotas, naming rules and data types](https://docs.aws.amazon.com/sagemaker/latest/dg/feature-store-quotas.html) — 2,400 RRU/s and 500 WRU/s per record identifier, 100 feature groups per account (soft), 2,500 feature definitions per group, 350 KB record, 40,000/80,000 RCU and WCU, `BatchGetRecord` 100 records and 100 feature groups per call at a 500 TPS soft limit
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — 500 requests/s, 500 active connections and 5 MBPS per managed online endpoint, 180-second request timeout, 100 endpoints and 500 deployments per subscription per Region
+- [Azure — What is Azure Cache for Redis?](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview) — retirement announced for all SKUs
+- [Azure — What is Azure Managed Redis?](https://learn.microsoft.com/en-us/azure/redis/overview) — tier sizes; in-memory tiers above 350 GB in preview

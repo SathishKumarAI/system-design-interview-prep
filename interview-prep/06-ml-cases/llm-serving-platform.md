@@ -259,6 +259,51 @@ Mostly stateless per request, but three pieces of state matter:
 - **First thing I'd cut:** max context length per tier, and interactive capacity reserved for
   overnight troughs (fill it with batch).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Self-hosted (the case as written)** | vLLM on EKS over P5/P4d or Inferentia, behind an ALB; **SageMaker real-time endpoints** are the managed alternative and now expose **`RoutingStrategy: PREFIX_AWARE` with an `X-Amzn-SageMaker-Prefix-Aware-Id` header — "the service routes requests with the same prefix and the same identifier to the same instance"**, which is prefix-cache-aware routing as a platform feature | vLLM on AKS over ND/NC-series GPUs behind Front Door, or Azure ML managed online endpoints. GPU quota is per VM family and **"specialized VM families like NCasT4\_v3, NC\_A100\_v4, or NDv2 series start with a default of zero cores"** — the capacity conversation starts at zero |
+| **Hosted API (the escape hatch)** | **Amazon Bedrock**, metered per model per Region in **tokens per minute, input and output combined** on the `bedrock-runtime` endpoint | **Azure OpenAI**, metered in **TPM with a fixed requests-per-minute ratio attached** per model version |
+| **What you configure** | Tensor-parallel degree, `--max-model-len`, GPU memory utilisation fraction, chunked prefill, prefix-cache size; on Bedrock, Provisioned Throughput model units versus on-demand | The same self-hosted knobs; on Azure OpenAI, deployment type (Standard / Global Standard / Data Zone / Provisioned) and PTU count |
+| **The default that bites** | **A model's quota is shared across every inference API**: "Although the quota names refer to `InvokeModel`, they aren't per-API" — `InvokeModel`, `Converse`, `Responses` and Chat Completions all draw on one bucket, while the `bedrock-mantle` endpoint is counted **separately for the same underlying model**. Output tokens burn down at a **model-specific rate**, and `max_tokens` affects the deduction — so an over-generous `max_tokens` costs quota you never used | **The RPM-to-TPM ratio changes between model *versions*.** `gpt-chat-latest` versions `2026-05-05` through `2026-06-24` allow **10 RPM per 1,000 TPM**; version `2026-08-06` allows **1 RPM per 1,000 TPM**. Upgrading a model version can cut your request headroom by 10× with no change to your token quota |
+| **What it costs you** | RPM quotas are model-specific and some models have none at all, governed purely by tokens — so a capacity plan written in requests per second is not portable across models. Daily caps also exist: max tokens per day defaults to the per-minute quota × 1,440 | **32 standard deployments per resource** and **100,000 PTUs per deployment**; global batch quota is denominated in **enqueued tokens**, which count against you until the job reaches a terminal state — a stuck batch holds quota it is not using |
+| **Where the case's own numbers land** | The KV-cache ceiling is unchanged by either cloud. What both give you is the *multi-tenant metering* this case's gateway has to implement, and a per-model quota that already thinks in tokens rather than requests | Same |
+
+Two things are worth saying out loud. **Both clouds meter in tokens, not requests**, which is the
+same conclusion this case reaches from GPU memory — and it means a per-tenant quota expressed in
+rps is wrong on the platform *and* wrong on the passthrough. And **prefix-aware routing is now
+purchasable on AWS**, which is the routing half of §Deep dive B arriving as a header.
+
+## In an LLM deployment
+
+This case *is* the LLM deployment, so the useful thing this section can do is name which of the
+corpus's mechanisms change shape here, and how — the same mapping every other page makes in
+miniature.
+
+**The economics invert, and the inversion has a number on this page already.** A cache miss costs
+a prefill: at ~$2–5 per H100-class GPU-hour, a 4-second prefill recomputed for every request that
+misses the prefix cache is the dominant cost line, which is why
+[cache-failure-modes](../fundamentals/cache-failure-modes.md) reads differently here than
+anywhere else. A deploy empties the prefix cache and reloads 140 GB of weights, so **you schedule
+your own cold start every rollout** — drain, warm with representative prefixes, and never roll all
+replicas at once.
+
+**The unit of work is enormous and variable.** A 200-token request and a 100 k-token request share
+a queue, and every assumption built on uniform millisecond requests breaks: load balancing by
+connection count is wrong, p99 latency without conditioning on prompt length is meaningless, and a
+timeout that is generous for one tier is absurd for the other. This is why prefill and decode get
+separated — they have opposite bottlenecks — and why the priority queue is not optional.
+
+**The state is huge and warm.** KV cache, prefix cache and weights all have to be resident, so an
+eviction, a restart or a scale-out costs far more than it does for a stateless service. Autoscaling
+that assumes a new replica is useful the moment it is `Ready` will route traffic to a cold GPU;
+gate readiness on a warm-up probe that has actually run a prefill.
+
+The one thing that does *not* change: everything in the corpus about queues, backpressure, retry
+budgets and shedding applies unaltered. A retry storm against a GPU fleet is the same metastable
+failure, only each retry costs a dollar instead of a disk seek.
+
 ## Referenced by
 
 - [8-week study plan](../07-drills/8-week-plan.md)
@@ -280,3 +325,13 @@ Mostly stateless per request, but three pieces of state matter:
 - Local book: `AI/LLM-Apps/AI Engineering — Chip Huyen (2025).pdf` — inference optimisation chapters
 - Local book: `AI/MLOps/LLM Engineer's Handbook.epub`
 - Related: [rag-assistant.md](rag-assistant.md), [../02-primitives/cost-engineering.md](../02-primitives/cost-engineering.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — quotas for the `bedrock-runtime` endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — per-model per-Region TPM combining input and output, quotas shared across `InvokeModel`/`Converse`/`Responses`/Chat Completions, `bedrock-mantle` counted separately, model-specific RPM (some models have none), daily cap defaulting to per-minute × 1,440, output-token burndown rates and the effect of `max_tokens`
+- [AWS — quotas for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html) — token-based quota model and the two inference endpoints
+- [AWS — `InvokeEndpoint` API reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html) — `PrefixAwareId` and the `PREFIX_AWARE` routing strategy, 60-second container response requirement
+- [Azure OpenAI quotas and limits](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/quotas-limits) — RPM-per-1,000-TPM ratios by model version, 32 standard deployments per resource, 100,000 PTUs per deployment, global batch quota in enqueued tokens
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — specialized GPU VM families default to zero cores
+- [vLLM — automatic prefix caching](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html)
+- [Anthropic — prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching) — 5-minute sliding TTL with a 1-hour option

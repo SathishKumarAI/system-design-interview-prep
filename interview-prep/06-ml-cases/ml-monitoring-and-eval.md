@@ -257,6 +257,51 @@ unbiased sample to train and evaluate on.
 - **First thing I'd cut:** full feature logging for non-critical models (metadata only), and raw
   prediction retention 90 → 30 days.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | **SageMaker Model Monitor** over data captured at the endpoint into S3, with Clarify for bias and explainability drift; **SageMaker Model Registry** for versions and approval state; CloudWatch for metrics and alarms; Athena/Iceberg for the prediction↔label join | **Azure ML model monitoring** over data collected from managed online endpoints into ADLS Gen2, with Azure Monitor for metrics and alerts; the Azure ML registry for versions and stages; Fabric or Databricks for the join |
+| **What you configure** | Data-capture sampling percentage on the endpoint, a baseline from the training set, monitoring schedule, constraint thresholds per feature | Data collector on the deployment, signals (data drift, prediction drift, data quality, feature attribution drift), lookback windows and per-signal thresholds |
+| **The default that bites** | **Data capture is a property of the endpoint**, so the moment the model moves in-process — which this track's other cases show is where every high-throughput model ends up — Model Monitor captures nothing and the logging is yours. The capture sampling percentage is also set per endpoint, not per model criticality, so "100% for money models, 1% elsewhere" is a deployment decision, not a policy | **The 5 MBPS bandwidth cap per managed online endpoint applies to captured data too**, because it is measured at the endpoint. And Azure Monitor's Prometheus store caps an Azure Monitor workspace at **1,000,000 active time series** — one model's 200 features across a handful of segments is thousands of series, so 50 models is a cardinality budget, not a rounding error |
+| **What it costs you** | 100 k predictions/s × 2 KB is 17 TB/day if you capture everything; both clouds make you sample, and neither samples *by model tier* for you | **20 rules per Prometheus rule group, not increasable**, and 500 rule groups per workspace. This case's alerting design — aggregate first, alert on a model-level summary rather than per feature — is also the only design that fits inside those limits |
+| **Retention** | Predictions to S3 with lifecycle rules to Glacier; the 90-day/2-year split is a storage-class policy | Prometheus retention is **18 months, and that limit "can't be increased"**; a query is capped at a **32-day time range**, so a two-year aggregate trend is stitched, not queried |
+
+Both clouds monitor the *endpoint*, and this track's other six cases all put the model somewhere
+else — in-process behind a feature fetch, in a Flink operator, in a batch job. That is the mismatch
+worth naming: managed model monitoring is excellent for the deployment shape it assumes, and
+silently inert for the one you will actually ship at scale. The platform you build here is the
+logging contract, not the dashboards.
+
+## In an LLM deployment
+
+Everything on this page still applies and **the ground-truth problem gets worse, not better**: for
+a generative system there is often no label at all, not even a late one. That is the whole
+difference, and it forces three changes.
+
+**The proxies change.** You cannot compute accuracy, so you monitor what you can see: refusal
+rate, response length distribution, citation rate, tool-call success rate, latency and token
+counts per route, and thumbs/edit-rate from users. A model that has started answering badly still
+emits perfect infrastructure metrics — see
+[metrics-monitoring](../03-backend-cases/metrics-monitoring.md), which structurally cannot catch
+this — so the proxies are the only early signal.
+
+**Evaluation becomes a model, and needs the same governance as one.** LLM-as-judge is the standard
+answer for offline eval, and it is a model that drifts, has a version, and must itself be
+validated against human judgements on a golden set. Treat the judge as a registered model with its
+own lineage; pin its version when you compare two candidates, or you are measuring the judge.
+
+**The A/B math is harder and the retraining loop is shorter.** Quality differences are small,
+noisy and often per-segment, so the sample sizes are larger than for a click-through metric — and
+the cheapest changes (a prompt, a retrieval parameter, a routing rule) ship far more often than a
+retrain. The registry has to version **prompt, retrieval config and model together**, because a
+rollback that restores the model weights and leaves yesterday's prompt in place has rolled back
+nothing.
+
+One number to keep the cost honest: at 100 k predictions/s, a judge model invoked on even 0.1% of
+traffic is 100 evaluations per second, billed. Sample by tier — 100% of a safety-critical route,
+a trickle elsewhere — and compute the bill before you turn it on.
+
 ## Referenced by
 
 - [ML and GenAI cases index](README.md)
@@ -269,3 +314,10 @@ unbiased sample to train and evaluate on.
 - Local book: `AI/MLOps/2023-10-EB-Big-Book-of-MLOps-2nd-Edition.pdf`
 - Local book: `DE/System-Design/Implementing MLOps in the Enterprise.pdf`
 - Related: [feature-store.md](feature-store.md), [../02-primitives/observability-and-delivery.md](../02-primitives/observability-and-delivery.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — `InvokeEndpoint` API reference](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html) — `InferenceId` is "added to the captured data when you enable data capture on the endpoint", i.e. capture is an endpoint property
+- [Azure — manage resources and quotas for Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-quotas) — 5 MBPS bandwidth and 500 requests/s per managed online endpoint
+- [Azure — Azure Monitor service limits](https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/service-limits) — 1,000,000 active time series per Azure Monitor workspace, 20 rules per rule group (not increasable), 500 rule groups, 18-month retention that cannot be increased, 32-day maximum query time range
+- [AWS — Amazon Managed Service for Prometheus service quotas](https://docs.aws.amazon.com/prometheus/latest/userguide/AMP_quotas.html) — active-series and ingestion quotas for the metrics half
