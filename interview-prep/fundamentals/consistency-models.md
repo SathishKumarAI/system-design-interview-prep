@@ -231,6 +231,26 @@ The `E` half is the one you live with 99.99% of the time.
 - **Kafka** — the log gives per-partition total order and nothing across partitions. Choosing the
   partition key *is* choosing the consistency boundary for downstream consumers.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The service** | DynamoDB | Azure Cosmos DB for NoSQL |
+| **The dial** | One boolean, per read: `ConsistentRead` on `GetItem` / `Query` / `Scan` | **Five** named levels, set on the account: `Strong`, `Bounded staleness`, `Session`, `Consistent prefix`, `Eventual` |
+| **The default** | Eventually consistent — `ConsistentRead` is false unless you pass it | **Session.** "This level is the default level applied to Azure Cosmos DB accounts" |
+| **What strength costs** | An eventually consistent read is **half** the RCUs of a strongly consistent one | `Strong` and `Bounded staleness` read two replicas of four, so they cost **2×** the RUs of the weaker levels |
+| **Multi-region strong** | Global tables in **MRSC** mode: exactly three Regions (three replicas, or two plus a witness), RPO 0, and no TTL, LSIs or transactions | Not available — an account with multiple write regions cannot use `Strong` |
+| **Bounded staleness** | No direct equivalent | `K` versions or `T` seconds, whichever first; minimum **10 writes / 5 s** single-region, **100 000 writes / 300 s** multi-region |
+| **The default that bites** | A strongly consistent read is **not supported on a global secondary index** at all. The read path you built for querying is the one you can never make strong | The per-request override can only **relax** consistency, never strengthen it. Moving one query from `Session` to `Strong` means changing the account and redeploying every client |
+
+Two more traps worth carrying into the room. On a DynamoDB global table in the default MREC mode, a strongly consistent read "returns the latest version of an item if that item was last updated in the Region where the read occurred, but may return stale data if the item was last updated in a different Region" — the flag does not become a lie, it becomes regional, and conflicts resolve last-writer-wins on an internal timestamp. On Cosmos DB, `Strong` between regions more than **5 000 miles (8 000 km)** apart is blocked by default and needs a support request: the PACELC trade-off arriving as a ticket.
+
+## In an LLM deployment
+
+Every level on this page governs one store. A RAG pipeline has **two**, and they fail independently: the document row and the embedding derived from it. A user edits a policy page, the write commits linearizably, and retrieval keeps returning the old text — because the vector is still the old vector. No `ConsistentRead`, no session token and no quorum fixes that, because the index is not stale; it is **correct about an input that no longer exists**. The consistency question for a retrieval system is not "did my read see my write" but "is the derived artefact downstream of the current version", and that is a pipeline property, not a database setting.
+
+The lag is a different order of magnitude, too. An Azure AI Search indexer's smallest schedule interval is **5 minutes** (longest 1 440), with a typical 2-hour processing window — so a scheduled refresh has a staleness floor three to four orders above the tens of milliseconds a read replica costs. If a user must see their own upload immediately, the design is a push write to the index on the same request, not a stronger consistency level on the row.
+
 ## Staff-level follow-ups
 
 1. Your service is linearizable for writes and reads from followers using a leader-issued read
@@ -280,3 +300,8 @@ The `E` half is the one you live with 99.99% of the time.
 - [GitHub — October 21 post-incident analysis](https://github.blog/news-insights/company-news/oct21-post-incident-analysis/) — 43 s partition, 24 h degradation
 - [Terry et al. — Session guarantees for weakly consistent replicated data (Bayou)](https://dl.acm.org/doi/10.5555/645792.668302)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.5 and ch.9
+- [DynamoDB read consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) — `ConsistentRead`, the GSI restriction, half-cost eventual reads; verified 2026-09-20
+- [DynamoDB global tables — consistency modes](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html) — MREC default, last-writer-wins, MRSC's three-Region rule
+- [Azure Cosmos DB — consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — the five levels, RU cost, bounded-staleness minimums, the 5 000-mile block
+- [Azure Cosmos DB — manage consistency](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency) — Session as the account default; overrides can only relax
+- [Azure AI Search — schedule indexer execution](https://learn.microsoft.com/en-us/azure/search/search-howto-schedule-indexers) — 5-minute minimum interval

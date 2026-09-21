@@ -246,6 +246,26 @@ consistency checker surfaced it in days.
 - **Spanner / FoundationDB** — strict serializability by construction; the cost moves to commit
   latency and to abort rates on contended keys rather than to correctness reasoning.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The services** | RDS / Aurora PostgreSQL, RDS / Aurora MySQL, Amazon DocumentDB | Azure SQL Database, Azure SQL Managed Instance, Azure Database for PostgreSQL / MySQL flexible server, Azure Cosmos DB |
+| **Engine default, unchanged by the cloud** | PostgreSQL `READ COMMITTED`; InnoDB `REPEATABLE READ` | The same two engine defaults on the flexible servers; `READ COMMITTED` on Azure SQL |
+| **What you set** | `SET TRANSACTION ISOLATION LEVEL` per session; `default_transaction_isolation` in a DB parameter group | `SET TRANSACTION ISOLATION LEVEL`, plus the `READ_COMMITTED_SNAPSHOT` database option — which changes what `READ COMMITTED` *means* rather than which level you are on |
+| **On a read replica** | Aurora MySQL readers are pinned to `REPEATABLE READ` and **ignore** `SET TRANSACTION ISOLATION LEVEL`. `aurora_read_replica_read_committed = ON` opts into a `READ COMMITTED` that is looser than MySQL's own and admits non-repeatable and phantom reads inside one query | Azure SQL read-only replicas always run `SNAPSHOT`, "regardless of transaction isolation level of the session, and regardless of any query hints" |
+| **Inside a write-forwarding session** | Aurora local write forwarding supports **only** `REPEATABLE READ`; `READ COMMITTED` does not work with it | No equivalent — Azure SQL replicas are read-only, with no forwarding path |
+| **Document store** | DocumentDB provides **snapshot** isolation, silently upgrades a `readConcern` of `local`, `available` or `majority` to `snapshot`, and errors on `linearizable` | Cosmos DB has no isolation levels; atomicity is a transactional batch inside **one logical partition** |
+| **The default that bites** | Turning on Aurora write forwarding is not enough: `aurora_replica_read_consistency` defaults to `''`, and the docs are blunt — "If you don't, then Aurora doesn't forward writes." A cluster configured for read-after-write quietly isn't | `READ_COMMITTED_SNAPSHOT` is **ON by default on Azure SQL Database** and **OFF by default on SQL Server**. The same application, the same `READ COMMITTED`, lifted and shifted, stops blocking on shared locks and starts reading row versions |
+
+That last row deserves saying out loud, because it cuts both ways in one migration: moving to Azure SQL Database usually *fixes* a readers-block-writers contention problem and *introduces* the write-skew surface this whole page is about, with nobody having typed an isolation level.
+
+## In an LLM deployment
+
+The isolation bug in an agent stack is rarely exotic. It is a transaction held open across a model call. A tool handler opens a transaction, reads a row, calls the model, writes the result — and where an OLTP transaction is tens of milliseconds, a generation is seconds: at a 4-second median and a minute-long tail for a long completion, the row is locked **100× to 1 000× longer** than the engine's concurrency assumptions allow for. Isolation level does not save you here, because a transaction "always gets an exclusive lock on any data it modifies, and holds that lock until the transaction completes, regardless of the isolation level" — so every other agent touching that conversation or that account queues behind one slow generation.
+
+The fix is this page's fifth follow-up, and the LLM case makes it compulsory rather than merely tidy: the model call goes **outside** the transaction, the result lands as a conditional write against a version column, and a losing writer re-reads and retries. Agent frameworks that retry a timed-out tool call force the issue — a retry after a client timeout is a second writer, not a resumed one, and only the conditional write can tell them apart.
+
 ## Staff-level follow-ups
 
 1. Give an invariant in a system you have built that snapshot isolation cannot protect, then defend
@@ -292,3 +312,8 @@ consistency checker surfaced it in days.
 - [PostgreSQL docs — Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
 - [MySQL docs — InnoDB transaction isolation levels](https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.7
+- [SET TRANSACTION ISOLATION LEVEL (Transact-SQL)](https://learn.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql) — `READ_COMMITTED_SNAPSHOT` ON by default on Azure SQL Database, OFF on SQL Server; the exclusive-lock rule; verified 2026-09-20
+- [Aurora MySQL isolation levels](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.IsolationLevels.html) — readers pinned to `REPEATABLE READ`; `aurora_read_replica_read_committed` and its looser semantics
+- [Aurora — read consistency for write forwarding](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-write-forwarding-consistency.html) and [local write forwarding](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-write-forwarding.html) — `aurora_replica_read_consistency` values, its empty default, `REPEATABLE READ` only
+- [Azure SQL — read queries on replicas](https://learn.microsoft.com/en-us/azure/azure-sql/database/read-scale-out) — read-only replicas always use snapshot isolation
+- [Amazon DocumentDB — transactions](https://docs.aws.amazon.com/documentdb/latest/developerguide/transactions.html) — snapshot isolation by default, `readConcern` upgraded, `linearizable` rejected

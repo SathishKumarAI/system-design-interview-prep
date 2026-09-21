@@ -245,6 +245,23 @@ sensitive component you own, and observability must not sit downstream of the th
 - **Spanner** — a Paxos group per shard, with the leader holding a lease; consensus for the log,
   TrueTime for the real-time order.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Where you actually meet Raft** | The EKS control plane's etcd; Amazon MSK in **KRaft** mode (Apache Kafka 3.7.x and later) | The AKS control plane's etcd — Azure "operates critical control plane components such as `kube-apiserver`, `etcd`, `kube-scheduler`, `kube-controller-manager`" |
+| **What you configure** | Close to nothing. MSK's KRaft controllers "are included at no additional cost to you, and require no additional setup or management", and you never address them directly | Nothing. Neither cloud rents you a tunable consensus store; the quorum is always an implementation detail of something else |
+| **The switch you make once** | `3.7.x.kraft` as the version string creates a KRaft cluster; `3.7.x` creates a ZooKeeper one. Existing clusters migrate with `UpdateClusterKafkaVersion` | No direct equivalent — Event Hubs offers a Kafka protocol surface, not a metadata quorum you own or migrate |
+| **Consensus inside the data store** | DynamoDB elects a leader per replication group with Paxos (ATC 2022, in Sources below) | Cosmos DB commits `Strong` writes to a majority of regions, with **dynamic quorum**: in a three-or-more-region account, unresponsive regions are dropped from the quorum set to keep writes committing |
+| **Running your own** | etcd or ZooKeeper on EC2 or as a StatefulSet; you own the disk, the snapshots, the election timeouts and the pager | Identical. The VM and the disk are the whole difference |
+| **The default that bites** | KRaft is **not** the default — one suffix on a version string decides whether you get a ZooKeeper ensemble or a Raft quorum, at create time | Dynamic quorum preserves *write* availability by evicting a region, and an evicted region "no longer [is] able to serve reads until readded into the quorum". The feature that protects your writes is a read outage in the region it protects them from |
+
+## In an LLM deployment
+
+Consensus stays exactly where this page puts it — the control plane — and inference makes the separation more obvious rather than less, because the data plane's unit of work is enormous. A 70B-parameter model at fp16 is **140 GB** of weights (70 × 10⁹ × 2 bytes), so a replica joining the fleet is unavailable for the tens of seconds to minutes it takes to pull and load them. Election timeouts and lease renewals tuned in hundreds of milliseconds are correct for the coordination store and three orders of magnitude away from the scale of the thing being coordinated: a replica that is up, holds a healthy lease and cannot serve for another 90 seconds is normal here and pathological in a stateless web fleet.
+
+The design consequence is about what must **not** reach the log. Prefix-cache-aware routing wants to know which replica currently holds which KV blocks; at even 1 000 requests/s that is 1 000 metadata decisions per second against a store whose job is membership and config. Put the routing hint somewhere gossiped and best-effort, where a wrong answer costs one cache miss and a prefill, and keep in the replicated log only what a wrong answer would corrupt — fleet membership, the active model version, and which replica owns a shard.
+
 ## Staff-level follow-ups
 
 1. You need a control plane that survives the loss of one region, with writes under 20 ms p99 in the
@@ -293,3 +310,7 @@ sensitive component you own, and observability must not sit downstream of the th
 - [Roblox — return to service, 28–31 October 2021](https://about.roblox.com/newsroom/2022/01/roblox-return-to-service-10-28-10-31-2021)
 - [Spanner: Google's globally-distributed database, OSDI 2012](https://research.google/pubs/pub39966/)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.9
+- [Amazon MSK — metadata management (KRaft and ZooKeeper)](https://docs.aws.amazon.com/msk/latest/developerguide/metadata-management.html) — KRaft from Kafka 3.7.x, the `3.7.x.kraft` version string, controllers at no extra cost; verified 2026-09-20
+- [AKS core concepts](https://learn.microsoft.com/en-us/azure/aks/core-aks-concepts) — Azure operates `etcd` and the rest of the control plane
+- [Azure Cosmos DB — consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — dynamic quorum, and that an evicted region stops serving reads
+- [Elhemali et al. — Amazon DynamoDB, USENIX ATC 2022](https://www.usenix.org/conference/atc22/presentation/elhemali) — Paxos for per-replication-group leader election

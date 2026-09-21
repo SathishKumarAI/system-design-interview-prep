@@ -222,6 +222,26 @@ back is a privacy incident (deletion requests, right to erasure), not just a dat
 - **Voldemort, Cassandra at scale** — public write-ups repeatedly identify repair scheduling, not
   the read/write path, as the dominant operational cost of running these systems.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The managed Dynamo-shaped store** | Amazon Keyspaces (for Apache Cassandra); DynamoDB | Azure Managed Instance for Apache Cassandra (real Cassandra on VMs); Azure Cosmos DB for Apache Cassandra |
+| **What `W` is** | Not yours. Keyspaces "replicates all write operations three times across multiple Availability Zones" and acknowledges at `LOCAL_QUORUM`, always | Not yours either on Cosmos: the write consistency level **is** the account's consistency setting and "can't be changed on a per-request basis". A durable quorum write is 3 of 4 replicas, on disk, not just in a commit log |
+| **What `R` is** | Three levels only: `ONE`, `LOCAL_ONE`, `LOCAL_QUORUM` | The driver's read CL is mapped dynamically onto the Cosmos levels: `ONE`/`LOCAL_ONE`/`ANY` → `Eventual`; `LOCAL_QUORUM`/`TWO`/`THREE` → a local quorum read |
+| **What a quorum read costs** | `LOCAL_QUORUM` is **1 RCU per 4 KB**; `ONE` and `LOCAL_ONE` are **0.5** | A local-minority read (`Strong`, `Bounded staleness`) costs **2×** the RU of a single-replica read |
+| **Anti-entropy** | **Nothing to run, and nothing to forget** — Keyspaces exposes no `nodetool repair`, so there is no repair schedule to get wrong and none to tune | The service "runs `nodetool repair` using reaper. This tool is run once every week" — and in a hybrid cluster that covers your own datacenters too |
+| **The other quorum in the family** | Aurora and DocumentDB: a write is acknowledged "when four copies of the data are persisted across three AZs" | Cosmos: local majority is 3 of 4 replicas; `Strong` additionally requires a majority of regions |
+| **The default that bites** | `QUORUM`, `EACH_QUORUM`, `ALL`, `TWO`, `THREE`, `ANY`, `SERIAL` and `LOCAL_SERIAL` are **unsupported on Keyspaces and throw**. A Cassandra app whose driver config says `QUORUM` compiles, deploys and fails on the first query | The same `LOCAL_QUORUM` in your driver is a strong read on a `Strong` account and an eventual read on a `Session` account. The CL in your code is an *input* to the guarantee, not the guarantee |
+
+The interesting managed-service move is that both clouds took `W` away. `R + W > N` stops being a design dial and becomes a read-side dial over a fixed, durable write — which removes the sloppy-quorum and hinted-handoff failure modes above, and equally removes the ability to trade write durability for latency at all.
+
+## In an LLM deployment
+
+The failure this page cares most about — **deleted data coming back** — is worse in a retrieval index than in a database, because the consequence is not a stale number on a dashboard, it is a model quoting to a user a document the business deleted for a reason. The mechanism is identical: a replica that missed the delete, an anti-entropy pass that reads its copy as merely-missing data, a resurrection. On a weekly repair cycle, the window in which a node returning from a long absence can undo a delete is **up to seven days** — which is also roughly the interval at which nobody is looking.
+
+Retrieval then adds copies the database does not know about. A deletion request has to remove the row, the chunk, the embedding **and** anything already cached downstream — a provider-side prompt cache keyed on a prefix containing that text, a KV prefix cache on a serving replica — before the deletion is true. Design the delete as a fan-out with an audit and a convergence check, the way a Cassandra ring gets a repair run, not as one `DELETE` and an assumption.
+
 ## Staff-level follow-ups
 
 1. A customer reports that a record they deleted three weeks ago is back. Walk the exact sequence —
@@ -268,3 +288,8 @@ back is a privacy incident (deletion requests, right to erasure), not just a dat
 - [DataStax — manual repair: anti-entropy repair](https://docs.datastax.com/en/cassandra-oss/3.x/cassandra/operations/opsRepairNodesManualRepair.html) — Merkle tree depth and overstreaming
 - [Pythian — more effective anti-entropy repair in Cassandra](https://blog.pythian.com/effective-anti-entropy-repair-cassandra/)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.5 — "limitations of quorum consistency"
+- [Amazon Keyspaces — supported read and write consistency levels and costs](https://docs.aws.amazon.com/keyspaces/latest/devguide/consistency.html) — `LOCAL_QUORUM` writes, the three read levels, RCU cost, the unsupported list; verified 2026-09-20
+- [Azure Managed Instance for Apache Cassandra — management operations](https://learn.microsoft.com/en-us/azure/managed-instance-apache-cassandra/management-operations) — weekly reaper `nodetool repair`, patching cadence
+- [Azure Cosmos DB for Apache Cassandra — consistency mapping](https://learn.microsoft.com/en-us/azure/cosmos-db/cassandra/consistency-mapping) — write CL fixed to the account level, 3-of-4 durable quorum, the read mapping
+- [Amazon DocumentDB — transactions](https://docs.aws.amazon.com/documentdb/latest/developerguide/transactions.html) — write quorum of four copies across three AZs
+- [Azure Cosmos DB — consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — local majority, and the 2× RU cost of a quorum read
