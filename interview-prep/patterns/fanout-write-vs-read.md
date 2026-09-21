@@ -206,6 +206,32 @@ window.
 - **Redis sorted sets** — the standard implementation primitive: `ZADD` with the timestamp as score
   gives ordered, deduplicated, trimmable timelines in one structure.
 
+## On AWS and Azure
+
+The important thing this table shows is that the **broker cannot be the fanout** on Azure, and can be on AWS — which changes the architecture, not just the service name.
+
+| | AWS | Azure |
+|---|---|---|
+| **The pub/sub primitive** | SNS → SQS / Lambda / HTTPS; EventBridge for rules-based routing | Event Grid (push and pull); Service Bus topics with subscriptions |
+| **How wide one topic fans** | **12,500,000 subscriptions per standard SNS topic** (FIFO topics: **100**) | **2,000 subscriptions per Service Bus topic**, on every tier; **500 event subscriptions per Event Grid topic** |
+| **Broker-side filtering** | 200 subscription filter policies per topic, 10,000 per account | 2,000 SQL filters or 100,000 correlation filters per Service Bus topic |
+| **Publish rate** | Per account per Region, and wildly uneven: **30,000 msg/s** in us-east-1, 9,000 in us-west-2 and eu-west-1, 1,500 in eight named Regions, and **300 in "all other supported Regions"** | Event Grid custom topic ingress: 5,000 events or 5 MB/s, where an event is counted in 64 KB chunks. Event Hubs: 1 MB/s per throughput unit, 40 TUs per namespace |
+| **The write-side worker** | Lambda on a DynamoDB stream — one instance per open shard, one shard per table partition, `ParallelizationFactor` up to 10, **no more than two readers per shard** | Azure Functions on the Cosmos DB change feed — one lease per physical partition |
+| **Retention of the fanout log** | DynamoDB Streams: **24 hours, fixed, no way to extend or delete**. Kinesis: 24 h default, up to 365 days | Event Grid namespace topics: 7 days. Custom/system topics: **1 day, "This limit can't be increased"** |
+| **The default that bites** | Lambda's **1,000 concurrent executions per Region** are shared by every function with no reserved concurrency, and reserved concurrency is **unset by default**. A celebrity post's fanout worker will consume the entire account pool and throttle unrelated functions — the blast radius of one hot key is every serverless workload in the Region | The subscription ceilings make **per-follower subscriptions architecturally impossible**: 2,000 on Service Bus, 500 on Event Grid. There is no Azure equivalent of SNS's 12.5 M. The fanout has to live in your own workers and your own timeline store, which is what the rest of this page describes anyway |
+
+The SNS publish-rate row is the one that catches people. A design reviewed in `us-east-1` at 30,000 messages per second per account deploys to a secondary Region at **300** — two orders of magnitude, as a regional default, on the service the whole fanout runs through. Check the Region you are actually deploying into before quoting a fanout rate.
+
+DynamoDB Streams' fixed 24-hour retention is the other constraint with architectural weight: it is simultaneously your fanout transport and your entire replay budget, so a fanout worker that is down for a day has lost the posts, not delayed them. [materialized-views-and-derived-data.md](./materialized-views-and-derived-data.md) treats that as the rebuild problem it is.
+
+## In an LLM deployment
+
+The hybrid threshold that makes this pattern work moves to **zero** the moment the fanned-out artefact is generated rather than copied, and the arithmetic on this page shows why in one line.
+
+Fan-out on write is only cheap because the unit of work is a 50 µs insert of a 16-byte id. Personalise the item per recipient with a model and that unit becomes a generation: seconds of GPU time and cents of spend, per follower, per post. Take this page's own figures — 5,000 posts/s × 200 average followers = **1 M timeline inserts/s** — and substitute generation for insert. At a conservative 2 seconds each, 1 M generations/s is **2 M concurrently decoding sequences**. No fleet has that; it is not a capacity plan, it is a category error. The same numbers that make fan-out on write correct for ids make it impossible for tokens.
+
+So the resolution inverts the usual advice: generate **once** at write time into a shared artefact — a summary, an embedding, a set of candidate ids — and do the per-user part at read time with retrieval and ranking, which is cheap and bounded by following count rather than follower count. That is the *asymmetry* argument at the end of *Numbers that matter*, applied to a new cost curve: precompute the side that is shared, merge the side that is personal. The one genuine exception is the deliberately expensive case — a daily digest for a paying user — where you are fanning out to thousands, not hundreds of millions, and the per-item cost is a product decision someone signed off on.
+
 ## Staff-level follow-ups
 
 1. Derive the celebrity threshold for a system doing 5 k posts/s with a 50 µs insert cost and a
@@ -238,4 +264,10 @@ window.
 - [Krikorian — Timelines at Scale (Twitter)](https://www.slideshare.net/chrisbolman1/twitter-raffi-krikoriantimelinesatscale) — Redis timelines, ~800 cap, celebrity merge at read
 - [High Scalability — How Twitter uses Redis to scale](http://highscalability.com/blog/2014/9/8/how-twitter-uses-redis-to-scale-105tb-ram-39mm-qps-10000-ins)
 - [Redis — sorted sets as timeline structures](https://redis.io/docs/latest/develop/data-types/sorted-sets/)
+- [AWS — Amazon SNS endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/sns.html) — 12,500,000 subscriptions per standard topic, per-Region publish rates, verified 2026-09-20
+- [AWS — Understanding Lambda function scaling](https://docs.aws.amazon.com/lambda/latest/dg/lambda-concurrency.html) — 1,000 concurrent executions per Region shared by all unreserved functions
+- [AWS — DynamoDB Streams](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) — 24-hour retention, one shard per partition, at most two readers per shard
+- [Azure — Service Bus quotas and limits](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quotas) — 2,000 subscriptions per topic
+- [Azure — Event Grid quotas and limits](https://learn.microsoft.com/en-us/azure/event-grid/quotas-limits) — 500 event subscriptions per topic, 1-day topic retention
+- [Azure — Event Hubs scalability](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability) — throughput units and per-partition rates
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.1 — the Twitter timeline example

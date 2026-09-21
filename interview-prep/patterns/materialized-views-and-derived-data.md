@@ -216,6 +216,32 @@ credentials should not permit application writes.
 - **Postgres materialized views** — the simple end: full refresh, or `REFRESH … CONCURRENTLY` to
   avoid blocking readers, with the trade-off that it rebuilds rather than increments.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The change log** | DynamoDB Streams, Kinesis Data Streams, or Debezium/DMS on RDS | **Cosmos DB change feed** — *"enabled by default for all Azure Cosmos DB accounts"*, read with your provisioned RU/s; Azure SQL change tracking into Event Hubs |
+| **The managed view** | Redshift materialized views; a DynamoDB **GSI** (a separately partitioned copy with its own capacity); OpenSearch as a derived index | Azure Synapse dedicated SQL pool materialized views; Azure SQL indexed views |
+| **How it is maintained** | Redshift *"automatically chooses the refresh method"* — incremental where it can, full recompute where it cannot | Synapse maintains incrementally **and synchronously**: *"both the base tables and the materialized views are updated in the same transaction"* |
+| **The rebuild handle** | `REFRESH MATERIALIZED VIEW [CASCADE]`; on RDS/Aurora Postgres, `REFRESH … CONCURRENTLY` — still a full rebuild, since Postgres has no incremental MV | `ALTER MATERIALIZED VIEW … REBUILD`, driven by `DBCC PDW_SHOWMATERIALIZEDVIEWOVERHEAD`, which reports `overhead_ratio = total_rows / max(1, base_view_row)` |
+| **The replay window** | **DynamoDB Streams is 24 hours, fixed** — *"there is no mechanism for manually deleting an existing stream"*, and equally none for extending it. Kinesis: 24 h default, up to 365 days | Latest-version change feed can be read *"as far back as the origin of your container"* — effectively unbounded replay, which is the strongest rebuild story on either cloud |
+| **The default that bites** | Redshift `AUTO REFRESH` is **off unless you ask for it**, and when it is on, an OUTER JOIN, a UNION/INTERSECT/EXCEPT, a window function, a subquery or a DISTINCT aggregate silently demotes the view to a **full recompute on every refresh**. Nothing warns you; the view is simply expensive, forever | The change feed's default **latest version** mode does not carry deletes: *"if an item is deleted, it's removed from the change feed."* A derived store built on it grows forever with rows the source no longer has. Capturing deletes needs **all versions and deletes** mode, which requires continuous backups configured on the account and only reads back as far as the backup window |
+
+That Azure default is this page's *"Unbounded view growth — views retain what the source deleted"* failure mode, shipped as the default configuration of the standard pipeline. The fix the page prescribes — *"propagate deletes explicitly; tombstones in the log"* — is on Azure a change to the account's backup configuration, not a change to your consumer.
+
+And the two replay windows are worth putting side by side, because they price the same sentence differently. "We can regenerate it" costs a container-scan on Cosmos and costs **a full table export plus a backfill** on DynamoDB, where the log itself is gone after a day. Compute the rebuild time before you promise it, on the platform you are actually on.
+
+## In an LLM deployment
+
+Re-embedding a corpus is the cleanest example of derived data on this page, because the embedding model **is** the view definition. Change it and every row is invalid at once — there is no incremental path, no partial refresh, and no way to mix old and new vectors in one index, because distances between them are meaningless. The rebuild is not 5% of the corpus, it is 100%, every time.
+
+The arithmetic goes in the design review, not the incident. A 50 M-chunk corpus at ~400 tokens per chunk is **20 billion tokens** to push through an embedding model; at 1,536 dimensions and float32 that is **307 GB of raw vectors** before graph overhead, and both numbers are paid again in full on every model change. That forces exactly the build-alongside-and-swap shape the state diagram above already prescribes — a second index, a shadow comparison, an alias flip — but for a hard reason rather than a hygiene one: the old index has to keep serving, because the new one is not queryable until it is complete.
+
+Two consequences follow, and both are staff-level answers:
+
+- **The staleness contract becomes a version, not a lag.** "Search reflects writes within 2 seconds" is still true of the ingest path, but the useful statement is "this index is on embedding model v3, built 2026-09-01" — because a retrieval quality regression after a model swap looks exactly like a relevance bug.
+- **Chunk text is not derived, even though it looks like it.** The source documents are the source of truth for *content*, but the chunk boundaries are a decision — a splitter, a size, an overlap — and reproducing them a year later usually is not possible. Store the chunking output, not just the source documents, or the rebuild you are relying on quietly is not one.
+
 ## Staff-level follow-ups
 
 1. List every store in a system you have built and classify each as source of truth or derived.
@@ -252,4 +278,8 @@ credentials should not permit application writes.
 - [Kleppmann — Turning the database inside out](https://www.confluent.io/blog/turning-the-database-inside-out-with-apache-samza/) — derived data as a first-class idea
 - [Materialize — incremental view maintenance](https://materialize.com/docs/overview/key-concepts/)
 - [PostgreSQL — materialized views and `REFRESH … CONCURRENTLY`](https://www.postgresql.org/docs/current/sql-creatematerializedview.html)
+- [AWS — Refreshing a materialized view in Amazon Redshift](https://docs.aws.amazon.com/redshift/latest/dg/materialized-view-refresh.html) — AUTO REFRESH is opt-in; the SQL constructs that force a full recompute, verified 2026-09-20
+- [AWS — DynamoDB Streams](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) — fixed 24-hour retention, shard/partition mapping
+- [Azure — Work with the change feed in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed) — latest-version mode drops deletes; all-versions-and-deletes mode needs continuous backups
+- [Azure — Performance tune with materialized views (Synapse dedicated SQL pool)](https://learn.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/performance-tuning-materialized-views) — synchronous same-transaction maintenance, `overhead_ratio` and REBUILD
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.12 — derived data and the unbundled database

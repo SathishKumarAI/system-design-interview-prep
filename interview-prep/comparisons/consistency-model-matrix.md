@@ -144,6 +144,31 @@ with the number attached, is the whole multi-region consistency conversation.
   rather than hidden.
 - **Amazon S3** — strong read-after-write since 2020: a reminder that these facts have dates.
 
+## On AWS and Azure
+
+This is the page where the two clouds have made the **opposite** design choice, and naming that is worth more in an interview than any single limit: AWS prices consistency **per request**, Azure configures it **per account**.
+
+| | AWS | Azure |
+|---|---|---|
+| **The dial** | DynamoDB `ConsistentRead`, a per-request boolean, **default `false`** | An account-level default consistency level, overridable per request — but the traditional override *"can only be **relaxed**"*. Strengthening it means changing the account, or using the preview `ReadConsistencyStrategy` (Java v4.69+, .NET v3.46+) |
+| **What strong costs** | **2× the read units**, and the read is served from a single AZ | 2× the RUs: Strong and Bounded Staleness read from two replicas of a four-replica set, so *"read throughput for strong and bounded staleness is half that of the other consistency levels"* |
+| **The default** | Eventually consistent reads. Global tables default to **multi-Region eventual consistency (MREC)**, resolving conflicts by *"the modification with the latest internal timestamp... a 'last writer wins' conflict resolution method"* | **Session.** *"This level is the default level applied to Azure Cosmos DB accounts"* — read-your-writes and write-follows-reads inside one client session |
+| **Strong across regions** | **MRSC** global tables: exactly three Regions (or two replicas plus a witness), synchronous replication, RPO zero — and **no TTL, no LSIs, no transactions**, and converting an existing table requires it to be **empty** | Strong is offered but **cannot be combined with multi-region writes**, and is *"blocked by default"* beyond 5,000 miles. Multi-region strong writes cost *"two times round-trip time (RTT) between any of the two farthest regions, plus 10 milliseconds at the 99th percentile"* |
+| **Session guarantees** | Not a product feature — read-your-writes is yours to build with token routing | Built in: the SDK issues a session token per **partition** after every write and replays it on reads |
+| **The default that bites** | On an MREC global table, a strongly consistent read is **only strong in the Region that took the write**: it *"may return stale data if the item was last updated in a different Region."* `ConsistentRead=true` reads like a global guarantee and is a regional one — the exact failure this page's first trap describes, sold as the fix for it | **Session consistency degrades to eventual, silently, whenever the token is missing.** *"If the client is re-created, its cache of session tokens is also re-created... read operations follow the same behavior as Eventual Consistency."* Every deploy, every new pod, every second app instance, every load balancer that doesn't pin — and the docs are explicit that with a round-robin balancer *"you could end up with inconsistent read results for a while"* |
+
+Both bottom-row entries are the same lesson from opposite ends. AWS gives you a switch that is genuinely per-request and whose scope is narrower than its name. Azure gives you a guarantee that is genuinely useful and whose *precondition* — a session token, carried by one client — is the part nobody deploys. In both cases the configured model differs from the model your users experience, which is the whole argument of this page.
+
+One fact worth updating in the table above: DynamoDB global tables now offer **MRSC**, so "eventual across regions, always" is no longer the complete answer for DynamoDB — it is the default, with a strongly consistent three-Region mode available at creation time and never after.
+
+## In an LLM deployment
+
+The consistency boundary grows two new members, and neither publishes a bound.
+
+The first is the retrieval index, and it breaks **read-your-writes** in the most visible way a product can. A user uploads a document and immediately asks about it; the correct answer requires that document chunked, embedded and indexed, and the pipeline is seconds to minutes. A concrete number: **Azure AI Search indexers have a minimum schedule of 5 minutes on every tier**, so on the default pull-based ingest path, "ask about the file I just uploaded" is a five-minute-stale read unless you push the document through the indexing API directly on the upload path. No session token in any SDK covers that gap. The design answer is the one this page already ranks best value — route the writer's own read differently — but here "differently" means answering from the raw uploaded text until the index catches up, and saying so in the UI.
+
+The second is stranger: **monotonic reads has no meaning for a generated answer.** Above `temperature: 0`, asking the same question twice returns different text from identical state, so "the answer went backwards" is not a consistency violation and cannot be detected as one. The guarantee you can actually offer is about the **retrieved context**, not the response — "every answer in this session was grounded in documents at least as fresh as your last upload" is falsifiable; "the same question gives the same answer" is not a property of the system at all. Classify the operations the way this page's ladder does, and the one that needs linearizability is almost never the generation: it is the tool call that moves money, and that one belongs on the primary with a condition expression, exactly as it would without a model in front of it.
+
 ## Staff-level follow-ups
 
 1. Take a product you know and classify five operations by the consistency they actually need.
@@ -181,3 +206,7 @@ with the number attached, is the whole multi-region consistency conversation.
 - [AWS — DynamoDB read consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) and [S3 strong consistency (2020)](https://aws.amazon.com/s3/consistency/)
 - [Cassandra — configuring consistency levels](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html)
 - [CockroachDB — transactions and consistency guarantees](https://www.cockroachlabs.com/docs/stable/architecture/transaction-layer)
+- [AWS — How DynamoDB global tables work](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html) — MREC default, last-writer-wins, regional scope of `ConsistentRead`, MRSC constraints, verified 2026-09-20
+- [Azure — Consistency levels in Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — five levels, session-token behaviour, 2× RU cost of strong reads, strong-with-multi-region-writes restriction
+- [Azure — Manage consistency levels in Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency) — Session is the account default; overrides can only relax
+- [Azure — AI Search service limits](https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) — 5-minute minimum indexer schedule on every tier

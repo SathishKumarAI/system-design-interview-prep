@@ -148,6 +148,29 @@ stateDiagram-v2
 - **Spanner / CockroachDB** — where multi-region strong consistency is a product requirement rather
   than a preference, and the latency cost is accepted explicitly.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Relational, managed** | RDS and Aurora (PostgreSQL, MySQL) | Azure Database for PostgreSQL flexible server; Azure SQL Database, including Hyperscale |
+| **Sharded relational** | No managed Postgres sharding product — you shard in the application, or run Vitess/Citus yourself | **Elastic Clusters** for Azure Database for PostgreSQL (the Citus extension). Note the rename: *Azure Cosmos DB for PostgreSQL*, the old name for the same thing, is *"on a retirement path and no longer recommended for new projects"* |
+| **NoSQL, key-shaped** | DynamoDB; Keyspaces (Cassandra API); DocumentDB | Cosmos DB, with NoSQL, Cassandra, MongoDB and Table APIs behind one engine |
+| **Distributed SQL** | **Aurora DSQL** — PostgreSQL 16-compatible, *"ACID transactions with strong consistency, snapshot isolation"*, and multi-Region peered clusters presenting *"a single logical database"* across two writable Regional endpoints | **No first-party distributed-SQL engine.** Cosmos DB gives global distribution without the relational model; SQL Hyperscale scales storage and readers, not writers |
+| **The multi-region catch** | Aurora DSQL peered clusters must sit inside one Region set — it *"currently doesn't support cross-continent multi-Region clusters"* | Cosmos DB **cannot use strong consistency with multiple write regions at all**, and strong consistency across regions more than 5,000 miles apart *"is blocked by default"* |
+| **The default that bites** | **The Figma ceiling is a storage-type default, not a database one.** An RDS `gp3` volume gets a baseline of **3,000 IOPS and 125 MiB/s**, and below the striping threshold (400 GiB for Postgres/MySQL) provisioning more is listed as *"Not applicable"*. You cannot buy IOPS; you must grow the volume past 400 GiB — where the baseline jumps to 12,000 IOPS — or move to io2 | On Premium SSD, **IOPS are a function of disk size**: 32 GiB gets 120 provisioned IOPS, 256 GiB gets 1,100, 1 TiB gets 5,000, and the type caps at 20,000. Premium SSD v2 decouples them (3,000 IOPS free, up to 80,000). Worse, the failure is not a slowdown: *"The server automatically switches to read-only mode when the storage usage reaches 95 percent"* — your relational database becomes a read replica of itself, at 95% full, without a deploy |
+
+Two things fall out of this for the recommendation at the top of the page. First, **"shard the relational store" has a managed answer on Azure and not on AWS** — Elastic Clusters is Citus, operated by Microsoft; the AWS equivalent is a project you staff. That is a genuine input to the build/buy half of the decision, and it points the opposite way from the usual assumption.
+
+Second, the constraint Figma actually hit is reproducible on both clouds as a **storage** decision made before anyone was thinking about scale. Vertical scale buys years — but only if the volume underneath it can. Check the IOPS ceiling of the storage type before you conclude that a single instance is out of room, because in a meaningful number of cases the instance is not the ceiling and the disk is.
+
+## In an LLM deployment
+
+The access pattern that finally breaks "default to relational" is vector search — and then it mostly does not, because `pgvector` puts it inside Postgres and the decision procedure at the top of this page still applies unchanged. What genuinely changes is the **sizing question**, and that is where the answer flips.
+
+For an OLTP table, the working set is the hot fraction of the data and the rest can live on disk. For an ANN index it cannot: the HNSW graph must be resident for the recall and latency you benchmarked, so the question is *"does the index fit in RAM"*, not *"does the data fit on disk"*. Run the arithmetic on a mid-sized corpus — **50 M chunks × 1,536 dimensions × 4 bytes = 307 GB** of raw vectors, before graph overhead — and the working set is the whole thing. That is past any single managed Postgres instance, and it is what forces a dedicated vector store, not the query language and not the write rate.
+
+The second LLM-shaped store is the one that actually is Dynamo-shaped, and it is easy to miss: conversation and agent state. It is keyed by session, appended every turn, read entirely on the next turn, and never queried across sessions — key-shaped access at a high write rate with no joins, which is the one honest NoSQL argument this page allows. A serving stack of Postgres for the application, a vector store for retrieval, and DynamoDB or Cosmos for session state is a legitimate three-store design, and worth saying out loud precisely because it looks like the polyglot-persistence mistake the rest of this page warns against.
+
 ## Staff-level follow-ups
 
 1. A team proposes migrating to Cassandra because writes will reach 60 k/s next year. Compute what
@@ -183,4 +206,9 @@ stateDiagram-v2
 - [Figma — How Figma's databases team lived to tell the scale (2024)](https://www.figma.com/blog/how-figmas-databases-team-lived-to-tell-the-scale/) and [The growing pains of database architecture](https://www.figma.com/blog/how-figma-scaled-to-multiple-databases/)
 - [Vitess — architecture and sharding](https://vitess.io/docs/concepts/shard/)
 - [Corbett et al. — Spanner (OSDI 2012)](https://research.google/pubs/pub39966/)
+- [AWS — Amazon RDS DB instance storage](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html) — gp3 baseline 3,000 IOPS / 125 MiB/s, 400 GiB striping threshold, verified 2026-09-20
+- [AWS — What is Amazon Aurora DSQL?](https://docs.aws.amazon.com/aurora-dsql/latest/userguide/what-is-aurora-dsql.html) — snapshot isolation, multi-Region peered clusters, Region-set limitation
+- [Azure — Storage options for Azure Database for PostgreSQL](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-storage) — Premium SSD IOPS by disk size, read-only mode at 95% full
+- [Azure — Azure Cosmos DB for PostgreSQL introduction](https://learn.microsoft.com/en-us/azure/cosmos-db/postgresql/introduction) — retirement path, Elastic Clusters as the successor
+- [Azure — Consistency levels in Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) — strong consistency unavailable with multi-region writes
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.2
