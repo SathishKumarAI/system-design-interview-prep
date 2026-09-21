@@ -9,7 +9,7 @@ tags: [index, cases]
 
 # Backend cases
 
-Ten designs that between them cover every pattern the classic distributed-systems round
+Eleven designs that between them cover every pattern the classic distributed-systems round
 tests. Do them in order — each introduces something the next one assumes.
 
 ## Where to look

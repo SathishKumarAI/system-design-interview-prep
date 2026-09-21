@@ -117,6 +117,48 @@ client (watcher + local index) ──metadata ops──→ metadata service → 
 client ──chunk PUT/GET (presigned)──→ blob storage (erasure-coded, multi-AZ) → CDN for reads
 ```
 
+Two planes that scale on different axes, and only small facts cross between them:
+
+```mermaid
+flowchart LR
+    c["Client<br/>watcher + local index"]
+    d2["Other devices"]
+    mds["Metadata service"]
+    md[("files · versions · file_chunks<br/>sharded by namespace_id")]
+    cl[("changelog<br/>namespace_id + monotonic seq")]
+    ch[("chunks<br/>content_hash PK, refcount")]
+    ns["Notification service<br/>WebSocket / long-poll"]
+    blob[("Blob storage<br/>erasure coded 10+4, multi-AZ")]
+    cdn["CDN<br/>content-addressed, infinitely cacheable"]
+    gc["GC + scrubber<br/>refcount 0, verify checksums"]
+
+    c --> |"prepare: path, size, chunk hashes"| mds
+    mds --> |"which of these hashes do we already hold?"| ch
+    mds --> |"the missing chunks — dedup happens HERE"| c
+    c ==> |"PUT only the missing chunks, presigned"| blob
+    c --> |"commit"| mds
+    mds --> md
+    mds --> |"append one seq"| cl
+    cl -.-> ns
+    ns -.-> |"namespace X changed — never the file bytes"| d2
+    d2 --> |"GET delta since my cursor:<br/>a single-partition range scan"| cl
+    d2 --> |"GET chunks by hash"| cdn
+    cdn --> |"miss"| blob
+    blob --> gc
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class c,d2 client
+    class cdn edge
+    class mds,ns,gc service
+    class md,cl,ch,blob store
+```
+
 ### Deep dive A — chunking and dedup
 
 - **Fixed-size chunks (4 MB)**: simple, but inserting one byte at the start of a file shifts
@@ -134,6 +176,28 @@ client ──chunk PUT/GET (presigned)──→ blob storage (erasure-coded, mul
   cheaper than a wrongly deleted chunk).
 
 ### Deep dive B — sync and conflicts
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant M as MacBook
+    participant S as Metadata service
+    participant B as Blob storage
+    participant P as Phone
+
+    Note over M: a 1 GB file gains one byte at the FRONT
+    M->>M: re-chunk with a rolling hash — boundaries follow content,<br/>so exactly one chunk's hash changed
+    M->>S: prepare(path, chunk hashes)
+    S-->>M: missing: 1 chunk of 256
+    Note over M,S: fixed 4 MB chunks would have shifted every boundary and<br/>re-uploaded the whole gigabyte. This is the whole trick.
+    M->>B: PUT that one chunk, presigned and content-addressed
+    M->>S: commit — new version, changelog seq 918
+
+    P->>S: commit a version from the SAME parent
+    S-->>P: conflict
+    Note over S,P: there is no correct merge for arbitrary binary files.<br/>Keep BOTH, as "report (conflicted copy, Phone).docx"
+    Note over M,P: silently picking a winner destroys someone's work.<br/>Users forgive a duplicate file far more readily.
+```
 
 - Client keeps a local index (path → version → chunk hashes) and watches the filesystem.
 - Upload: hash chunks locally → `prepare` → upload only what the server says is missing →

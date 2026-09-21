@@ -113,6 +113,49 @@ player → manifest (small, from API/CDN) → segments (CDN edge; origin shield 
        → ABR: measure throughput/buffer, switch rendition per segment
 ```
 
+Batch work on the left, 30 Tbps of egress on the right, and almost nothing in between:
+
+```mermaid
+flowchart LR
+    up["Uploader"]
+    obj[("Object store<br/>raw source, 30 TB/day")]
+    orch["Pipeline orchestrator<br/>DAG per video, priority queues"]
+    ck["Split by GOP<br/>independently decodable chunks"]
+    tr["Transcode workers<br/>spot instances, ~7500 cores<br/>6 renditions per video"]
+    pkg["Concatenate · package HLS/DASH · DRM<br/>thumbnails · captions"]
+    seg[("Segments + manifests<br/>content-addressed, ~120 TB/day")]
+    db[("videos · renditions<br/>small facts only")]
+    sh["Origin shield"]
+    cdn["CDN edge PoPs<br/>95%+ of bytes must hit"]
+    pl["Player<br/>adaptive bitrate"]
+
+    up --> |"presigned resumable upload"| obj
+    obj -.-> |"object-created event"| orch
+    orch --> ck
+    ck ==> |"hundreds of parallel tasks, output keyed by<br/>video + rendition + chunk + pipeline version"| tr
+    tr ==> pkg
+    pkg --> seg
+    pkg --> |"mark ready"| db
+    pkg -.-> |"pre-position before a premiere"| cdn
+    pl --> |"manifest, small"| cdn
+    pl --> |"2-6 s segments — 30 Tbps peak, 99.9% of traffic"| cdn
+    cdn --> |"miss"| sh
+    sh --> |"one pull per shield, not one per PoP"| seg
+    pl -.-> |"measure throughput and buffer,<br/>pick the next segment's rendition"| pl
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class up,pl client
+    class cdn,sh edge
+    class orch,ck,tr,pkg service
+    class obj,seg,db store
+```
+
 ### Deep dive A — the transcoding pipeline
 
 - **Split by GOP (group of pictures)** so chunks are independently decodable, then transcode
@@ -134,6 +177,29 @@ player → manifest (small, from API/CDN) → segments (CDN edge; origin shield 
   broadcast. Optimising the ladder per title saves double-digit percentages of total egress.
 
 ### Deep dive B — adaptive bitrate delivery
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Player
+    participant C as CDN edge
+    participant O as Origin shield
+
+    P->>C: GET manifest
+    C-->>P: the rendition ladder and its segment list
+    P->>C: segment 1 at the LOWEST rendition
+    C->>O: miss — cold video
+    O-->>C: fill, one pull for every PoP behind this shield
+    C-->>P: 2 s of video
+    Note over P: start playing now. Requesting the lowest rendition first<br/>is how join time stays under 1 s.
+    P->>P: measured 12 Mbps, buffer 8 s and growing
+    P->>C: segments 2-5 at 1080p, then 4K
+    Note over P: buffer 20 s — the ramp up is only safe because there is<br/>video banked to fall back on
+    P->>P: throughput collapses to 2 Mbps (cell handover)
+    P->>C: next segment at 480p — switch DOWN now, not when the buffer empties
+    Note over P,C: the server does nothing clever. Every decision is made in the<br/>player, which is exactly why 10M concurrent viewers scale.
+    Note over P: shorter segments adapt faster but cost more requests and<br/>compress worse. That is the knob.
+```
 
 - Video is cut into 2–6 s segments at each quality level; the manifest lists them.
 - The **player** decides: measure recent throughput and buffer occupancy, pick the next

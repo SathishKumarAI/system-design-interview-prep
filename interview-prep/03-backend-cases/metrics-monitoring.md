@@ -118,6 +118,47 @@ targets → collectors/agents (scrape or receive) → relabel/filter → remote 
                                                           silence, route → page/slack)
 ```
 
+```mermaid
+flowchart LR
+    t["Targets"]
+    ag["Collectors / agents<br/>scrape or receive, relabel, filter"]
+    lim["Cardinality limiter<br/>per-tenant series cap"]
+    ing["Ingester tier<br/>head block in memory + WAL<br/>RF3, quorum writes"]
+    comp["Compactor"]
+    obj[("Object storage<br/>immutable 2 h blocks<br/>+ 5 min downsample, 13 months")]
+    q["Querier<br/>fans out and merges"]
+    dash["Dashboards"]
+    rule["Rule evaluator<br/>every 15-30 s, fires after for: 5m"]
+    am["Alert manager<br/>group · inhibit · silence · route"]
+    pg["Page / Slack"]
+
+    t --> |"scrape or push — 10M datapoints/s"| ag
+    ag --> |"remote write, protobuf/snappy"| lim
+    lim --> |"over the tenant's series cap: reject, with a clear error"| ag
+    lim --> ing
+    ing --> |"429 when saturated: agents buffer, then drop the<br/>oldest. A designed behaviour, not a bug"| ag
+    ing ==> |"every 2 h, cut the head into an immutable block"| comp
+    comp ==> obj
+    q --> |"recent: read the head from the ingesters"| ing
+    q --> |"history: read blocks"| obj
+    q --> dash
+    q --> |"recording rules make this cheap"| rule
+    rule --> am
+    am --> |"one page for 500 hosts down, not 500 pages"| pg
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class t,dash,pg client
+    class ag edge
+    class lim,ing,comp,q,rule,am service
+    class obj store
+```
+
 ### Deep dive A — cardinality, the thing that kills these systems
 
 Cardinality = number of distinct label combinations. It is **multiplicative**:
@@ -133,6 +174,26 @@ Rules to state:
   continuously. High churn is worse than high static cardinality because the index keeps growing.
 - Use **histograms** for latency, not one series per bucket boundary you invented; and prefer
   native/exponential histograms where available.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant E as Engineer, Friday afternoon
+    participant A as Agent
+    participant L as Cardinality limiter
+    participant I as Ingester<br/>head block + in-memory index
+    participant Q as Querier
+
+    E->>A: adds a user_id label to http_requests_total
+    Note over A: service(50) x endpoint(200) x status(10) x instance(1000)<br/>was already 100M series. Cardinality MULTIPLIES.
+    A->>L: remote write, millions of brand-new series
+    L-->>A: 429 — per-tenant series limit exceeded, metric named
+    Note over L,I: a rejected metric is annoying. An unbounded one takes<br/>monitoring down for EVERYBODY, during the incident it caused.
+    A->>A: buffer locally, then drop the oldest samples
+    Q->>I: dashboards and the 10k alert rules keep working
+    Note over I: without the limiter the index (~1 KB per series) grows<br/>without bound, ingesters OOM, and WAL replay on restart<br/>never finishes — the only irreplaceable window is lost.
+    Note over E: churn is the slow version of the same bug: pods restarting<br/>with a new instance label on every deploy.
+```
 
 > [!tip] Say this
 > "The first thing I'd build after ingest is a cardinality limiter and a per-tenant
