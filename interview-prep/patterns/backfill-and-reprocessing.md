@@ -211,6 +211,39 @@ process rather than code.
 - **Financial restatement practice** — immutable published periods plus adjustment entries in the
   current period; the pattern the analytics world usually reinvents badly.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **How far back you can replay** | Kinesis Data Streams retention: **24 hours by default**, extendable to **8 760 hours (365 days)** with `IncreaseStreamRetentionPeriod`; charged above 24 h | Event Hubs retention: default **1 hour**; maximum **7 days** on Standard, **90 days** on Premium and Dedicated. Retention changes apply to existing events |
+| **The archive you reprocess from** | S3 raw zone, read by Glue, EMR or Athena — "read history from cheap storage rather than the production primary" in service form | **Event Hubs Capture** to Blob Storage or Data Lake Storage, Avro by default (Parquet through the no-code editor) |
+| **Incremental state across runs** | **AWS Glue job bookmarks** — `Enable`, `Disable`, `Pause`. You can **rewind** a bookmark to any previous run for a backfill, or `aws glue reset-job-bookmark` to reprocess everything | **Data Factory tumbling window trigger** — a `startTime` in the past generates `M = (now − startTime) ÷ windowSize` backfill runs, executed **oldest to newest**, deterministically, and this order "can't be modified" |
+| **Throttling it** | A separate Glue or EMR capacity pool; SQS worker fleets get instance scale-in protection so a long task is not killed mid-flight | `maxConcurrency` bounds simultaneous windows (1–**50**, required); `retryPolicy.count` default **0**, `intervalInSeconds` default and minimum **30**; `delay` default `00:00:00` |
+| **The default that bites** | Glue job bookmarks default to **`Disable`**, so a rerun silently reprocesses the whole dataset — and once enabled they bite from the other side: "when you rewind or reset a bookmark, AWS Glue does not clean the target files", so a rewound backfill duplicates output unless you write to a new target. Which is this page's rule, enforced by the tool's absence of one | Standard-tier Event Hubs **cannot retain more than 7 days**, so "replay from the log" is not a recovery plan for a six-week correction unless you are on Premium/Dedicated or capturing to storage. Check the tier before you promise a rebuild |
+
+One more Glue trap, because it is silent and permanent: change a source's path without changing its
+`transformation_ctx` and "the AWS Glue job will use the old bookmark state", so files in the new path are
+**skipped as already processed**. A backfill that reads nothing and reports success is the worst outcome on this
+page.
+
+## In an LLM deployment
+
+There is an honest LLM version of this page, and it is not "it also applies". Reprocessing a pipeline whose
+transformation is a model call is the one case where *same code path as live* cannot be achieved by discipline
+alone: the model version, the system prompt, the decoding parameters and the provider's own weights all drift
+underneath byte-identical code, so a rerun of last quarter's records through today's endpoint is a **different
+computation** with no diff that will tell you. Pin and record the model identifier, the prompt version and the
+sampling parameters on every output row — that is this page's `computed_at` column with three more fields, and
+without it a restatement is indistinguishable from model drift.
+
+The cost arithmetic is different in kind, too. A database backfill spends cluster-hours you can add; a model
+backfill spends **tokens**, metered per call against a quota. Amazon Bedrock's on-demand quotas are tokens per
+minute per model per Region, shared across `InvokeModel`, `Converse` and the rest, so a backfill competes
+directly with live traffic for a resource you cannot scale by spending money faster. That is this page's
+throttling problem with the shared cluster replaced by a vendor quota. The answer both clouds ship is a separate
+lane: Bedrock **batch inference** has its own quotas, distinct from the on-demand pool, and using it is the
+difference between a backfill that is a Tuesday and a backfill that is an incident.
+
 ## Staff-level follow-ups
 
 1. A bug corrupted six weeks of a metric that three dashboards and one model consume. Walk the
@@ -247,3 +280,11 @@ process rather than code.
 - [Delta Lake — `replaceWhere` and time travel](https://docs.delta.io/latest/delta-batch.html)
 - [Kafka KIP-405 — tiered storage](https://cwiki.apache.org/confluence/display/KAFKA/KIP-405%3A+Kafka+Tiered+Storage)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.11 — reprocessing and derived data
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [Amazon Kinesis Data Streams — change the data retention period](https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html) — 24 h default, 8 760 h maximum
+- [AWS Glue — tracking processed data using job bookmarks](https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html) — Enable/Disable/Pause with Disable the default, rewind, targets not cleaned, the `transformation_ctx` trap
+- [Amazon Bedrock — Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — token-per-minute quotas shared across inference APIs, batch inference quoted separately
+- [Azure Event Hubs — features and terminology](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features) — retention by tier, Event Hubs Capture
+- [Azure Data Factory — create a tumbling window trigger](https://learn.microsoft.com/en-us/azure/data-factory/how-to-create-tumbling-window-trigger) — backfill execution order, `maxConcurrency`, `retryPolicy`, `delay`

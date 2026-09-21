@@ -244,6 +244,37 @@ so the switch was made on measured evidence rather than confidence.
   schemas: add the new field, populate both, migrate clients, remove the old — see
   [../02-primitives/storage-and-databases.md](../02-primitives/storage-and-databases.md).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Expand–contract as a managed product** | **Amazon RDS Blue/Green Deployments** (RDS for MariaDB, MySQL and PostgreSQL; Aurora has its own). RDS copies the production *topology* — replicas, storage config, Multi-AZ — replicates blue→green, and switches over "typically under a minute" with no data loss and no application change | **No engine-level equivalent.** Azure Database Migration Service does online (minimal-downtime) migration, but its current scope is SQL only: **Azure SQL Managed Instance** and **SQL Server on Azure VMs** online, **Azure SQL Database offline only**. Reaching for DMS to move PostgreSQL or MySQL is reaching for a service that no longer covers it |
+| **Non-blocking index build** | PostgreSQL `CREATE INDEX CONCURRENTLY`; gh-ost or pt-online-schema-change for MySQL rewrites | Azure SQL / SQL MI `WITH (ONLINE = ON)` on `CREATE INDEX`, `ALTER INDEX`, `DROP INDEX`, and on `ALTER TABLE` adding or dropping a UNIQUE or PRIMARY KEY constraint. **Resumable** index operations require online |
+| **The read-switch flag** | AWS AppConfig feature flag, with automatic rollback when a CloudWatch alarm fires — the flip and its revert are the same mechanism | Azure App Configuration feature flag; immutable **snapshots** give a last-known-good to redeploy |
+| **Throttling the backfill** | Read history from a replica or snapshot rather than the writer; watch replica lag before raising parallelism | ADF tumbling window `maxConcurrency` (1–50) to bound a batched copy; read replicas for the heavy scan |
+| **The default that bites** | The green environment is **read-only by default**, and that is protection, not friction: enabling writes "can result in replication conflicts" and "unintended data in the production databases after switchover", and on RDS for PostgreSQL with physical replication "you can't enable write operations on the green environment" at all. The other surprise is the contract step — after switchover the old environment is **renamed `mydb1-old1`, not deleted**, and keeps billing until you delete it | `ONLINE = ON` is not lock-free. The docs warn that "index rebuild commands might hold exclusive locks on clustered indexes after a large object column is dropped from a table, even when performed online", and online index operations "aren't available in every edition of SQL Server" — so a script that runs clean against Azure SQL may block hard against the on-prem source you are migrating away from |
+
+Neither cloud helps with **contract**, which is the step teams skip. Both give you an irreversible switchover and
+nothing that nags about the old column, the second write path or the dead backfill job. That remains a scheduled
+piece of work with a date and an owner.
+
+## In an LLM deployment
+
+The expand–contract shape survives intact when the thing being migrated is a model or a prompt, and it is the
+only safe way to do it: expand (deploy the new model behind a flag) → dual-write (send a sample of live traffic
+to both) → shadow-read (serve the old answer, score the new one offline) → switch reads → contract. What breaks
+is **verify**. There is no mismatch rate, because two models given the same prompt produce different text and
+both can be correct — so this page's warning about comparing *semantically* rather than byte-wise stops being a
+footnote and becomes the entire step. "Mismatch ~0 across a full business cycle" becomes "no regression on a
+graded eval set, plus a live A/B", and the soak is still measured in business cycles.
+
+Two schema-shaped traps carry over literally. **Embeddings are a schema**: changing the embedding model
+invalidates every stored vector, so the change is a full rebuild of the index plus a dual-write window, not a
+config edit — and a half-migrated index of old and new vectors does not error, it returns confidently wrong
+neighbours, which is the silent-corruption failure this page exists to prevent. And **a prompt is a wire
+format**: add a field to a structured output and every reader that has not deployed yet breaks on it, which is
+the same rule as the last row of the Failure modes table — **deploy readers first, writers second**.
+
 ## Staff-level follow-ups
 
 1. Order the phases of a column-type migration and explain what breaks if dual-write and backfill
@@ -282,3 +313,12 @@ so the switch was made on measured evidence rather than confidence.
 - [Percona — pt-online-schema-change](https://docs.percona.com/percona-toolkit/pt-online-schema-change.html)
 - [PostgreSQL — `CREATE INDEX CONCURRENTLY` and lock levels](https://www.postgresql.org/docs/current/sql-createindex.html)
 - [Martin Fowler — ParallelChange (expand/contract)](https://martinfowler.com/bliki/ParallelChange.html)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [Amazon RDS — overview of blue/green deployments](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/blue-green-deployments-overview.html) — supported engines, read-only green, switchover under a minute, the `-old1` rename
+- [What is AWS AppConfig?](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html) — feature flags and CloudWatch-alarm rollback
+- [What is Azure Database Migration Service?](https://learn.microsoft.com/en-us/azure/dms/dms-overview) — current online/offline scenario support
+- [SQL Server / Azure SQL — perform index operations online](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/perform-index-operations-online) — `ONLINE = ON`, resumable operations, the clustered-index lock caveat
+- [Azure App Configuration — best practices](https://learn.microsoft.com/en-us/azure/azure-app-configuration/howto-best-practices) — snapshots as last-known-good
+- [Azure Data Factory — create a tumbling window trigger](https://learn.microsoft.com/en-us/azure/data-factory/how-to-create-tumbling-window-trigger) — `maxConcurrency`
