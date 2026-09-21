@@ -229,6 +229,42 @@ component versions.
 - **First thing I'd cut:** the number of components. A 40-component library nobody maintains
   is worse than 15 excellent ones.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | CodeBuild/CodePipeline builds the library → **CodeArtifact** as the private npm registry with an upstream to npmjs → **Amplify Hosting** (or S3 + CloudFront) for the docs site and Storybook, one branch deployment per PR | Azure Pipelines builds → **Azure Artifacts** npm feed with an upstream to npmjs → **Azure Static Web Apps** for docs and Storybook, with preview environments per PR |
+| **What you configure** | Domain and repository layout, upstream ordering (your repo first, npmjs behind it), the auth token TTL your CI uses | Feed scope (project vs organization), upstream sources, retention policies, preview-environment count |
+| **The default that bites** | **1,200 requests per second using a single authentication token, and that quota is not adjustable.** Thirty teams' CI sharing one CodeArtifact token is a throttle waiting for your busiest morning; 800 read req/s from a single AWS account is the account-level companion. `PublishPackageVersion` is **10/s** — irrelevant until a monorepo release publishes 40 packages at once | **Azure Artifacts gives 2 GiB of free storage per organization**, and "when your organization reaches the 2 GiB free-tier storage limit, you won't be able to publish new packages." Forty components × every version ever published crosses that quietly, and the failure mode is a blocked release, not a bill |
+| **What it costs you** | Amplify Hosting: **25 apps per Region**, **50 branches per app**, 5 GB build artifact. One preview deployment per open PR against 50 branches is a real ceiling for a library 30 teams send PRs to | Static Web Apps: **15,000 files per app on every plan**, **500 MB per environment**, and **10 preview environments** on Standard. A Storybook static build for 40 components with per-story assets reaches 15,000 files faster than it reaches 500 MB — a file *count* limit is the unusual one to plan for |
+| **The odd specific** | Asset file size 5 GB, 350 assets per package version, 10 upstreams per repository | npm packages are capped at **500 MiB**, with "an additional hard limit of **375 KB** for the `package.json` file" — a generated exports map for 40 components with per-entry `types`/`import`/`require` conditions can approach it |
+| **Versions** | Not documented as a count limit | **5,000 versions per package ID**, unlimited package IDs per feed — use retention policies or a long-lived library eventually stops publishing |
+
+Neither cloud has anything to say about the actual hard part. Registry, CI and a docs host are
+commodities; the API contract, the deprecation window and the codemods are not purchasable and are
+where all the cost is. The one genuinely useful cloud fact is the *token* rate limit on AWS and the
+*storage* limit on Azure — both are the shared-service failure this case's whole thesis is about,
+arriving in the delivery pipeline instead of the API.
+
+## In an LLM deployment
+
+**This case does not meaningfully change for a model**, and the reason is worth one line: a
+component library is a compile-time artefact, not a runtime service, so there is no inference
+anywhere in it.
+
+Two second-order effects are real enough to name. **Your API is now training data and prompt
+context.** Assistants generating UI code will reach for whatever shape is most common in public
+corpora, which means a consumer team's first draft uses the props your library deliberately does
+*not* have. Publishing machine-readable usage — accurate TypeScript types, JSDoc on every prop, and
+an `llms.txt`-style usage doc next to the Storybook — is the cheapest way to make the generated
+code compile. **Codemods get easier, and migration does not.** A model is good at the mechanical
+half of a breaking change and unreliable at the judgement half; the deprecation window exists
+because 30 teams have to *read* the change, and that does not compress.
+
+If a component ever does call a model — an AI-powered `<Combobox>` that ranks options — it has
+violated this case's own rule that a component never fetches. Keep the model call in the consumer's
+data layer and let the component take `options` like everything else.
+
 ## Referenced by
 
 - [Frontend cases index](README.md)
@@ -241,3 +277,10 @@ component versions.
 - [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/)
 - Vendor: `10-resources/vendor/front-end-interview-handbook/`
 - Related repo skills: `shadcn`, `frontend-design:frontend-design`, `ui-ux-pro-max:design-system`
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — CodeArtifact endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/codeartifact.html) — 1,200 requests/s per authentication token (not adjustable), 800 read and 100 write requests/s per account, `PublishPackageVersion` 10/s, 5 GB asset size, 350 assets per package version, 10 direct upstreams, 1,000 repositories per domain, 10 domains per account
+- [AWS — Amplify Hosting service quotas](https://docs.aws.amazon.com/amplify/latest/userguide/quotas-chapter.html) — 25 apps per Region, 50 branches per app, 5 domains per app, 5 GB build artifact
+- [Azure — size and count limits in Azure Artifacts](https://learn.microsoft.com/en-us/azure/devops/artifacts/reference/limits) — 2 GiB free storage per organization and the publish block on reaching it, 5,000 versions per package ID, 500 MiB npm package with a 375 KB `package.json` hard limit, 20 upstreams per package type
+- [Azure — quotas in Azure Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/quotas) — 15,000 file count, 500 MB per environment, 2 GB total storage, 10 preview environments and 100 apps on Standard, 100 GB included bandwidth per month

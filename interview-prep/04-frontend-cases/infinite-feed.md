@@ -252,6 +252,42 @@ still be semantically a list, with `aria-setsize`/`aria-posinset` where the DOM 
 incomplete); infinite scroll needs a keyboard-reachable "Load more" alternative; new items
 announced via `aria-live="polite"`; focus must never be stolen by loading content.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | App shell on Amplify Hosting or S3 + CloudFront; `GET /v1/feed` through API Gateway; images in S3, resized variants generated at the origin or by Lambda@Edge, served by CloudFront | App shell on Azure Static Web Apps or Blob + Front Door; the feed API through APIM or Static Web Apps' managed Functions; images in Blob Storage behind Front Door |
+| **What you configure** | Cache policy per path (immutable hashed assets vs `no-store` feed JSON), compression, `Cache-Control` on image variants, CloudFront Functions for device/format negotiation | Route-level cache and header rules in `staticwebapp.config.json`, Front Door caching and compression rules |
+| **The default that bites** | **A CloudFront Function cannot do the image work.** It is capped at 10 KB of code and 2 MB of memory and the runtime "restricts access to the network, file system, environment variables, and timers", so AVIF negotiation at the edge can only *choose* a variant — something else has to have produced it. The 10× image saving this case's estimates depend on is a pipeline you build | **15,000 files per Static Web App, on every plan**, and 500 MB per environment. A modern bundle with per-route chunks and hashed assets is not near it; a build that emits a pre-rendered page per feed item is. It is a *file count* ceiling, which is the one nobody checks |
+| **What it costs you** | CloudFront defaults to **250,000 requests/second and 150 Gbps per distribution** (both adjustable). At 3–5 images per post that is images, not API calls, deciding when you file a quota increase | Every Static Web Apps plan includes **100 GB of bandwidth per month**, overage **$0.20/GB on Standard and unavailable on Free** (rates as documented 2026-09-21). At ~80 KB/post of optimised imagery, 100 GB is roughly 1.2 M post impressions — a month of a small product, an hour of a large one |
+| **Back/forward restore** | Nothing platform-side. `history.state` and the bfcache are browser features; the CDN's job is to make the shell instant so a restored scroll position has something to restore into | Same |
+
+The honest summary for a frontend case: the cloud supplies a static host, a CDN and a JSON
+endpoint, and every number this case actually cares about — INP, CLS, DOM node count, bundle size —
+is decided in your code and measured in the browser. The two cloud facts worth carrying are the
+edge-function restriction (images) and the file-count quota (build output), because both are
+invisible until a deploy fails.
+
+## In an LLM deployment
+
+The client barely changes; what changes is that the response has **no fixed size and no fixed
+latency**, and both of those are CLS and INP problems. A generated summary card whose height is
+unknown until it finishes streaming is the textbook layout shift this case budgets 0.1 for —
+reserve the box from a token-count estimate before the first chunk arrives, exactly as you reserve
+an image's aspect ratio.
+
+Streaming forces a rendering decision too. Tokens arrive at tens per second; naively setting state
+per token is the same mistake as one React render per WebSocket message — batch to an animation
+frame and the 200 ms INP target survives. A `ReadableStream` read in a Web Worker keeps the parse
+off the main thread for the same reason the dashboard case does it.
+
+Optimistic UI is where it genuinely breaks. A like is optimistic because you can predict the
+result; a generation is not, so there is nothing to render optimistically and the honest pattern is
+a skeleton with a visible cancel. And **virtualization and streaming fight**: an item that grows
+while it is being written must not be unmounted by the virtualizer mid-stream, so the streaming
+item is pinned outside the windowed range until it settles. That interaction — not the model — is
+the bug you will actually ship.
+
 ## Referenced by
 
 - [Frontend cases index](README.md)
@@ -264,3 +300,10 @@ announced via `aria-live="polite"`; focus must never be stolen by loading conten
 - [TanStack Virtual](https://tanstack.com/virtual) · [TanStack Query — optimistic updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates)
 - Vendor: `10-resources/vendor/front-end-interview-handbook/`
 - Backend counterpart: [../03-backend-cases/news-feed.md](../03-backend-cases/news-feed.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — restrictions on CloudFront Functions](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-function-restrictions.html) — no network, file system, environment variable or timer access
+- [AWS — CloudFront quotas](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) — 10 KB function size, 2 MB function memory, 250,000 requests/s and 150 Gbps per distribution
+- [AWS — Amplify Hosting service quotas](https://docs.aws.amazon.com/amplify/latest/userguide/quotas-chapter.html) — apps, branches and build-artifact limits for the app shell
+- [Azure — quotas in Azure Static Web Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/quotas) — 15,000 file count, 500 MB per environment, 100 GB included bandwidth per month and the documented overage rate

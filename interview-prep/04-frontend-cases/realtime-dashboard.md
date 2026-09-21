@@ -234,6 +234,43 @@ that a chart has an a11y story.
   fan-out by more than half.
 - **First thing I'd cut:** update resolution (1 s → 5 s) for widgets that aren't focused.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | AppSync Events (channel per widget subscription) or an API Gateway WebSocket API for the live stream; API Gateway + Lambda for the historical `/query`; dashboards in DynamoDB; the SPA on CloudFront | Azure Web PubSub (group per widget subscription) for the live stream; APIM + Functions for `/query`; dashboards in Cosmos DB; the SPA on Static Web Apps or Front Door |
+| **What you configure** | Channel namespaces, per-connection subscription set, and **how much the server batches before it publishes** | Groups joined on connect, `sendToGroup` for server-pushed batches, event handler only for control messages |
+| **The default that bites** | **Outbound is metered in 5 kB units**: "one metered event equals 5 kB of delivered event." Sending 5,000 unbatched 200-byte messages per second bills as 5,000 metered events; batching a frame's worth into one 16 KB message bills as 4. The batching this case does for the *main thread* turns out to be the same batching that governs the bill | An API Gateway WebSocket connection is killed at **7,200 seconds** and that quota cannot be raised, so an 8-hour dashboard session reconnects at least four times. Every reconnect needs the `snapshot` path in §4 — it is not an edge case, it is scheduled |
+| **What it costs you** | **10,000 inbound events/second per API** and 1,000,000 outbound metered events/s (both adjustable), **2,000 connections/second per API**, and **25 publish requests/second per client connection** — the last one caps interactive widgets that publish, not just subscribe | Web PubSub caps a frame at **1 MB** and **stores no customer data**, so the snapshot a reconnecting client needs comes from your query API, never from the bus. Replay is not a feature you can turn on |
+| **Where the design already agrees** | Server-side batching and downsampling to the chart's pixel width are asks the platform rewards twice: fewer metered events out, fewer messages for the Worker to parse | Same, plus 1 MB per frame is a real cap on "send me the last hour on resubscribe" — page it |
+
+The case argues for server-side batching on frontend grounds (5,000 renders/s is fatal) and both
+clouds independently make it a cost and a quota decision. That convergence is the thing to say: the
+batching boundary is not a client optimisation, it is the contract between three systems.
+
+## In an LLM deployment
+
+Nothing about the 5,000 msg/s hot path should involve a model — the whole design exists to keep the
+main thread free, and an inference call is orders of magnitude slower than a frame. Where it lands
+is the parts that are already human-paced.
+
+**Natural-language query** is the obvious one and the one with a real failure mode: the model
+translates "p99 latency for checkout, last 4 hours, by region" into a PromQL/SQL query, and then
+that query has to be *validated and cost-bounded* before it runs, because a generated
+`query_range` over 13 months is a denial of service against the backend in
+[metrics-monitoring](../03-backend-cases/metrics-monitoring.md). Parse it, cap the time range and
+the series count, and show the user the query you are about to run.
+
+**Anomaly narration** — "error rate tripled at 14:02, correlated with the deploy" — is a batch job
+whose output is a small annotation on a chart, generated at most every few seconds and streamed
+through the same widget channel as everything else. It reuses the ring buffers, which is the point:
+the model sees the downsampled series a chart already computed, not the 5,000 msg/s firehose. At
+one summary per widget per 30 seconds across 50 widgets that is 100 calls/minute, which fits a
+modest quota; per-message inference at 5,000/s does not fit any.
+
+The honest caveat for an ops tool: a narrated anomaly that is wrong during an incident costs more
+than no narration. Show the evidence next to the sentence, and never let it move a threshold.
+
 ## Referenced by
 
 - [Frontend cases index](README.md)
@@ -246,3 +283,10 @@ that a chart has an a11y story.
 - [LTTB downsampling paper (Steinarsson, 2013)](https://skemman.is/handle/1946/15343)
 - [MDN — OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
 - Backend counterpart: [../03-backend-cases/metrics-monitoring.md](../03-backend-cases/metrics-monitoring.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — AppSync endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/appsync.html) — outbound metered in 5 kB events, 1,000,000 outbound/s and 10,000 inbound/s per API, 2,000 connections/s per API, 25 publish requests/s per connection (not adjustable)
+- [AWS — API Gateway endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/apigateway.html) — WebSocket connection duration 7,200 s (not adjustable), 600 s idle timeout
+- [Azure — Web PubSub service internals](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/concept-service-internals) — groups, `sendToGroup`, 1 MB maximum frame
+- [Azure — Web PubSub FAQ](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/resource-faq) — the service stores no customer data

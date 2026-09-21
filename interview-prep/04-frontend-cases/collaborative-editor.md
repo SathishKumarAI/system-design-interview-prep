@@ -260,6 +260,42 @@ sequenceDiagram
   Compaction cadence is the main cost knob.
 - **First thing I'd cut:** history retention depth and presence update frequency.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shape** | AppSync Events (or an API Gateway WebSocket API) as the update bus, one channel per document; snapshots in S3; the op log and `permissions` in DynamoDB; Lambda/ECS for auth and compaction | Azure Web PubSub as the update bus, **one group per document**; snapshots in Blob Storage; op log and permissions in Cosmos DB; Container Apps for auth and compaction |
+| **What you configure** | Channel namespace per document, publish authorisation, and whether awareness rides the same channel as updates (it should not) | Group membership on connect via the `connect` event handler, `sendToGroup` mode so cursor traffic never round-trips to your server |
+| **The default that bites** | **25 publish requests per second per WebSocket connection, and that quota is not adjustable.** A client that emits one message per keystroke plus awareness at 20 Hz exceeds it on its own — which is why Yjs-style clients batch updates on a debounce. The platform makes batching mandatory, not optional | Web PubSub **stores no customer data**, and a frame is capped at **1 MB**. Snapshot, history, state-vector sync and replay are entirely yours; the service is a fan-out pipe with groups and nothing else. A client back from a week offline gets its diff from *your* store, never from the bus |
+| **What it costs you** | Outbound is metered in **5 kB units** and capped at **1,000,000 metered events/second per API** (adjustable); subscription payload is capped at **240 KB** and a publish payload at **1.2 MB**, so a compacted snapshot cannot be pushed down the update channel — it is a signed URL to object storage | A Cosmos logical partition is capped at **20 GB**. An op log keyed by `doc_id` therefore has a hard ceiling, and this case's tombstone-growth problem stops being a performance concern and becomes a write failure. Compaction is a correctness requirement, not an optimisation |
+
+The awareness/update split that the protocol section recommends on semantic grounds is enforced by
+the platform on both clouds: cursor traffic at 20 Hz against a 25 publish/s per-connection limit
+cannot share a channel with edits. Throttle presence to 5–10 Hz and put it on its own channel —
+which is what the case already says, arriving as a quota rather than as taste.
+
+## In an LLM deployment
+
+An AI collaborator in a CRDT document is **just another client with a client ID**, and that is the
+whole design. It connects, receives updates, and applies its own ops through the same merge
+function — so its suggestions converge with a human's concurrent typing for free, undo is scoped
+to its client ID like anyone else's, and "revert the AI's changes" is a per-origin undo you already
+built. Bolting a model onto the server as a privileged writer that rewrites the document throws all
+of that away.
+
+Two properties of a model client break assumptions the human case does not have. **It is slow and
+bursty**: a generation takes seconds and then arrives as a large insert, so the 25 publish/s and
+1.2 MB payload limits above are hit by *one* client producing a page of text, and the op must be
+chunked. **It reads the whole document every time**: at 10 MB of content that is far past a
+comfortable prompt, so the model sees a window — the current block plus a retrieved summary — and
+a 10 MB document is never one context.
+
+The operational trap is presence. An assistant that appears as a cursor is a cursor that can move
+while a human is typing in the same paragraph; both edits survive, which is exactly right for a
+sequence CRDT and exactly wrong for the user's mental model. Show its work as *suggestions* in a
+separate layer until accepted, and only then merge — a product decision the data structure will
+happily let you skip.
+
 ## Referenced by
 
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
@@ -276,3 +312,10 @@ sequenceDiagram
 - [Yjs docs](https://docs.yjs.dev/) · [Automerge](https://automerge.org/)
 - [Martin Kleppmann — CRDTs: the hard parts](https://martin.kleppmann.com/2020/07/06/crdt-hard-parts-hydra.html)
 - Primitives: [consistency-and-consensus](../02-primitives/consistency-and-consensus.md), [networking-and-edge](../02-primitives/networking-and-edge.md)
+
+Cloud claims in §On AWS and Azure (all verified 2026-09-21):
+
+- [AWS — AppSync endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/appsync.html) — 25 publish requests/s per connection (not adjustable), 2,000 connections/s per API, 10,000 inbound events/s, 1,000,000 outbound metered events/s at 5 kB each, 1.2 MB publish payload, 240 KB subscription payload, 200 subscriptions per client connection
+- [Azure — Web PubSub service internals](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/concept-service-internals) — groups, `sendToGroup` mode, 1 MB maximum frame size
+- [Azure — Web PubSub FAQ](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/resource-faq) — the service stores no customer data
+- [Azure — partitioning and horizontal scaling in Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) — 20 GB per logical partition
