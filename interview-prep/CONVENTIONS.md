@@ -62,10 +62,12 @@ carry is in [../CLAUDE.md](../CLAUDE.md) → *Section contract*:
 | 4 | `Failure modes` | What breaks at scale, with cited incidents |
 | 5 | `Trade-offs vs alternatives` | X vs Y vs Z, and where staff engineers get it wrong |
 | 6 | `Real-world examples` | Cited, specific systems and versions |
-| 7 | `Staff-level follow-ups` | 3–5 multi-part probes, never definitional |
-| 8 | `See also` | Hand-written |
-| 9 | `Referenced by` | **Generated** by `gen_backlinks.py`. Never hand-edited |
-| 10 | `Sources` | |
+| 7 | `On AWS and Azure` | The managed service that IS this, the knob, the default that bites. [Contract](_templates/applied-sections.md) |
+| 8 | `In an LLM deployment` | Where this bites when the workload is a model. Prose, one number minimum |
+| 9 | `Staff-level follow-ups` | 3–5 multi-part probes, never definitional |
+| 10 | `See also` | Hand-written, each link with the reason to read it next |
+| 11 | `Referenced by` | **Generated** by `gen_backlinks.py`. Never hand-edited |
+| 12 | `Sources` | Every cloud claim in §7 carries its vendor doc link here |
 
 > [!warning] Trap
 > Do not put a literal `## Referenced by` line inside a code fence anywhere in this repo.

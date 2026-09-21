@@ -233,6 +233,52 @@ Three design rules fall out of it, and all three generalise beyond caching:
 - **Discord** — request coalescing in a service tier in front of the database, specifically to make
   a viral hot key produce one query (see [hot-shard-mitigation.md](./hot-shard-mitigation.md)).
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The cache** | ElastiCache (Valkey / Redis OSS), or DAX in front of DynamoDB | Azure Cache for Redis (Basic → Enterprise) |
+| **What you configure** | `maxmemory-policy`, reserved-memory-percent, cluster mode, multi-AZ | Eviction policy, tier, zone redundancy, clustering |
+| **Stampede protection** | **None.** Redis has no request coalescing — a mass expiry is entirely your application's problem | **None.** Identical Redis semantics |
+| **Where it IS solved** | **CloudFront Origin Shield** consolidates concurrent requests for the same object, "resulting in as few as one request going to your origin" | Front Door / CDN caching, but no documented request collapsing — do not assume it |
+| **Negative caching** | CloudFront error-caching TTL per status code; DAX caches a negative lookup like any other result | Front Door rules engine on response status |
+| **Cold start** | ElastiCache restores from a backup (RDB) rather than starting empty — the difference between a warm restart and an origin event | Import from an RDB on Premium/Enterprise only |
+| **The default that bites** | The error-caching TTL is *short*. A 5xx that is cached for seconds re-stampedes the origin every few seconds | A Basic-tier cache has **no replica**: a node restart is a guaranteed full cold start |
+
+Two of the four disasters are therefore bought, not built — but only at the edge. Origin Shield is
+coalescing for *cacheable objects over HTTP*; it does nothing for the stampede that happens between
+your service tier and your database, which is where most of them happen. That one you still write
+yourself, with `singleflight` or a lease.
+
+## In an LLM deployment
+
+Every one of the four disasters gets worse, because the cost of a miss changes by three orders of
+magnitude. A database miss costs a disk seek; a prompt-cache miss costs a **prefill**, which is
+GPU-seconds you are billed for and seconds of latency the user sees.
+
+**Stampede.** vLLM's automatic prefix caching holds the KV blocks for shared prefixes — a long
+system prompt, a RAG context. When a popular prefix is evicted, every concurrent request
+recomputes the same prefill. There is no coalescing: the requests are not identical, they merely
+*share a prefix*, so ordinary request-deduplication does not fire. The fix is the same lease idea
+in a different place — admit one request to compute the prefix, queue the rest behind it.
+
+**Cold start is a deploy, and you schedule it.** A rolling restart empties the prefix cache and
+reloads tens of GB of weights. For a minute or two after each rollout every request pays full
+prefill against a GPU fleet sized for the cached steady state. This is the section's central point
+in its most expensive form: **you schedule your own outage every time you deploy**, and the only
+defences are draining, warming with representative prefixes before taking traffic, and never
+rolling all replicas at once.
+
+**Penetration.** Provider-side prompt caching keys on an exact prefix — Anthropic's cache entries
+expire on a 5-minute sliding TTL, with a 1-hour option. An attacker, or just a badly built client
+that varies a timestamp near the top of the prompt, produces a permanent 0% hit rate at full price
+per call. Put anything varying at the END of the prompt; a single header injected before the system
+prompt can multiply a bill.
+
+**The number that makes this urgent.** At roughly $2–5 per GPU-hour for an H100-class card, a
+stampede that recomputes a 4-second prefill 10 000 times is not a latency incident, it is a line
+item. Cache failure modes are a cost-control topic here, not just an availability one.
+
 ## Staff-level follow-ups
 
 1. Your homepage feed key expires and 10 000 requests miss simultaneously. Give three independent
@@ -265,6 +311,12 @@ Three design rules fall out of it, and all three generalise beyond caching:
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources
+
+- [CloudFront Origin Shield](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html) — request consolidation, verified 2026-09-20
+- [ElastiCache backup and restore](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups.html)
+- [Azure Cache for Redis tiers](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview)
+- [vLLM automatic prefix caching](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html)
+- [Anthropic prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)
 
 - [Meta — More details on today's outage (23 September 2010)](https://engineering.fb.com/2010/09/23/uncategorized/more-details-on-today-s-outage/)
 - [Nishtala et al. — Scaling Memcache at Facebook, NSDI 2013](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf) — leases

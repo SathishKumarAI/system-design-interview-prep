@@ -6,7 +6,7 @@ tier: P0
 status: drafted
 sources: [Google SRE book, Facebook "Fail at Scale", CoDel, Netflix concurrency-limits]
 updated: 2026-09-02
-tags: [load-shedding, admission-control, overload, codel, adaptive-lifo, criticality, 429]
+tags: [load-shedding, admission-control, overload, codel, adaptive-lifo, criticality, "429"]
 ---
 
 # Load shedding and admission control
