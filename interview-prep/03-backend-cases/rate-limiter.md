@@ -103,6 +103,38 @@ Three placements, and you should name all three:
 3. Service-local     — protects a specific expensive downstream (bulkhead-style)
 ```
 
+```mermaid
+flowchart LR
+    c["Clients<br/>1M rps"]
+    cdn["Edge / CDN<br/>crude per-IP limits"]
+    gw["API gateway<br/>PRIMARY enforcement<br/>local token bucket per key"]
+    rej["429 + Retry-After"]
+    sync[("Redis<br/>global budget, atomic Lua")]
+    svc["Service<br/>local bucket, bulkhead-style"]
+    dn["Expensive downstream"]
+
+    c --> |"volumetric abuse absorbed before it costs you"| cdn
+    cdn --> gw
+    gw --> |"allow — decision never leaves the node"| svc
+    gw --> |"deny"| rej
+    gw -.-> |"resync this node's share of the global<br/>budget every ~1 s — 1000x fewer Redis ops"| sync
+    gw --> |"billing-relevant rules only: exact<br/>central count, fail CLOSED"| sync
+    svc --> dn
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class c client
+    class cdn edge
+    class gw,svc,rej service
+    class dn external
+    class sync cache
+```
+
 ### Deep dive A — algorithm choice
 
 | Algorithm | State | Behaviour | Verdict |
@@ -143,6 +175,25 @@ return {allowed and 1 or 0, math.floor(tokens)}
 resynchronised every second against Redis. That's ~1000x fewer Redis operations, sub-microsecond
 decisions, and it degrades gracefully to "each node enforces its own share" when Redis is
 unreachable. Reserve exact central counting for the few rules where over-admitting costs money.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant X as Abusive client<br/>100k rps on ONE key
+    participant N1 as Gateway node 1<br/>local bucket
+    participant N2 as Gateway nodes 2..N
+    participant R as Redis<br/>global budget
+
+    R-->>N1: your share for this second: budget / N
+    X->>N1: burst
+    N1->>N1: token bucket drains locally — no network hop, sub-microsecond
+    N1-->>X: 429 + Retry-After
+    N1->>N1: early-reject cache: this key is over for the rest of the window
+    Note over N1,R: from here the abusive key costs ZERO Redis operations.<br/>The hot key never becomes a hot Redis slot.
+    N1--xR: Redis unreachable
+    Note over N1,N2: every node keeps enforcing its last known share.<br/>Accuracy falls to about ±10% — and the API stays up.
+    Note over R: the few billing-relevant rules do not degrade —<br/>they use the central path and fail CLOSED instead.
+```
 
 > [!tip] Interview line
 > "I'll trade exactness for availability: 10% over-admission on a 1000/min limit is

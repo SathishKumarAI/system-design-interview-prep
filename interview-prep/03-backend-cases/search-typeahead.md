@@ -116,6 +116,52 @@ client → search API → query understanding (spellcheck, synonyms, intent)
                     → hydrate + facets → response                              [< 300 ms]
 ```
 
+Indexing is 80% of the system and never touches the query path:
+
+```mermaid
+flowchart LR
+    src[("Source DB")]
+    cdc[["CDC / Kafka"]]
+    enr["Enrichment<br/>attributes, ML features"]
+    ana["Analysis<br/>tokenize, stem, synonyms, n-grams"]
+    iw["Index writers<br/>immutable segments, ~1 s refresh"]
+    ql[("Query log")]
+    tb["Top-K per prefix<br/>offline build"]
+    ta["Typeahead nodes<br/>trie / FST, memory-resident"]
+    cdn["CDN<br/>prefixes of 1-3 chars, TTL 60 s"]
+    c["Client<br/>150 ms debounce"]
+    sa["Search API<br/>spellcheck, synonyms, intent"]
+    sh[("Search shards<br/>document-partitioned, BM25")]
+    rr["Re-rank top ~200<br/>learning-to-rank, ~10 ms"]
+
+    src ==> cdc
+    cdc ==> enr
+    enr ==> ana
+    ana ==> iw
+    iw ==> |"replicate segments, flip the alias"| sh
+    ql ==> tb
+    tb ==> |"immutable artefact, rebuilt every N minutes"| ta
+    c --> |"100k qps peak"| cdn
+    cdn --> |"miss"| ta
+    ta --> |"p99 under 100 ms, no database on the path"| c
+    c --> |"GET /v1/search"| sa
+    sa --> |"scatter to N shards"| sh
+    sh --> |"per-shard top K, gather and merge"| rr
+    rr --> |"hydrate + facets, p99 under 300 ms"| c
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class c client
+    class cdn,cdc edge
+    class enr,ana,iw,tb,ta,sa,rr service
+    class src,sh,ql store
+```
+
 ### Deep dive A — indexing pipeline
 
 - **Near-real-time** indexing: documents go into an in-memory buffer, flushed to a new
@@ -143,6 +189,31 @@ Also mention **hybrid retrieval** — BM25 (lexical) combined with vector/embedd
 to [../06-ml-cases/rag-assistant.md](../06-ml-cases/rag-assistant.md).
 
 ### Deep dive C — making 100 ms achievable for typeahead
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User typing "iphone"
+    participant B as Browser
+    participant E as CDN edge
+    participant T as Typeahead node<br/>trie / FST in memory
+
+    U->>B: i
+    U->>B: p
+    Note over B: 150 ms debounce — no request has left yet
+    B->>E: suggest for "ip"
+    E-->>B: HIT — 1-3 char prefixes are a tiny, extremely hot set
+    Note over E: the majority of the 100k qps never reaches the service
+    U->>B: h
+    B--xB: cancel the in-flight request for "ip"
+    B->>E: suggest for "iph"
+    E->>T: miss
+    T->>T: walk the prefix, read the precomputed top 10 at that node
+    T-->>E: 10 suggestions
+    E-->>B: p99 under 100 ms
+    U->>B: o, n, e
+    Note over U,T: 10 keystrokes became about 3 queries. The debounce and<br/>the cancel remove most of the TAIL, not just the mean.
+```
 
 - Client debounce ~150 ms + cancel in-flight requests on the next keystroke (cuts query
   volume ~3x and removes most of the tail).

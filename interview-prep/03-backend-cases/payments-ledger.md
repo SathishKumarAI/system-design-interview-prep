@@ -130,6 +130,54 @@ Daily settlement file from PSP → reconciliation job → discrepancy report →
 Payout scheduler → saga: check balance → create payout → PSP transfer → confirm/compensate
 ```
 
+Every path that can write a ledger entry, including the three that run after the request is gone:
+
+```mermaid
+flowchart LR
+    co["Checkout"]
+    api["Payment API<br/>idempotency_keys lookup first"]
+    led[("ledger_entries<br/>append-only, each txn sums to zero")]
+    att[("payment_attempts<br/>written BEFORE the call out")]
+    psp["PSP adapter"]
+    ext["Payment provider"]
+    rec["Reconciler<br/>sweeps unknown attempts"]
+    stl["Daily settlement file<br/>the final arbiter"]
+    ops["Ops queue<br/>a human"]
+    wh["Webhook handler<br/>verify signature, dedupe by event id"]
+    k[["Kafka payment events"]]
+    pay["Payout saga<br/>orchestrated, queryable"]
+
+    co --> |"POST with Idempotency-Key"| api
+    api --> |"pending entries"| led
+    api --> |"record the attempt first"| att
+    api --> psp
+    psp --> |"charge, our key passed through"| ext
+    ext --> |"captured or failed — failures are data too"| led
+    att -.-> |"state = unknown"| rec
+    rec --> |"query by our reference"| ext
+    rec --> |"resolve, then write the entries"| led
+    ext ==> |"end of day"| stl
+    stl --> |"discrepancies"| ops
+    ext -.-> |"webhooks: out of order, redelivered"| wh
+    wh --> |"state machine drops stale transitions"| led
+    led -.-> |"notifications, analytics, seller balances"| k
+    pay --> |"reserve, transfer, then confirm or compensate"| led
+    pay --> ext
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class co client
+    class api,psp,rec,wh,pay,ops service
+    class led,att,stl store
+    class k queue
+    class ext external
+```
+
 ### Deep dive A — the ambiguous outcome (the actual hard problem)
 
 You call the PSP; the connection times out. Did the charge happen? **You do not know, and
@@ -148,6 +196,32 @@ Handling:
    truthful, deliberate state, not a bug.
 5. The daily settlement file is the final arbiter. Anything that disagrees goes to an ops
    queue with a human.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Customer
+    participant A as Payment API
+    participant L as ledger + payment_attempts
+    participant P as Payment provider
+    participant R as Reconciler
+    participant S as Settlement file
+
+    U->>A: charge, Idempotency-Key k
+    A->>L: INSERT attempt (state = unknown, psp key = k)
+    Note over A,L: never call an external system without a durable<br/>record that you were about to
+    A->>P: charge with psp key k
+    P--xA: connection timeout
+    Note over A,P: did the money move? You do not know,<br/>and you cannot find out synchronously.
+    A-->>U: 202 processing — a truthful state, not a bug
+    R->>P: sweep: query by psp key k
+    P-->>R: it succeeded — 4999 minor units captured
+    R->>L: write the captured entries (they sum to zero)
+    Note over R,P: a retry would have carried the SAME psp key,<br/>which makes it a lookup, never a second charge
+    S->>R: end of day, the provider's own record
+    R->>L: agrees — done
+    Note over R,S: disagrees — ops queue, with a human.<br/>The settlement file wins, always.
+```
 
 > [!tip] Say this
 > "The system is at-least-once end to end. Correctness comes from idempotency keys at every

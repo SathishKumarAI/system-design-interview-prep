@@ -121,6 +121,47 @@ callers → ingest API ──(dedup check, validate, persist)──→ Kafka: no
                               webhooks in ← delivery/bounce/open events → deliveries table
 ```
 
+Every arrow into a provider is rate-limited, and every topic is a bulkhead:
+
+```mermaid
+flowchart LR
+    src["Callers"]
+    ing["Ingest API<br/>dedup_key UNIQUE in the same txn"]
+    dd[("notifications · deliveries · dedup")]
+    k0[["Kafka notif.requested"]]
+    pref["Preference / eligibility<br/>opt-out, quiet hours, caps, locale"]
+    sch["Scheduler<br/>send_at in user-local time, digests"]
+    kt[["Topic per channel and priority<br/>push.txn · email.txn · email.mkt · sms.txn"]]
+    w["Channel workers<br/>token bucket per provider contract"]
+    prov["APNs · FCM · SES · Twilio"]
+    wh["Delivery webhooks<br/>sent · delivered · bounced · opened"]
+
+    src --> |"202 with notification_id"| ing
+    ing --> |"duplicate dedup_key returns the original"| dd
+    ing -.-> k0
+    k0 -.-> sch
+    sch -.-> |"held until the user's local morning"| pref
+    k0 -.-> pref
+    pref --> |"evaluated at SEND time, not at enqueue"| kt
+    kt -.-> w
+    w --> |"email ~1k/s contracted, SMS ~100/s per pool"| prov
+    prov -.-> wh
+    wh --> |"per-channel state machine"| dd
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    classDef external fill:#f1f3f4,stroke:#9aa0a6,color:#111,stroke-dasharray:4 3
+    class src client
+    class ing,pref,sch,w,wh service
+    class dd store
+    class k0,kt queue
+    class prov external
+```
+
 ### Deep dive A — never double-send
 
 Layered, because one layer is not enough:
@@ -149,6 +190,33 @@ Layered, because one layer is not enough:
 - Channel workers hold a **token bucket sized to the provider contract**, shared across
   workers via the pattern in [rate-limiter.md](rate-limiter.md). Exceeding a provider's rate
   gets you throttled or blocklisted — worse than being slow.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Marketing campaign<br/>100M in 2h = 14k/s
+    participant I as Ingest API
+    participant MK as email.mkt topic
+    participant TX as email.txn topic
+    participant W as Channel workers<br/>token bucket
+    participant P as Email provider<br/>~1k/s contracted
+    participant O as One OTP send
+
+    C->>I: 14k/s enqueue
+    I->>MK: accepted, chunked, drip-fed with a deadline
+    Note over MK: lag grows to hours — BY DESIGN.<br/>The topic is the shock absorber for a 14x overshoot.
+    W->>MK: pull only at the provider's rate
+    W->>P: 1k/s, never more
+    Note over W,P: exceeding the contract gets you throttled or<br/>blocklisted, which is worse than being slow
+
+    O->>I: transactional send
+    I->>TX: a separate topic with its own workers
+    W->>TX: pulls immediately — TX is empty
+    W->>P: OTP out
+    Note over TX,P: p99 under 10 s while 100M marketing emails<br/>are still draining. THAT is the bulkhead.
+    Note over MK: if lag exceeds the campaign deadline: alert and stop<br/>accepting new campaigns. Never fall silently further behind.
+```
+
 - Campaigns get admission control: a 100M-recipient campaign is chunked and drip-fed with an
   explicit completion deadline, and it's visible on a dashboard while it drains.
 - Backpressure: if `email.mkt` lag exceeds the campaign deadline, alert and stop accepting new
