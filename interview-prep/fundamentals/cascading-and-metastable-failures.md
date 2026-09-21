@@ -222,6 +222,39 @@ not by fixing the bug**.
 - **Google SRE** — the *Addressing Cascading Failures* chapter: the canonical operational playbook,
   including the explicit advice to drop traffic to zero and ramp back.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Breaking the retry loop** | The SDK's standard-mode **retry quota**: a 500-token bucket, 14 tokens per transient retry, 5 per throttling retry. Depleted, the client stops retrying and returns the error, which "helps service disruptions resolve faster by reducing retry traffic" | **No client-side budget.** The nearest thing is the API Management **backend circuit breaker**, which stops calls to a tripped backend for its `tripDuration` |
+| **Taking load off one failure domain** | **Zonal shift** in Amazon Application Recovery Controller (ARC): move traffic out of one AZ for an initial expiry of **1 minute to 3 days (72 hours)**, extendable, cancellable | **No direct equivalent.** Zone-redundant services fail over automatically and the platform owns the decision; the manual path is a second zonal deployment you switch between yourself |
+| **Where the lever is armed** | `zonal_shift.config.enabled` on an NLB — default **`false`**; the resource must be opted in *before* the incident | Zonal vs zone-redundant is a per-resource choice; a zonal resource is isolated from other zones' faults but "Microsoft doesn't manage the process for you" |
+| **Rehearsing the loop** | **AWS Fault Injection Service**: experiment templates of actions + targets + **stop conditions bound to a CloudWatch alarm**, so a runaway experiment halts itself | **Azure Chaos Studio**: Scenarios including **Compute Zone Down** and **DNS Outage**; Experiments (classic) support service-direct faults (VM shutdown, SQL failover, Redis cache flush) and agent-based faults (CPU/memory pressure, process kill) |
+| **The default that bites** | ARC zonal shift only works on **opted-in** resources, and AWS states you must **prescale before you shift** — the mid-incident lever is useless unless you bought the headroom in advance, which is this page's "have the exit before you need it" in the vendor's own words | Chaos Studio's current Workspaces/Scenarios model is **public preview** and "isn't meant for production use". The generally available path is Experiments (classic), which "Microsoft no longer develops features for" — so the game-day tooling you can run in production is the one being wound down |
+
+Note what the Kinesis incident on this page and ARC's prescaling warning have in common: both say a **capacity
+change is a change**. Adding front-end servers triggered the 2020 outage; shifting a zone's traffic onto the
+remaining zones is the same arithmetic, and it only helps if the remaining zones were already oversized for it.
+
+## In an LLM deployment
+
+This is the failure class a model fleet reaches fastest, because the sustaining loop is cheap to start and
+ruinous to feed. A generation that times out and is retried re-runs a prefill *and* a decode, so a single retry
+roughly doubles the GPU work for that request at the moment the fleet has already proved it cannot keep up — and
+because service time is seconds rather than milliseconds, everything queued behind it moves closer to its own
+timeout while it waits. That is the textbook loop, with a unit of work three orders of magnitude more expensive
+than the database query it is usually drawn with.
+
+Two of the loops in the table above have specific forms here. **Cold start**: a rolling restart reloads tens of
+GB of weights and empties the prefix cache, so replicas added into the incident are slower than the ones already
+serving — capacity added into a loop feeds it, exactly as this page warns. And **recovery is bounded by
+bootstrap**: if coming back means loading weights and re-warming caches, your recovery time is set by that, not
+by the fix, which is the Kinesis lesson with a GPU attached.
+
+The one exit this workload has that an ordinary service does not: **shed tokens, not requests**. Dropping
+`max_tokens`, disabling streaming extras, or routing to a smaller model cuts offered GPU-seconds by most of the
+80–95% this page says you need, without returning a single error. Reach for that before the 503s.
+
 ## Staff-level follow-ups
 
 1. Give the diagnostic that distinguishes a metastable failure from a capacity shortfall, then
@@ -261,3 +294,13 @@ not by fixing the bug**.
 - [Google SRE Book — Addressing cascading failures](https://sre.google/sre-book/addressing-cascading-failures/)
 - [Meta — More details on today's outage (23 September 2010)](https://engineering.fb.com/2010/09/23/uncategorized/more-details-on-today-s-outage/)
 - [Marc Brooker — on metastability and retries](https://brooker.co.za/blog/2021/06/22/eb.html)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [AWS SDKs and Tools — Retry behavior](https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html) — the retry quota token bucket
+- [Amazon Application Recovery Controller — zonal shift](https://docs.aws.amazon.com/r53recovery/latest/dg/arc-zonal-shift.html) — 1 minute to 72 hours, opt-in, prescale first
+- [Network Load Balancers — load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html) — `zonal_shift.config.enabled` default false
+- [AWS Fault Injection Service — what is FIS](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html) — actions, targets, CloudWatch-alarm stop conditions
+- [Azure Chaos Studio overview](https://learn.microsoft.com/en-us/azure/chaos-studio/chaos-studio-overview) — Scenarios, preview status, service-direct vs agent-based faults
+- [What are Azure availability zones?](https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview) — zonal vs zone-redundant, automatic failover
+- [Azure API Management — backends and circuit breaker](https://learn.microsoft.com/en-us/azure/api-management/backends)

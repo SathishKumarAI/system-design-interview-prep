@@ -213,6 +213,37 @@ amount of per-server tuning would have achieved.
 - **HdrHistogram / t-digest / Prometheus native histograms** — the measurement infrastructure that
   makes tail claims verifiable rather than rhetorical.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Routing away from a busy replica** | ALB `load_balancing.algorithm.type`: `round_robin` (**the default**), `least_outstanding_requests`, `weighted_random` | Application Gateway and Front Door offer no least-outstanding-requests algorithm. Front Door picks by **latency sensitivity (extra latency)** — any origin inside the latency band is eligible — then by priority and weight |
+| **Getting a slow host out of rotation** | **Automatic Target Weights**: anomaly detection on target 5xx and connection failures, always on and not disableable, needs ≥3 healthy targets, adjusts traffic every **5 seconds** | Origin-group health probes tuned by **sample size** and **successful sample size** — with a 30 s interval, sample 5 and successful 3, the decision is made over the last **150 seconds** |
+| **Hedging / tied requests** | **Not offered** by ALB, NLB or API Gateway. Envoy or gRPC, run by you | **Not offered.** Same |
+| **Draining without cutting requests** | Target group `deregistration_delay.timeout_seconds`, default **300 s**; `slow_start.duration_seconds` to ramp a new target in | Application Gateway connection draining: **30 s** when not explicitly enabled, 1–3 600 s when it is |
+| **Seeing the tail at all** | CloudWatch percentile statistics, to ten decimal places (`p95.0123456789`), supported on API Gateway, ALB, EC2, ELB, Kinesis, Lambda and RDS metrics | Azure Monitor metrics have **five** aggregations — Sum, Count, Average, Min, Max. **No percentile.** Percentiles come from logs: KQL `percentile()` / `percentiles()`, T-Digest-based, estimation error capped at 1% and worst at the median |
+| **The default that bites** | ATW's anomaly *detection* runs on every ALB automatically, but *mitigation* only acts under `weighted_random` — and the default is `round_robin`. The platform identifies your slow host and then does nothing about it | Metrics Explorer preselects a default aggregation, and for a latency metric that is **Average** — recomputed as Sum/Count at every granularity. There is no p99 to switch to, so a percentile SLO has to be built on log queries, on a different retention and a different bill |
+
+The CloudWatch trap worth its own line: **percentiles need raw data points**. Publish latency as a *statistic
+set* — the cheap, obvious way to send high-volume timings — and percentiles become unavailable unless the set is
+degenerate. They are also unavailable "for metrics when any of the metric values are negative numbers".
+
+## In an LLM deployment
+
+The tail here is not a defect, it is the workload. On one endpoint a 20-token reply and a 4 000-token reply
+differ by two orders of magnitude in decode work, so a single p99 over mixed traffic measures the request mix
+rather than the system, and it moves whenever the mix moves. Bucket the metric by output length, and split the
+number users actually feel: **time to first token** is a queueing-and-prefill measurement, **inter-token latency**
+is a decode measurement, and raising batch size improves throughput while making the second one worse.
+
+Hedging — the best-value technique on this page — is the worst one here. Dean and Barroso's 2% extra load holds
+because a duplicate read is cheap; a duplicate generation is another full prefill plus decode on the scarcest
+resource you own, so the 2% figure does not transfer and an unbounded hedge is a self-inflicted overload. The
+techniques that survive are the ones that do not duplicate work: cap `max_tokens` so the tail has a ceiling,
+stream so perceived latency is time to first token rather than total, return partial output on deadline, and
+route to the replica that already holds the request's prefix in its KV cache — prefix locality beats
+least-outstanding-requests when the warm state is tens of GB.
+
 ## Staff-level follow-ups
 
 1. Your service has p99 = 15 ms and a request touches 40 of them. Compute the user-visible p99,
@@ -250,3 +281,12 @@ amount of per-server tuning would have achieved.
 - [Gil Tene — How NOT to measure latency (coordinated omission)](https://www.infoq.com/presentations/latency-response-time/)
 - [Facebook — Fail at Scale (ACM Queue 2015)](https://queue.acm.org/detail.cfm?id=2839461)
 - [Envoy — request hedging and retry policies](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [ALB — edit target group attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html) — routing algorithms and the round-robin default, deregistration delay, slow start, Automatic Target Weights
+- [Amazon CloudWatch — metrics concepts, Percentiles](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html) — raw data points required, negative values excluded, supported services
+- [Azure Front Door — origins and origin groups](https://learn.microsoft.com/en-us/azure/frontdoor/origin) — health probes, sample size, latency sensitivity
+- [Azure Application Gateway — backend settings](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings) — connection draining defaults
+- [Azure Monitor — metrics aggregation explained](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-aggregation-explained) — the five aggregation types
+- [Kusto — `percentile()`, `percentiles()`](https://learn.microsoft.com/en-us/kusto/query/percentiles-aggregation-function) — T-Digest, 1% error bound at the median

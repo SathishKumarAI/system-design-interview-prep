@@ -226,6 +226,42 @@ anyone.*
 - **CDN / WAF rate limiting** — the outermost and cheapest shed point, and the only one that helps
   against volumetric abuse.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The cheapest shed point** | AWS WAF **rate-based rule statement**, on CloudFront, an ALB or API Gateway | Azure WAF **rate limiting** on Front Door, expressed as a custom WAF rule |
+| **What you actually set** | Evaluation window **60 / 120 / 300 / 600 s**, rate limit (lowest allowed **10**), an aggregation key, and an action (anything but Allow) | A threshold per **socket IP**, a window of **1 or 5 minutes**, and at least one match condition (`Host` header length > 0 matches everything) |
+| **Concurrency, not rate** | No managed concurrency limiter at the edge. API Gateway throttles by rate + burst; Lambda bounds in-flight work with reserved/provisioned concurrency | APIM `limit-concurrency` with `key` and `max-count` — over the limit, requests "fail immediately with the `429` Too Many Requests status code" |
+| **Fairness and quotas** | API Gateway usage plans; account throttle **10 000 rps** with a **5 000** burst bucket (2 500 / 1 250 in fourteen Regions) | APIM `rate-limit`, `quota` and `llm-token-limit`, each keyed by an expression you choose |
+| **Queue-age shedding (CoDel), adaptive LIFO** | **Not offered.** Neither is a managed feature anywhere in the stack | **Not offered.** Same |
+| **The default that bites** | The WAF evaluation window **defaults to 300 s**. A 10× burst inside one minute may not breach a five-minute aggregate until the damage is done — and AWS is explicit that it "applies rate limiting near the limit that you set, but does not guarantee an exact limit match" | Front Door counts **per Front Door server**, not globally: below roughly **200 requests/minute** "you might see some requests above the threshold get through". The window is also *fixed*, so a client blocked at second 30 of a one-minute window is released 30 seconds later |
+
+One more asymmetry worth knowing before you tune: APIM's own note that "the maximum number of requests enforced
+by API Management is lower when multiple capacity units are deployed in a region" — the concurrency limit is
+per-unit, so scaling out changes the ceiling you thought you set.
+
+## In an LLM deployment
+
+Requests per second is the wrong unit of admission when one request is a 20-token reply and the next is 4 000
+tokens. The managed controls have already moved: Azure API Management's `llm-token-limit` policy limits by
+`tokens-per-minute` and by a `token-quota` over an Hourly–Yearly window, returning **429** when the rate limit is
+hit and **403** when the quota is exhausted; Amazon Bedrock's on-demand quotas are per-model tokens per minute,
+and some models (the docs name Claude Opus 4.7 and 4.8) carry **no requests-per-minute quota at all**.
+
+Two admissions the policy docs make, and both matter. You cannot know a request's cost until it finishes, so with
+`estimate-prompt-tokens="false"` "prompts may be sent to the backend even when the limit is exceeded" — admission
+control that admits first and learns second. And "concurrent or near-concurrent requests can temporarily exceed
+the configured token limit", so the limit is a guide, not a gate. Streaming makes it worse: with `stream: true`
+both prompt and completion tokens are *estimated*, and an image input is overcounted at a flat maximum of
+**1 200 tokens**.
+
+The real admission control is further in. A continuous-batching server admits a request only when a batch slot
+and KV-cache blocks are free, which is a concurrency limit in the `L = λW` sense rather than a rate limit, and it
+self-corrects exactly as this page argues. Shedding at the edge protects the queue; only the batch scheduler
+protects the GPU. The other lever this workload has and a web service does not: **degrade instead of shedding** —
+route the overflow to a smaller model rather than returning 429, and goodput stays non-zero.
+
 ## Staff-level follow-ups
 
 1. Your service handles 10 000 rps and receives 25 000. Describe the behaviour with no shedding,
@@ -267,3 +303,13 @@ anyone.*
 - [Google SRE Book — Handling Overload](https://sre.google/sre-book/handling-overload/) — criticality, adaptive throttling, goodput
 - [Netflix — Performance under load: adaptive concurrency limits](https://netflixtechblog.medium.com/performance-under-load-3e6fa9a60581)
 - [Envoy — adaptive concurrency and circuit breaking](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/adaptive_concurrency_filter)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [AWS WAF — rate-based rule high-level settings](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html) — window options, 300 s default, minimum limit 10
+- [Amazon API Gateway endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/apigateway.html) — 10 000 rps throttle rate, 5 000 burst
+- [AWS Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html) — concurrent executions
+- [Amazon Bedrock — Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — token-based quotas, models without an RPM quota
+- [Azure WAF — rate limiting for Azure Front Door](https://learn.microsoft.com/en-us/azure/web-application-firewall/afds/waf-front-door-rate-limit) — per-socket-IP thresholds, 1/5-minute fixed windows, per-server counting
+- [Azure API Management — `limit-concurrency` policy](https://learn.microsoft.com/en-us/azure/api-management/limit-concurrency-policy)
+- [Azure API Management — `llm-token-limit` policy](https://learn.microsoft.com/en-us/azure/api-management/llm-token-limit-policy) — token rate limits, quotas, estimation and streaming caveats

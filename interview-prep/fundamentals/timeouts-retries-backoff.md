@@ -224,6 +224,39 @@ restarting fast makes it worse, which is exactly the situation retries create at
 - **AWS Kinesis 2020** — the cautionary tale for recovery: systems whose failure mode generates
   load cannot be restarted quickly.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The client retry** | AWS SDK retry mode — `standard` (default), `adaptive`, `legacy` — set with `AWS_RETRY_MODE` / `retry_mode`; attempts with `AWS_MAX_ATTEMPTS` / `max_attempts`, default **3** (DynamoDB **4**) | API Management `retry` policy: `condition`, `count` (1–50), `interval`, `max-interval`, `delta`, `first-fast-retry` (default `false`) |
+| **The retry budget** | Standard mode's **retry quota**: a 500-token bucket, **14** tokens per transient retry, **5** per throttling retry, refunded on success. Empty bucket ⇒ the client fails fast instead of retrying | **No equivalent.** `count` bounds one request, not the fleet. Bound system-wide retry load with `limit-concurrency` or `rate-limit` instead |
+| **Backoff** | Full jitter: `delay = random(0,1) × min(20 000 ms, base × 2^retry)`, base **50 ms** transient / **1 000 ms** throttling; honours a server's `x-amz-retry-after` | Exponential only when `interval`, `delta` and `max-interval` are all set: `interval + 2^(count−1) × random(0.8·delta, 1.2·delta)`, capped at `max-interval`. With `interval` alone it is a **fixed** wait |
+| **The timeout your deadline must fit inside** | ALB `idle_timeout.timeout_seconds`, default **60 s**; NLB TCP flows **350 s** (settable 60–6000, TLS listeners fixed at 350, UDP fixed at 120); API Gateway integration timeout **29 000 ms**, raisable only for Regional and private APIs | Azure Load Balancer `IdleTimeoutInMinutes`, default **4 minutes** (4–100); Application Gateway backend **Request time-out**, default **20 s** (1–86 400 s private backend, 1–240 s external); Front Door origin response timeout, 16–240 s |
+| **Deadline propagation** | Nothing managed. gRPC deadlines or your own header; the SDK's attempts are per-call, not per-request-tree | Nothing managed. `forward-request timeout` is per hop and stacks the same way |
+| **The default that bites** | The retry behaviour above is opt-in until it becomes the default: without `AWS_NEW_RETRIES_2026=true` you get each SDK's **legacy** mode, which has no standardised quota, so a client "continues to retry at full rate during service disruptions" — exactly the storm this page is about | Front Door's origin response timeout is a **profile-level** setting applied to *all* endpoints in the profile. One slow API forces a long timeout on every other route behind the same profile, and there is no per-route override |
+
+Two cautions the tables cannot hold. The ALB and Load Balancer idle timeouts must **exceed** your application's own
+timeout, or the proxy closes a connection the app still believes is live and the client sees a 502 rather than
+your error. And an SDK retry is scoped to one client instance — the token bucket "is not shared across processes
+or hosts", so a hundred hosts each get their own 500 tokens.
+
+## In an LLM deployment
+
+Every default timeout in the stack was chosen for a request that finishes in milliseconds, and a generation does
+not. API Gateway's **29-second** integration timeout is a hard ceiling in front of a long generation unless you
+raise that quota (and it can only be raised for Regional and private APIs); Lambda stops at **900 seconds**; an
+ALB's 60-second idle timeout will cut a non-streaming connection long before a 4 000-token reply lands. The two
+honest fixes are to **stream**, so the connection is never idle, or to make the work asynchronous — SageMaker
+Asynchronous Inference exists for this shape, taking payloads up to **1 GB** and processing times up to **one
+hour**, and it autoscales to zero between requests.
+
+The retry rule inverts as well. Retrying a timed-out generation does not re-issue a cheap query, it re-issues a
+prefill *and* a decode on a GPU that has just proved it is saturated, so one retry roughly doubles the work for
+that request at the worst possible moment. Amazon Bedrock makes the cost explicit: its on-demand quotas are
+denominated in **tokens per minute** (input and output combined, per model, per Region) rather than requests, and
+a request's `max_tokens` parameter affects how much quota the call deducts — so a retry storm spends quota you
+cannot buy back by adding instances.
+
 ## Staff-level follow-ups
 
 1. Compute the load your dependency sees when it starts failing, with and without a 10% retry
@@ -265,3 +298,17 @@ restarting fast makes it worse, which is exactly the situation retries create at
 - [AWS — summary of the Kinesis event in us-east-1 (25 November 2020)](https://aws.amazon.com/message/11201/)
 - [gRPC — retry design and throttling](https://github.com/grpc/proposal/blob/master/A6-client-retries.md)
 - [Envoy — retry budgets and per-try timeouts](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/http/http_connection_management)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [AWS SDKs and Tools — Retry behavior](https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html) — modes, `max_attempts` default 3, retry quota, full-jitter formula, `AWS_NEW_RETRIES_2026`
+- [Application Load Balancers — load balancer attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html) — `idle_timeout.timeout_seconds` default 60 s
+- [Network Load Balancers — connection idle timeout](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html) — 350 s default, 60–6000 s
+- [Amazon API Gateway endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/apigateway.html) — maximum integration timeout 29 000 ms
+- [AWS Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html) — 900 s function timeout
+- [Amazon SageMaker — Asynchronous inference](https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html) — 1 GB payloads, one-hour processing
+- [Amazon Bedrock — Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — per-model tokens per minute
+- [Azure Load Balancer — TCP reset and idle timeout](https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-idle-timeout) — 4-minute default
+- [Azure Application Gateway — backend settings](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-http-settings) — request time-out default 20 s
+- [Azure Front Door — configure origins](https://learn.microsoft.com/en-us/azure/frontdoor/how-to-configure-origin) — origin response timeout 16–240 s, profile-wide
+- [Azure API Management — `retry` policy](https://learn.microsoft.com/en-us/azure/api-management/retry-policy)

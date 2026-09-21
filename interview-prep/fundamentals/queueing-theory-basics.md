@@ -223,6 +223,37 @@ work in order for someone who left.**
 - **Database connection pools** — the most common place `L = λW` is violated in practice: a pool of
   20 cannot serve 2 000 rps at 50 ms no matter how large the database is.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **`L = λW` as a managed control** | The documented SQS scaling policy *is* Little's law: target tracking on **backlog per instance** = `ApproximateNumberOfMessages ÷ InService instances`, with the target set to **acceptable latency ÷ average processing time**. AWS's worked example: 10 s ÷ 0.1 s = **100** messages per instance | Azure Monitor autoscale on a Storage or Service Bus queue: the threshold is the **average messages per instance**, not queue depth. With 2 instances and a threshold of 50, a 50-message queue does **not** scale out — 100 does |
+| **Bounding in-flight work** | Lambda concurrency: account default **1 000** concurrent executions; each function scales by **1 000 execution environments every 10 seconds** | APIM `limit-concurrency` (`key`, `max-count`), immediate 429 at the limit |
+| **Rate limit vs concurrency limit** | API Gateway throttles by rate + burst (token bucket); nothing at the edge bounds in-flight work | Front Door WAF and APIM `rate-limit` bound rate; only `limit-concurrency` bounds `L` |
+| **Scaling behaviour** | Target tracking with a CloudWatch alarm per policy; instance scale-in protection for long-running queue workers | Scale-out fires if **any** rule matches; scale-in requires **all** rules to match. Flapping is detected and logged as `Flapping` (attempt aborted) or `FlappingOccurred` (scaled to a different count) |
+| **The default that bites** | AWS's own docs name the mismatch: "API Gateway has a default throttle limit of 10 000 requests per second, whereas Lambda has a default concurrency limit of 1 000." The front door admits **10×** what the back end can hold in flight, and the queue that forms is invisible until the 429s start | The queue threshold is **per instance**, so the number you typed is not the queue depth you were picturing — and because scale-in needs every rule to agree, one noisy metric pins the fleet at its high-water mark and you pay for the headroom forever |
+
+Both clouds' autoscalers react in minutes and both docs say to size from the post-failure state rather than the
+steady one. Neither ships a control that operates on the time scale at which the knee is crossed; that is still
+shedding, and it is still yours to write.
+
+## In an LLM deployment
+
+Queueing theory is more visible here than anywhere else in this folder, because the terms you normally have to
+estimate are large and directly measurable. Service time is seconds, not milliseconds, and its coefficient of
+variation is enormous: on a single endpoint a 20-token reply and a 4 000-token reply are a **200:1** spread in
+decode work. Kingman's `(C_a² + C_s²)/2` term says variability multiplies the wait, so a GPU fleet at a
+utilisation that would be entirely comfortable for uniform 50 ms requests produces a tail nobody budgeted for —
+and the fix is not more capacity, it is less variance.
+
+Two things follow. **Split the pools.** Routing long generations away from short ones is this page's bulkhead
+argument with an unusually large payoff, because it is `C_s²` and not the mean that is hurting you. And **bound
+the queue in tokens, not requests**: with `W` measured in seconds, a ten-deep queue of 4 000-token generations is
+a minute of waiting while a ten-deep queue of short replies is a second, so a request-count limit means two
+completely different latency promises. The vendors have already moved to that unit — API Management's
+`llm-token-limit` is denominated in tokens per minute, and Amazon Bedrock's on-demand quotas are tokens per
+minute per model, with some models carrying no requests-per-minute quota at all.
+
 ## Staff-level follow-ups
 
 1. Your service is at 45% CPU and p99 has tripled. Give three queueing explanations and the metric
@@ -265,3 +296,13 @@ work in order for someone who left.**
 - [Neil Gunther — Universal Scalability Law](https://www.perfdynamics.com/Manifesto/USLscalability.html)
 - [Google SRE Book — Handling Overload](https://sre.google/sre-book/handling-overload/)
 - [Netflix — performance under load / adaptive concurrency limits](https://netflixtechblog.medium.com/performance-under-load-3e6fa9a60581)
+
+Cloud handles (§ *On AWS and Azure*), all verified 2026-09-20:
+
+- [Amazon EC2 Auto Scaling — scaling policy based on Amazon SQS](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-using-sqs-queue.html) — backlog per instance, acceptable-backlog arithmetic, scale-in protection
+- [AWS Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html) — 1 000 concurrent executions, 1 000 environments per 10 s, and the API Gateway/Lambda quota mismatch
+- [Amazon API Gateway endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/apigateway.html) — throttle rate and burst
+- [Azure Monitor — autoscale best practices](https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-best-practices) — per-instance queue thresholds, multiple-rule logic, flapping log types
+- [Azure API Management — `limit-concurrency` policy](https://learn.microsoft.com/en-us/azure/api-management/limit-concurrency-policy)
+- [Azure API Management — `llm-token-limit` policy](https://learn.microsoft.com/en-us/azure/api-management/llm-token-limit-policy)
+- [Amazon Bedrock — Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html)
