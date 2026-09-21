@@ -123,6 +123,49 @@ client ──WebSocket──→ [connection gateway tier: 1000 nodes, stateful]
                                     offline? → push notification service + wait for sync
 ```
 
+One socket per user, one partition per conversation:
+
+```mermaid
+flowchart LR
+    a["Sender device"]
+    b["Recipient<br/>online"]
+    off["Recipient<br/>offline"]
+    gw["Connection gateway<br/>1000 stateful nodes<br/>50k–200k sockets each"]
+    sr[("Redis session registry<br/>user to node, TTL + heartbeat")]
+    cs["Chat service<br/>assigns per-conversation seq"]
+    ms[("messages<br/>partition: hash conversation_id<br/>hot 30 days")]
+    cold[("Object storage<br/>older, compacted + index")]
+    k[["Kafka message_created"]]
+    cons["Receipts · search index · analytics"]
+    pn["Push service<br/>APNs / FCM"]
+
+    a --> |"WebSocket send<br/>carries client_msg_id"| gw
+    gw --> |"gRPC"| cs
+    cs --> |"atomic INCR seq, then INSERT with<br/>UNIQUE on conversation_id + client_msg_id"| ms
+    ms -.-> |"compaction after 30 days"| cold
+    cs --> |"ack: message_id and seq"| gw
+    gw --> a
+    cs --> |"which node holds this user?"| sr
+    cs --> |"forward to their gateway node"| b
+    cs -.-> k
+    k -.-> cons
+    cs -.-> |"offline: notify, then wait for sync"| pn
+    pn -.-> off
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class a,b,off client
+    class gw edge
+    class cs,cons,pn service
+    class ms,cold store
+    class sr cache
+    class k queue
+```
+
 ### Deep dive A — the connection tier
 
 - Stateful by nature: a user's socket lives on exactly one node. **Session registry** in
@@ -137,6 +180,36 @@ client ──WebSocket──→ [connection gateway tier: 1000 nodes, stateful]
 - Heartbeat/ping every ~30 s to detect dead sockets that TCP hasn't noticed yet.
 
 ### Deep dive B — ordering and exactly-once display
+
+The retry and the gap are the same mechanism seen from each end:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Sender
+    participant G as Gateway node
+    participant C as Chat service
+    participant M as messages<br/>one partition per conversation
+    participant R as Recipient
+
+    S->>G: send with client_msg_id 7f3a
+    G->>C: forward
+    C->>M: INCR seq to 6, then INSERT (conv, 6, 7f3a)
+    M-->>C: ok
+    C--xS: ack lost on the way back — the sender cannot tell<br/>a lost ack from a lost message
+    S->>G: retry, same client_msg_id 7f3a
+    G->>C: forward
+    C->>M: INSERT (conv, next seq, 7f3a)
+    M--xC: UNIQUE violation — 7f3a already exists at seq 6
+    C-->>S: ack seq 6 — the ORIGINAL message
+    Note over S,M: at-least-once delivery + idempotency key + a per-conversation<br/>monotonic seq = exactly-once EFFECT. No second message exists.
+
+    C->>R: push seq 8
+    Note over R: holds up to seq 5 — 6 and 7 are missing
+    R->>C: sync since_seq 5
+    C-->>R: seq 6, 7, 8 — a single-partition range scan
+    Note over R: renders strictly by seq. The gap buffer is why<br/>8 is never shown before 6.
+```
 
 1. Client sends with `client_msg_id`.
 2. Chat service atomically increments the conversation's `seq` (single partition = cheap) and

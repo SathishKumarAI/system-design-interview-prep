@@ -113,7 +113,78 @@ read   → API → ZREVRANGE feed:{uid} → hydrate posts (multi-get, cached)
               → rank → return page
 ```
 
+The two halves of the hybrid, and the amplification between them:
+
+```mermaid
+flowchart LR
+    p["Author"]
+    api["Post API"]
+    ps[("posts + user_posts<br/>Snowflake ids")]
+    k[["Kafka post_created<br/>topic per follower tier"]]
+    fw["Fanout workers<br/>active users only"]
+    fl[("followers")]
+    fc[("Redis feed per user<br/>capped sorted set, 800")]
+    r["Reader"]
+    fa["Feed API"]
+    hy["Filter + hydrate<br/>blocks, deletes, already-seen"]
+    rk["Ranker<br/>about 10 ms over a few hundred"]
+
+    p --> |"POST /v1/posts — 10k/s peak"| api
+    api --> ps
+    api -.-> |"post_created"| k
+    k -.-> fw
+    fw --> |"read the follower list"| fl
+    fw ==> |"ZADD — 700k/s avg, millions/s peak"| fc
+    r --> |"GET /v1/feed — 150k/s peak"| fa
+    fa --> |"ZREVRANGE 0 19"| fc
+    fa --> |"pull path: recent posts of the few<br/>celebrities this user follows"| ps
+    fa --> hy
+    hy --> |"multi-get post bodies"| ps
+    hy --> rk
+    rk --> |"20 items, p99 under 200 ms"| r
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class p,r client
+    class api,fa,fw,hy,rk service
+    class ps,fl store
+    class fc cache
+    class k queue
+```
+
 ### Deep dive A — fanout on write vs read (the whole case)
+
+The same event, taken down two different paths by one threshold:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant N as Author, 200 followers
+    participant C as Celebrity, 100M followers
+    participant F as Fanout workers<br/>via tiered Kafka topics
+    participant Z as Redis feed sorted sets
+    participant P as user_posts
+    participant U as Reader's feed request
+
+    N->>F: post_created (low-follower tier)
+    F->>Z: ZADD into about 20 feeds — only the ~10% who read daily
+    Note over F,Z: bounded work, and this is 90% of posts
+
+    C->>F: post_created (celebrity tier)
+    F--xF: above the 100k-follower threshold — no fanout at all
+    Note over F: 100M feed writes skipped. The 60B/day figure<br/>is caused by a handful of accounts.
+    C->>P: the post exists only in the author's own timeline
+
+    U->>Z: ZREVRANGE 0 19
+    Z-->>U: precomputed entries (push path)
+    U->>P: recent posts of the celebrities followed (pull path)
+    P-->>U: merge candidates
+    Note over U,P: publish cost is bounded by NON-celebrity followers,<br/>read cost by celebrities FOLLOWED. Both are small.
+```
 
 | | **Fanout on write** (push) | **Fanout on read** (pull) |
 |---|---|---|

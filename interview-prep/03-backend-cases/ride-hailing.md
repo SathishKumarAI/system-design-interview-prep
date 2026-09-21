@@ -114,6 +114,50 @@ rider app ──request──→ ride service (state machine)
                           → on accept: ride → accepted; notify both; start live tracking
 ```
 
+The write path and the match path are different systems, each sized for its own number:
+
+```mermaid
+flowchart LR
+    d["Driver app"]
+    r["Rider app"]
+    ing["Ingest gateway"]
+    geo[("In-memory geo index<br/>H3 cells, per city shard<br/>TTL 30 s")]
+    k[["Kafka"]]
+    trail[("location_trail<br/>time series / object store")]
+    rs["Ride service<br/>state machine"]
+    mt["Matching service<br/>1–3 s batch window"]
+    rt["Routing service<br/>ETA, not straight-line"]
+    ds[("driver_state<br/>strongly consistent")]
+    rides[("rides<br/>partition by city_id")]
+
+    d --> |"POST location every 4 s<br/>1.25M writes/s"| ing
+    ing --> |"overwrite current position"| geo
+    ing -.-> k
+    k ==> |"trail, analytics, ML features"| trail
+    r --> |"POST /v1/rides — about 1k/s peak"| rs
+    rs --> rides
+    rs --> |"match request"| mt
+    mt --> |"this cell plus its ring of neighbours"| geo
+    mt --> |"rank candidates by ETA"| rt
+    mt --> |"compare-and-set available to offered"| ds
+    mt -.-> |"offer, 15 s timeout"| d
+    d --> |"POST accept"| rs
+    rs -.-> |"WebSocket/SSE, driver position every 1–4 s"| r
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class d,r client
+    class ing edge
+    class rs,mt,rt service
+    class ds,rides,trail store
+    class geo cache
+    class k queue
+```
+
 ### Deep dive A — geospatial indexing
 
 | Technique | How | Notes |
@@ -134,6 +178,33 @@ least useful thing in the design. Keep current position in memory (replicated fo
 stream the trail to Kafka for anything that needs history.
 
 ### Deep dive B — matching without double assignment
+
+Two riders, one driver, one key — the invariant decided in a single statement:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Rider A
+    participant B as Rider B
+    participant M as Matching, one city shard
+    participant D as driver_state<br/>single key, strongly consistent
+    participant DR as Driver 42
+
+    A->>M: request
+    B->>M: request
+    Note over M: the 1–3 s batch window closes —<br/>both riders rank Driver 42 first
+    M->>D: UPDATE to offered for ride A WHERE driver 42 is available
+    D-->>M: 1 row — A wins
+    M->>D: UPDATE to offered for ride B WHERE driver 42 is available
+    D-->>M: 0 rows — B loses, take B's next candidate
+    Note over M,D: a single-key compare-and-set, NOT a distributed transaction.<br/>Zero rows updated IS the no-double-assignment invariant.
+
+    M-)DR: offer ride A, 15 s timeout
+    DR--xM: no answer
+    M->>D: release: back to available
+    Note over D: every path must release. A leaked offered state silently<br/>removes a driver from supply — hence the expired-offer sweeper.
+    M->>D: offer A's ride to the next candidate
+```
 
 - Naive greedy (nearest driver, immediately) is fast but globally worse: it can strand two
   riders while a better global assignment existed.

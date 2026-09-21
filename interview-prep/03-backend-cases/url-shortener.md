@@ -103,6 +103,51 @@ redirect: client → CDN/edge (cache 302 for public links)
                  → async: click event → Kafka → aggregator → clicks_daily
 ```
 
+Two paths that share nothing, drawn at the ratio they actually run at:
+
+```mermaid
+flowchart LR
+    c["Client"]
+    cdn["CDN edge<br/>caches the 302<br/>for public links"]
+    lb["L7 load balancer"]
+    api["Create API"]
+    pool["Code pool service<br/>pre-generated codes"]
+    rd["Redirect service<br/>in-process LRU, top 1000"]
+    ch[("Redis u:code<br/>TTL 24h, LRU")]
+    kv[("urls table<br/>partition: hash of code")]
+    k[["Kafka click events"]]
+    agg["Stream aggregator"]
+    cd[("clicks_daily")]
+
+    c --> |"POST /v1/urls — 5k/s peak"| lb
+    lb --> api
+    api --> |"lease a block of 1000 codes"| pool
+    api --> |"write immutable row"| kv
+    api -.-> |"warm"| ch
+    c --> |"GET the short code — 350k/s peak"| cdn
+    cdn --> |"miss, or analytics-critical link"| lb
+    lb --> rd
+    rd --> |"GET u:code — 95% hit"| ch
+    ch -.-> |"5% miss"| kv
+    rd --> |"302 Location"| c
+    rd -.-> |"after the 302, fire and forget"| k
+    k ==> agg
+    agg ==> cd
+
+    classDef client fill:#e8f0fe,stroke:#4285f4,color:#111
+    classDef edge fill:#e6f4ea,stroke:#34a853,color:#111
+    classDef service fill:#fff,stroke:#5f6368,color:#111
+    classDef store fill:#fef7e0,stroke:#f9ab00,color:#111
+    classDef cache fill:#fce8e6,stroke:#ea4335,color:#111
+    classDef queue fill:#f3e8fd,stroke:#a142f4,color:#111
+    class c client
+    class cdn,lb edge
+    class api,pool,rd,agg service
+    class kv,cd store
+    class ch cache
+    class k queue
+```
+
 ### Deep dive A — generating the code
 
 | Option | How | Verdict |
@@ -123,6 +168,29 @@ removes the hot row entirely).
 > counter, yes, and that's a privacy incident. Volunteer this before they ask.
 
 ### Deep dive B — the read path
+
+One viral link is one key, and its TTL expiry is the whole risk:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant V as Viewers of one viral code<br/>most of the 350k/s
+    participant E as Redirect node<br/>in-process LRU
+    participant R as Redis
+    participant K as urls (KV store)
+
+    Note over R: TTL on the hot key expires
+    V->>E: GET the code
+    E->>R: GET u:code — miss
+    E->>E: single-flight: one request takes the lock,<br/>the rest wait on its result
+    E->>K: read the row ONCE, not 350 000 times
+    K-->>E: long_url
+    E->>R: SET u:code, TTL 24h
+    E-->>V: 302 Location
+    Note over E,K: the mapping is immutable, so a stale value is never WRONG —<br/>serve it while revalidating and no reader waits on the KV store
+    E->>E: promote into the local LRU (10 MB holds the top 1000)
+    V->>E: the next million hits never leave the node
+```
 
 - **Redis** in front, key `u:{code}` → long_url, TTL 24 h, LRU. Expected hit rate 95%+
   because link popularity is heavily Zipfian.
