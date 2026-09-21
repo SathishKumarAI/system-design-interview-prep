@@ -232,6 +232,30 @@ argument as Jepsen finding a nine-year-old Postgres SSI bug in
 - **HTTP `ETag` / `If-None-Match`** — revalidation instead of invalidation: the client asks "is my
   copy still good?" and gets a 304. Shifts the problem from push to pull, and is why it scales.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **Purge by path** | CloudFront `CreateInvalidation`. The `*` wildcard must be the **last** character — an asterisk anywhere else is matched literally. Max path length 4,000 characters | Front Door purge: a single full path, or `/*` for the whole endpoint. **Wildcard domains cannot be purged** — you must name each subdomain |
+| **Purge by tag (surrogate keys)** | **Yes.** Add a `CacheTagConfig` naming the origin response header, then invalidate with `--paths "#brand:acme"`. Opt-in per distribution, max **50 tags per object** (extras are dropped silently) | **No direct equivalent.** Path and wildcard purge only |
+| **Purge rate** | **150 paths or tags per second**, and **1 wildcard invalidation per second**. This is the number that kills per-write purge designs | No published rate, but purge *"can take up to 10 minutes to propagate across all Azure Front Door POP locations"* |
+| **Purge cost** | First **1,000 invalidation paths per month** free per account, then billed per path; a wildcard counts as one path however many objects it clears (docs verified 2026-09-20) | Not separately metered in the purge documentation |
+| **Purge semantics** | Invalidating a path clears **every cached variant** of it — all cookie and header variants — but query-string variants need the `*` | Purges are **case-insensitive and query-string agnostic**: purging one URL purges every query-string variation of it |
+| **CDC into invalidation** | DynamoDB Streams (24-hour retention, one shard per table partition, **no more than two readers per shard**), Kinesis, or Debezium/DMS on RDS | Cosmos DB change feed (on by default for every container), Azure SQL change tracking into Event Hubs |
+| **The default that bites** | **DAX never invalidates its query cache.** *"Updates to the item cache, or to the underlying DynamoDB table, do not invalidate or modify the results stored in the query cache."* A write that went **through** DAX still leaves the matching `Query` returning its pre-write result set until that result's TTL expires. The item cache TTL defaults to 5 minutes and the query cache is a separate dial | **Front Door does not support `ETag` — only `Last-Modified`.** Revalidation, the cheapest option on this page because it converts a push problem into a pull one, is simply unavailable at that edge. Anything without a reliable `Last-Modified` is re-fetched in full |
+
+The DAX row is the one worth memorising, because it is the stale-set race from the top of this page with the blame moved: the application did everything right, the cache is write-through, and a *query* still serves the old answer. Two independent caches, one invalidation path, one of them unhooked. Writes to a DynamoDB **global table** replica have the same shape from the other direction — they *"bypass DynamoDB Accelerator (DAX), updating DynamoDB directly"*, so a cross-region write leaves the local DAX cache stale until TTL.
+
+CloudFront's cache tags are worth knowing by name: they are the AWS answer to Fastly's surrogate keys, which this page's *Real-world examples* already treats as the nearest thing to real invalidation at the edge. They are opt-in, so a distribution created before you added `CacheTagConfig` ignores every tag header the origin sends.
+
+## In an LLM deployment
+
+This is the page where the LLM version is genuinely *harder*, not merely different, and it is worth saying so plainly in an interview.
+
+Provider prompt caches key on an **exact prefix**, and the invalidation is a cascade rather than an event. Bedrock processes cache checkpoints in the order `tools` → `system` → `messages`, and *"changing content in an earlier section invalidates the cache for later sections (for example, modifying `tools` invalidates the `system` and `messages` caches)."* Adding one tool definition — a one-line diff, reviewed by nobody as a caching change — therefore invalidates every cached conversation prefix in the fleet at once. That is an invalidation storm from this page's *Failure modes* table, triggered by a deploy, with no key to rate-limit and no warm-before-invalidate path.
+
+Semantic caching is the case with no good answer. The key is an embedding and the match is a similarity threshold, so a hit is a *claim* that a near-duplicate question has the same correct answer — and you cannot prove it. At a typical 0.95-cosine threshold, "is this drug safe with alcohol" and "is this drug **not** safe with alcohol" are neighbours; negation barely moves an embedding. There is no `DEL` for "everything semantically near this fact", because the fact does not have a key. The honest design is the one this page ranks first for exactly this reason: **TTL, short, plus a per-tenant key namespace** — no race to lose, bounded damage, and a staleness number you can state. Reserve exact-match response caching for the cases where the prompt really is byte-identical, and accept a much lower hit rate in exchange for a correctness argument you can make out loud.
+
 ## Staff-level follow-ups
 
 1. Draw the stale-set interleaving and then fix it three different ways, stating what each fix
@@ -267,4 +291,12 @@ argument as Jepsen finding a nine-year-old Postgres SSI bug in
 - [Nishtala et al. — Scaling Memcache at Facebook, NSDI 2013](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf) — leases, invalidate-don't-update
 - [Debezium — change data capture connectors](https://debezium.io/documentation/reference/stable/index.html)
 - [Fastly — surrogate keys and purging](https://developer.fastly.com/reference/http/http-headers/Surrogate-Key/)
+- [AWS — DAX and DynamoDB consistency models](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html) — the query cache is not invalidated by writes
+- [AWS — CloudFront: invalidating content by cache tags](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/invalidation-by-tags.html) — `CacheTagConfig`, 50 tags per object
+- [AWS — CloudFront invalidation paths](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/invalidation-specifying-objects.html) and [quotas](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html) — 150 paths/s, 1 wildcard/s
+- [AWS — Pay for file invalidation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PayingForInvalidation.html) — 1,000 free paths per month, verified 2026-09-20
+- [AWS — DynamoDB global tables: how they work](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html) — replica writes bypass DAX
+- [Azure — Purge cache for Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/cache-purge) — supported path formats, 10-minute propagation
+- [Azure — Caching with Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching) — validators: `Last-Modified` only, no `etag`
+- [AWS — Amazon Bedrock prompt caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html) — `tools` → `system` → `messages` cascade invalidation
 - [MDN — HTTP conditional requests (`ETag`, `If-None-Match`)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests)

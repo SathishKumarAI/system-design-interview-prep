@@ -246,6 +246,29 @@ metastability that makes it unrecoverable.
 - **CDNs** — the same patterns at the edge: `stale-while-revalidate` is refresh-ahead,
   `stale-if-error` is graceful degradation, and cache-key design is the whole engineering job.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The shared cache** | ElastiCache (Valkey / Redis OSS / Memcached); DAX in front of DynamoDB | **Azure Managed Redis** — Azure Cache for Redis has a published retirement path, so name the new one |
+| **The pattern you get managed** | **DAX is write-through**: `PutItem`/`UpdateItem`/`DeleteItem` go to DynamoDB first, then the DAX item cache, and the operation "is successful only if the data is successfully written to *both*" | None. There is no managed read-through cache in front of an Azure store — cache-aside is yours to write |
+| **The eviction knob** | `maxmemory-policy` (only in a custom parameter group — default groups are immutable), `reserved-memory-percent`, default **25** | `maxmemory-policy`; `maxmemory-reserved` and `maxfragmentationmemory-reserved`, each ~10% of memory by default, clamped to the range 10–60% |
+| **Cluster shape** | Cluster mode **disabled** is one shard plus up to 5 replicas and does not partition at all; cluster mode enabled is 1–500 shards | Every instance is internally clustered — `OSS`, `Enterprise` or `Non-clustered` policy. **You cannot set the shard count**; the SKU does |
+| **The edge layer** | CloudFront cache policy: min / default / max TTL, plus the cache key (headers, cookies, query strings) | Front Door route caching plus Rules Engine: *Honor origin*, *Override always*, *Override if origin missing* |
+| **The default that bites** | `maxmemory-policy` defaults to **`volatile-lru`** — only keys carrying a TTL are eligible for eviction. Every key written without `EXPIRE` is pinned forever, and the node fills and starts erroring rather than evicting | The same `volatile-lru` default, with the consequence stated out loud: *"If no keys have a TTL value, the system doesn't evict any keys."* And at the edge, if the origin sends no `Cache-Control`, **Front Door "randomly determines a cache duration between one and three days"** — a staleness budget you did not choose and cannot predict |
+
+Two things this table is really saying. First, the eviction default is the same mistake on both clouds and it is the one that turns a cache into a store: a cache whose keys have no TTL cannot evict, so "working set outgrows memory" does not show up as the hit-rate slide described in *Failure modes* — it shows up as write errors. Choose `allkeys-lru` deliberately, or put a TTL on every write, and say which role Redis is playing.
+
+Second, DAX is the only place on either cloud where the write-through row of the pattern table is a managed product rather than your code — and it ships with a *second* cache whose rules are different. That half is in [cache-invalidation.md](./cache-invalidation.md). Stampede protection, Origin Shield and cold-start behaviour are in [cache-failure-modes.md](./cache-failure-modes.md) §On AWS and Azure and are not repeated here.
+
+## In an LLM deployment
+
+The layer table at the top of this page still holds, but the layers have **different key shapes**, and that — not their TTLs — is what makes the staleness budget hard to write down. The GPU's KV/prefix cache keys on a token prefix. The provider's prompt cache keys on an exact byte prefix. A response cache keys on an embedding. Only the first two compose; the third is answering a different question.
+
+The number that decides whether the middle layer works at all is a **minimum, not a TTL**. Bedrock will not create a cache checkpoint until the cumulative prefix reaches the model's floor — **512 tokens for Claude Opus 5, 1,024 for Claude Sonnet 5, 4,096 for Claude Haiku 4.5** — and below it, *"your inference still succeeds, but your prefix isn't cached."* A 2,000-token system prompt therefore caches on Sonnet and silently does not cache on Haiku: the cheapest model has the highest bar, so moving a workload down the model ladder to save money can quadruple the input tokens you pay full price for. Nothing errors; the only signal is `cacheReadInputTokens` sitting at zero.
+
+Refresh-ahead is the one pattern that transfers cleanly. The prompt-cache TTL **resets on every hit**, so a low-rate keepalive against a hot prefix inside the 5-minute window keeps it resident the same way refresh-ahead keeps a hot key warm. Write-behind has no analogue here and should not be invented.
+
 ## Staff-level follow-ups
 
 1. Your cache tier is unavailable for ten minutes. Walk through exactly what happens to the
@@ -288,5 +311,12 @@ metastability that makes it unrecoverable.
 - [Meta — More details on today's outage (23 September 2010)](https://engineering.fb.com/2010/09/23/uncategorized/more-details-on-today-s-outage/)
 - [Netflix — EVCache: caching at global scale](https://netflixtechblog.com/caching-for-a-global-netflix-7bcc457012f1)
 - [Redis — key eviction policies](https://redis.io/docs/latest/develop/reference/eviction/)
+- [AWS — ElastiCache engine-specific parameters](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/ParameterGroups.Engine.html) — `maxmemory-policy` default `volatile-lru`, `reserved-memory-percent` default 25, verified 2026-09-20
+- [AWS — ElastiCache cluster mode disabled vs enabled](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Replication.Redis-RedisCluster.html) — 1 shard vs 1–500 shards
+- [AWS — DAX: how it works](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.concepts.html) — write-through, item cache TTL
+- [Azure — Azure Managed Redis architecture](https://learn.microsoft.com/en-us/azure/redis/architecture) — cluster policies, shard count not user-settable
+- [Azure — Azure Cache for Redis memory management best practices](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-memory-management) — `volatile-lru` default, reserved-memory defaults
+- [Azure — Caching with Azure Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching) — one-to-three-day default cache duration, cache behaviour modes
+- [AWS — Amazon Bedrock prompt caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html) — per-model checkpoint token minimums, TTL reset on hit
 - [MDN — HTTP caching, `stale-while-revalidate` and `stale-if-error`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.11
