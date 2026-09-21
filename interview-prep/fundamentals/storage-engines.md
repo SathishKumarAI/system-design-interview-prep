@@ -241,6 +241,26 @@ amplification the storage layer creates.
 - **Aurora / Neon** — the third answer: keep a B-tree engine and push the log to a distributed
   storage layer, so replication and durability stop being the engine's problem.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **B-tree, managed** | RDS / Aurora MySQL (InnoDB B+tree); RDS / Aurora PostgreSQL (heap plus B-tree indexes) | Azure Database for MySQL / PostgreSQL flexible server — the same two engines; Azure SQL Database rowstore |
+| **The "log is the database" answer** | Aurora: the engine ships redo, not pages, to a cluster volume made of "copies of the data across three Availability Zones"; a write is durable when **four copies across three AZs** are persisted | Azure SQL **Hyperscale**: the engine is separated from a log service and page servers, with a local-SSD cache in front (RBPEX). Storage grows from 10 GB to **128 TB** without a declared max size |
+| **LSM, managed** | Amazon Keyspaces (for Apache Cassandra), DynamoDB | Azure Managed Instance for Apache Cassandra (real Cassandra on VMs you can see) |
+| **Who runs compaction** | Nobody you can talk to. Keyspaces exposes no `nodetool`, no compaction strategy and no repair — the deferred work is the provider's problem, and so is the tuning | Yours via CQL (`WITH compaction = {...}`), and Microsoft warns "don't do any manual compactions outside the strategy". The service itself performs a repair-driven minor compaction weekly |
+| **Cold-start / cache rehydration** | Aurora replicas attach to the existing cluster volume, so adding an instance copies no data | Hyperscale **continuous priming** keeps a secondary's buffer pool and RBPEX filled with the primary's hottest pages, so a failover does not start on a cold cache |
+| **Backup cost model** | Aurora bills storage on actual usage and reclaims space when data is dropped; Aurora I/O-Optimized removes per-I/O billing above ~25% I/O spend | Hyperscale backups are file-snapshot based and "nearly instantaneous... regardless of size", with no I/O impact on compute |
+| **The default that bites** | You cannot tune Aurora's storage layer. Fill factor, page size, the redo path, the placement of a segment: all gone. Everything this page calls a lever is now a property of a service | **`DBCC CHECKDB` and `DBCC CHECKFILEGROUP` aren't supported on Hyperscale.** The integrity check a SQL Server shop has run weekly for a decade silently has nowhere to go; the documented workaround is `DBCC CHECKTABLE ('TableName') WITH TABLOCK`, table by table |
+
+The pattern across both columns is the one this page's fifth real-world bullet already names: the managed answer to LSM-versus-B-tree is to keep a B-tree engine and move durability and replication into a distributed storage layer underneath it. What you buy is the disappearance of compaction tuning, cold-start refill and failover data movement. What you give up is every knob, and the ability to reason about the write path from first principles — which is why the amplification arithmetic above still matters for *capacity* even when it no longer describes anything you can change.
+
+## In an LLM deployment
+
+The store under a retrieval system is neither of this page's two shapes. An HNSW or DiskANN vector index is a graph, built once and expensive to mutate: a delete is a tombstone until the segment is rebuilt, and an update is a delete plus an insert that degrades the graph's connectivity as it accumulates. That is the RUM conjecture again with the currencies re-denominated — you buy read latency with build time and with space, and the deferred work arrives as a rebuild rather than as a compaction stall, on a schedule you also do not choose.
+
+The space numbers are what surprise people. A 1 536-dimension embedding in float32 is **6 KB per vector**, so a million chunks is **6.1 GB** of vectors before any graph structure. That is why quantisation is a first-class index type rather than an optimisation: on Azure Cosmos DB, a `flat` vector index stores raw vectors and is capped at **505 dimensions**, while `quantizedFlat` and `diskANN` compress before storing and reach **4 096** — a direct, documented instance of paying accuracy for space and latency. Plan the index like an LSM: size it for the rebuild, not for the steady state, and know what a full re-embedding costs in tokens before the day you need one.
+
 ## Staff-level follow-ups
 
 1. Your write p99 jumped from 2 ms to 4 s on an LSM store, with unchanged traffic and 30% CPU.
@@ -281,3 +301,9 @@ amplification the storage layer creates.
 - [PostgreSQL — WAL configuration and full page writes](https://www.postgresql.org/docs/current/wal-configuration.html)
 - [Cassandra — compaction strategies](https://cassandra.apache.org/doc/latest/cassandra/operating/compaction/index.html)
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` ch.3
+- [Amazon Aurora storage](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html) — the cluster volume across three AZs, I/O-Optimized vs Standard, storage reclaim; verified 2026-09-20
+- [Amazon DocumentDB — transactions](https://docs.aws.amazon.com/documentdb/latest/developerguide/transactions.html) — the four-copies-across-three-AZs write quorum of the Aurora-family storage layer
+- [Azure SQL Database — Hyperscale service tier](https://learn.microsoft.com/en-us/azure/azure-sql/database/service-tier-hyperscale) — log service and page servers, RBPEX, continuous priming, snapshot backups, and that `DBCC CHECKDB` is unsupported
+- [Azure Managed Instance for Apache Cassandra — management operations](https://learn.microsoft.com/en-us/azure/managed-instance-apache-cassandra/management-operations) — compaction strategy guidance and the weekly repair
+- [Amazon Keyspaces — consistency levels and costs](https://docs.aws.amazon.com/keyspaces/latest/devguide/consistency.html) — the serverless Cassandra surface, with no compaction or repair controls
+- [Azure Cosmos DB — indexing policies](https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy) — `flat` / `quantizedFlat` / `diskANN` vector indexes and their dimension limits

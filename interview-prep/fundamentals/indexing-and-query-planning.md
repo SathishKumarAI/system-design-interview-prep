@@ -242,6 +242,25 @@ citation from an argument.
 - **Elasticsearch** — inverted index as the primary structure; the same selectivity arithmetic
   drives filter ordering and caching decisions.
 
+## On AWS and Azure
+
+| | AWS | Azure |
+|---|---|---|
+| **The planner you are tuning** | PostgreSQL's cost model on RDS / Aurora PostgreSQL; the InnoDB optimiser on RDS / Aurora MySQL | The same two engines on the flexible servers; the SQL Server cardinality estimator plus Query Store on Azure SQL |
+| **The cost knobs** | `random_page_cost` (**default 4.0**), `seq_page_cost` (**1.0**), `effective_cache_size` (**4 GB**), `work_mem` — set in a DB parameter group, applied per instance class | Database-scoped configurations and compatibility level; `LEGACY_CARDINALITY_ESTIMATION`; there is no `random_page_cost` equivalent to get wrong |
+| **Plan stability** | Nothing automatic. Performance Insights and `pg_stat_statements` show you the regression; forcing or fixing the plan is yours | **Automatic plan correction**: `FORCE_LAST_GOOD_PLAN` reverts a regressed plan to the last known good one, verifies the gain, and reverts itself if it made things worse |
+| **Automatic index management** | **No direct equivalent.** Nothing in RDS or Aurora creates or drops an index for you | `CREATE_INDEX` and `DROP_INDEX` automatic tuning on Azure SQL Database. `DROP INDEX` removes indexes "unused (over the last 90 days) and duplicate", never a unique or constraint-backing one |
+| **When there is no planner at all** | DynamoDB: the key *is* the access path; GSIs and LSIs are explicit structures with their own capacity | Cosmos DB: no planner either, but the opposite default — **every property of every item is indexed**, with range indexes on every string and number |
+| **The default that bites** | `random_page_cost` is **4.0**, a number chosen to model a spinning disk, and it does not change when you move the database onto gp3 or io2. The planner is still being told that a random page costs four sequential ones, which biases it toward sequential scans on exactly the hardware where that is least true | **`FORCE_LAST_GOOD_PLAN` is enabled by default** ("Azure defaults are set to FORCE\_LAST\_GOOD\_PLAN enabled, CREATE\_INDEX disabled, and DROP\_INDEX disabled"). Azure SQL will pin a previous plan for you without being asked — usually what you want, and occasionally exactly the plan you spent a release getting rid of |
+
+Cosmos DB's default deserves its own line, because it inverts the arithmetic in *Numbers that matter*: indexing every path means "the index size can be larger than the data size", and every write pays RUs to maintain paths no query ever filters on. Two details make it worse before they make it better — the partition key is **not** indexed unless it is also `/id`, so a query filtering on it forces a full scan, and **no composite indexes exist by default**, so any `ORDER BY` on two properties needs one added by hand. The default is "index everything you will never query, and nothing you actually sort by".
+
+## In an LLM deployment
+
+Vector search removes the half of this page that is about the planner and keeps the half that is about the index. There is no cost model choosing between a scan and a seek: you pick the index type, and you live with its recall. Azure Cosmos DB makes the trade explicit in three named choices — `flat` is brute force, "guaranteed to find the most similar vectors", capped at **505 dimensions**; `quantizedFlat` compresses first, so accuracy is "slightly less than 100%"; `diskANN` is approximate from the start, and both reach **4 096** dimensions. Two build parameters set the rest of the curve, and `indexingSearchListSize` defaults to **100** out of a 10–500 range, "setting this larger may result in higher accuracy vector searches at the expense of longer index build times".
+
+That is the whole discipline, and it is the same discipline as composite-index order: the index encodes the query you intend to run, and the wrong choice is not slow, it is **quietly wrong**. A bad B-tree choice shows up as latency on a dashboard; a bad ANN choice shows up as a retriever that returns a plausible neighbour instead of the right chunk, and the model writes a confident answer over it. Measure recall@k against a labelled set before and after any index change, because nothing in the system will tell you the index got worse.
+
 ## Staff-level follow-ups
 
 1. A query slowed 500× overnight with no deploy. Walk your diagnosis from `EXPLAIN (ANALYZE,
@@ -281,3 +300,7 @@ citation from an argument.
 - [Markus Winand — On Uber's choice of databases](https://use-the-index-luke.com/blog/2016-07-29/on-ubers-choice-of-databases)
 - [MySQL — optimizer trace and index condition pushdown](https://dev.mysql.com/doc/refman/8.0/en/index-condition-pushdown-optimization.html)
 - [Uber — Why Uber Engineering switched from Postgres to MySQL](https://www.uber.com/en-US/blog/postgres-to-mysql-migration/)
+- [PostgreSQL — planner cost constants](https://www.postgresql.org/docs/current/runtime-config-query.html) — `random_page_cost` 4.0, `seq_page_cost` 1.0, `effective_cache_size` 4 GB, and when to lower the first; verified 2026-09-20
+- [Azure SQL — automatic tuning overview](https://learn.microsoft.com/en-us/azure/azure-sql/database/automatic-tuning-overview) — the Azure defaults (FORCE_LAST_GOOD_PLAN on, CREATE_INDEX and DROP_INDEX off) and the 90-day unused-index rule
+- [SQL Server — automatic tuning](https://learn.microsoft.com/en-us/sql/relational-databases/automatic-tuning/automatic-tuning) — what automatic plan correction does, and its dependence on Query Store
+- [Azure Cosmos DB — indexing policies](https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy) — index-everything default, the unindexed partition key, no composite indexes by default, and the vector index types and build parameters

@@ -148,6 +148,27 @@ crossover for your numbers rather than arguing about it.
 - **Amazon DynamoDB** — the managed extreme: no planner, no joins, explicit per-partition limits,
   and correspondingly little to operate.
 
+## On AWS and Azure
+
+The managed form of each engine above, and the one setting that changes the answer.
+
+| Engine | AWS | Azure |
+|---|---|---|
+| **PostgreSQL** | RDS for PostgreSQL; **Aurora PostgreSQL** — shared cluster volume, up to **15** replicas, engine defaults untouched (`READ COMMITTED`, `random_page_cost` 4.0) | Azure Database for PostgreSQL **flexible server** — community Postgres, asynchronous replication, **5** read replicas (30 with cascading), lag documented as "a few seconds to minutes... could extend to hours" |
+| **MySQL** | RDS for MySQL; **Aurora MySQL** — readers pinned to `REPEATABLE READ`, optional local write forwarding gated behind `aurora_replica_read_consistency` | Azure Database for MySQL flexible server — InnoDB, `REPEATABLE READ`, no write-forwarding equivalent |
+| **SQL Server** | RDS for SQL Server (Multi-AZ via database mirroring or Always On AGs) | **Azure SQL Database** — the tier choice *is* the topology choice, and Hyperscale is the documented default recommendation for new OLTP work |
+| **Cassandra** | **Amazon Keyspaces** — serverless, writes always `LOCAL_QUORUM` across three AZs, no `nodetool`, no compaction strategy, no repair to schedule | **Azure Managed Instance for Apache Cassandra** — actual Cassandra on VMs you can see, weekly reaper repair run for you, OS patched fortnightly, `nodetool` available and dangerous |
+| **DynamoDB-shaped** | **DynamoDB** — `ConsistentRead` per read at 2× RCUs, global tables MREC (last-writer-wins) or MRSC (three Regions, RPO 0) | **Azure Cosmos DB for NoSQL** — five consistency levels, `Session` by default, session tokens, multi-region writes without `Strong` |
+| **The default that bites** | **Keyspaces is not Cassandra.** `QUORUM`, `EACH_QUORUM`, `ALL`, `TWO`, `THREE`, `ANY`, `SERIAL` and `LOCAL_SERIAL` are unsupported and throw, so a lift-and-shift fails at runtime on a line of driver config, not at deploy | **Cosmos DB indexes every property of every item** by default, with range indexes on every string and number — "if all the properties are indexed, then the index size can be larger than the data size". The write RU from a benchmark row is not the write RU of your document |
+
+This sharpens the page's recommendation rather than changing it. "Postgres unless you can name the property that rules it out" survives both clouds intact — both sell community PostgreSQL with the engine defaults untouched, which means everything on the fundamentals pages still applies and your knowledge transfers. The two Cassandra offerings, by contrast, are barely the same product: one removes the operational burden by removing the controls, and the other keeps both. Choosing between them is choosing whether repair scheduling is a thing your team does.
+
+## In an LLM deployment
+
+The OLTP choice for an LLM product is usually settled by a question this matrix does not ask: **does it carry the vectors, or does something else?** Keeping embeddings in the transactional store (Postgres plus `pgvector`, or a Cosmos container with a vector index) buys one backup, one consistency story and a join between a chunk and its permissions — which is the difference between a retriever that respects access control and one that leaks. Splitting them out buys index features and a rebuild you can run without touching production, at the cost of a second system that can disagree with the first.
+
+Size the decision before making it. A million chunks at 1 536 dimensions in float32 is **6.1 GB** of raw vectors (10⁶ × 1 536 × 4 bytes) before any index structure, which is nothing for a database and a great deal for a buffer pool sized on row data. The dimension limits are real constraints too: a Cosmos DB `flat` vector index caps at **505** dimensions and only `quantizedFlat` and `diskANN` reach **4 096**, so the embedding model you choose can eliminate an index type before you have written a query. Decide the vector home at the same time as the engine, not two quarters later.
+
 ## Staff-level follow-ups
 
 1. Given an app with 20 k writes/s, 4 TB, and queries that change every quarter, choose an engine
@@ -184,3 +205,10 @@ crossover for your numbers rather than arguing about it.
 - [PostgreSQL — WAL configuration and full page writes](https://www.postgresql.org/docs/current/wal-configuration.html)
 - [MySQL — InnoDB index and locking behaviour](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html)
 - [Cassandra — compaction and repair](https://cassandra.apache.org/doc/latest/cassandra/operating/compaction/index.html)
+- [Amazon Keyspaces — supported read and write consistency levels and costs](https://docs.aws.amazon.com/keyspaces/latest/devguide/consistency.html) — `LOCAL_QUORUM` writes, and the levels that throw; verified 2026-09-20
+- [Azure Managed Instance for Apache Cassandra — management operations](https://learn.microsoft.com/en-us/azure/managed-instance-apache-cassandra/management-operations) — weekly reaper repair, fortnightly OS patching, compaction guidance
+- [Amazon Aurora DB clusters](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.html) and [Aurora MySQL isolation levels](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.IsolationLevels.html) — 15 replicas; readers pinned to `REPEATABLE READ`
+- [Azure Database for PostgreSQL flexible server — read replicas](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-read-replicas) — five replicas, asynchronous, documented lag range
+- [DynamoDB read consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) and [global tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html) — `ConsistentRead` cost, MREC vs MRSC
+- [Azure Cosmos DB — consistency levels](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) and [indexing policies](https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy) — the five levels; index-everything default and vector index dimension limits
+- [Azure SQL Database — Hyperscale service tier](https://learn.microsoft.com/en-us/azure/azure-sql/database/service-tier-hyperscale) — the recommended default tier for new OLTP and HTAP workloads
