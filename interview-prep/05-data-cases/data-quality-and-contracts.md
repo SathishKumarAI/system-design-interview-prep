@@ -291,6 +291,7 @@ verdict is non-deterministic is a check you will mute.
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

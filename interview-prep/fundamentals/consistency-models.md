@@ -279,6 +279,7 @@ The lag is a different order of magnitude, too. An Azure AI Search indexer's sma
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Cache invalidation](cache-invalidation.md)
 - [Consensus — Raft and Paxos](consensus-raft-paxos.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)

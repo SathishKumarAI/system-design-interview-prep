@@ -207,6 +207,7 @@ Lambda-by-accident warning above: two code paths, and this time the platform enf
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Comparisons index](README.md)
 - [Messaging matrix](messaging-matrix.md)
 - [Technology selection tables](../08-reference/tech-selection.md)

@@ -161,6 +161,7 @@ name and no link is a paper nobody reads.
 
 ## Referenced by
 
+- [Books already on this machine](books-on-this-machine.md)
 - [Courses and mock interviews](courses-and-mocks.md)
 - [GitHub repositories](github-repos.md)
 - [Newsletters and Substacks](newsletters-substack.md)

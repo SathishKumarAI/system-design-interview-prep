@@ -154,7 +154,6 @@ change; a relay (or CDC on that table) publishes it. At-least-once, no lost even
 
 ## Referenced by
 
-- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Data engineering design playbook](../05-data-cases/data-playbook.md)
 - [Design a news feed](../03-backend-cases/news-feed.md)
 - [Design a notification system](../03-backend-cases/notification-system.md)

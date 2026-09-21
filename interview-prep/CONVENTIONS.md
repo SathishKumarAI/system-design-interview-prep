@@ -152,6 +152,7 @@ That's the whole ritual. Three steps, or the index rots and the repo becomes a p
 ## Referenced by
 
 - [ADR-0001: Split bundled primitives into atomic fundamentals pages](../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
+- [Books already on this machine](10-resources/books-on-this-machine.md)
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
 - [Comparisons index](comparisons/README.md)
 - [Diagram component library](diagrams/components.md)

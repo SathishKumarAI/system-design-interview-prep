@@ -278,6 +278,7 @@ multi-objective weights. All batch, all off the 50 ms path.
 
 - [Design a news feed](../03-backend-cases/news-feed.md)
 - [Design a recommender system](recommender.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

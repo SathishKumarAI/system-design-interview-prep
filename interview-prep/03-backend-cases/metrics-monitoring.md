@@ -280,6 +280,7 @@ right.
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Consensus — Raft and Paxos](../fundamentals/consensus-raft-paxos.md)
 - [Design a real-time dashboard (frontend)](../04-frontend-cases/realtime-dashboard.md)
 - [Design ML monitoring, evaluation and retraining](../06-ml-cases/ml-monitoring-and-eval.md)

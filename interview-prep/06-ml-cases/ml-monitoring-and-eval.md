@@ -304,6 +304,7 @@ a trickle elsewhere — and compute the bill before you turn it on.
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
 - [Design a RAG assistant over company documents](rag-assistant.md)
 - [Design a recommender system](recommender.md)

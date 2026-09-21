@@ -293,6 +293,7 @@ The fix is this page's fifth follow-up, and the LLM case makes it compulsory rat
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Cache invalidation](cache-invalidation.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)

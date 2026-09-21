@@ -286,6 +286,7 @@ The space numbers are what surprise people. A 1 536-dimension embedding in float
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Fundamentals index](README.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
 - [OLTP database matrix](../comparisons/oltp-database-matrix.md)

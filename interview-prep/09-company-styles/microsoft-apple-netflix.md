@@ -94,4 +94,5 @@ drill do worse than candidates who ran twenty drills and read none.
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Company interview styles](README.md)

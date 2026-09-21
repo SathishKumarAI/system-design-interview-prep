@@ -299,6 +299,7 @@ documents into a vector store nobody will think to check.
 ## Referenced by
 
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)

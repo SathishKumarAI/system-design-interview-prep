@@ -217,6 +217,7 @@ above it is carrying job IDs rather than work.
 ## Referenced by
 
 - [Batch vs streaming](batch-vs-streaming.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Comparisons index](README.md)
 - [Technology selection tables](../08-reference/tech-selection.md)
 - [Topic manifest](../topics/manifest.md)

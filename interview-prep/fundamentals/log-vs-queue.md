@@ -278,6 +278,7 @@ it will, that is the named replay requirement this page asks you to produce befo
 
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Batch vs streaming](../comparisons/batch-vs-streaming.md)
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Delivery semantics](delivery-semantics.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)

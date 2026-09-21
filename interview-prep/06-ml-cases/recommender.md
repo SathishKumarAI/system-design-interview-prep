@@ -284,6 +284,7 @@ lose the ability to tell whether recommendations improved or the copy just got b
 ## Referenced by
 
 - [Design video streaming (YouTube / Netflix)](../03-backend-cases/video-streaming.md)
+- [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)

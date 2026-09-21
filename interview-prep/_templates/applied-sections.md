@@ -85,4 +85,5 @@ plausible service names that do not exist.
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [File conventions](../CONVENTIONS.md)

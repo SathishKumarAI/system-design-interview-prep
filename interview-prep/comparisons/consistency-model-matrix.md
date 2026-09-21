@@ -192,6 +192,7 @@ The second is stranger: **monotonic reads has no meaning for a generated answer.
 
 ## Referenced by
 
+- [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Comparisons index](README.md)
 - [OLTP database matrix](oltp-database-matrix.md)
 - [SQL vs NoSQL vs NewSQL](sql-vs-nosql-vs-newsql.md)

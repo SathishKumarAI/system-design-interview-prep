@@ -79,6 +79,7 @@ training–serving skew*; *specified the evaluation and rollout plan*; *gave $/p
 
 ## Referenced by
 
+- [Behavioural self-scoring rubric](../11-behavioural/rubric.md)
 - [Drill — <problem> — <YYYY-MM-DD>](../_templates/drill-log-template.md)
 - [Drills index](README.md)
 - [Interview prep index](../README.md)
