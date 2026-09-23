@@ -5,7 +5,7 @@ track: universal
 tier: P0
 status: drafted
 sources: [existing repo inventory, 2026 staff-level curricula]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [manifest, index, canonical]
 ---
 
@@ -318,9 +318,16 @@ are new. Case studies are expected to run long.
 
 ## 5. Not topics — leave as is
 
-`07-drills/`, `08-reference/glossary.md`, `09-company-styles/`, `10-resources/` are meta:
-process, lookup and sourcing. They keep their current format and are **excluded** from the
-staff-level section contract.
+`07-drills/`, `08-reference/glossary.md`, `09-company-styles/`, `10-resources/`,
+`11-behavioural/` are meta: process, lookup, sourcing and the non-technical round. They keep
+their current format and are **excluded** from the staff-level section contract.
+
+They are still bound by the one-topic-one-file rule. Two live collisions to respect:
+
+| Collision | Rule |
+|---|---|
+| `07-drills/question-bank.md` and `11-behavioural/question-bank.md` | Same filename, different rounds — **technical** drills vs **behavioural** stories. Both stay; always link with the folder, never the bare filename |
+| `07-drills/self-scoring-rubric.md` and `11-behavioural/rubric.md` | Design-round rubric vs behavioural rubric. Never merge them |
 
 `08-reference/tech-selection.md` is the exception — it is **retired** into `comparisons/`
 once those files exist, and replaced by a stub pointing there.
@@ -385,10 +392,27 @@ This section is history now; do not re-litigate it here — supersede the ADR in
 | 6 | **patterns/** (folder created): outbox-pattern · saga-pattern · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | ✅ written, link-checked, `docs/patterns-batch-6` |
 | 7 | fanout-write-vs-read · cell-based-architecture · graceful-degradation · circuit-breaker · backfill-and-reprocessing | ✅ written, link-checked, `docs/patterns-batch-7` |
 | 8 | **comparisons/** (folder created): sql-vs-nosql-vs-newsql · oltp-database-matrix · messaging-matrix · consistency-model-matrix · batch-vs-streaming | ✅ written, link-checked, `docs/comparisons-batch-8` |
-| 9 | cases: news-feed · chat-messaging · ride-hailing · payments-ledger · ticket-booking | next — **first case rewrites** |
-| 10–13 | see §6 batch order | planned |
+| 9 | **resources audit** — `primary-sources` (new) · `github-repos` rewritten by reader intent · dead and hijacked entries dropped · vendor pruned to what runs | ✅ `docs/resources-audit` |
+| 10 | **applied sections** — `## On AWS and Azure` + `## In an LLM deployment` defined in [`_templates/applied-sections.md`](../_templates/applied-sections.md) and added to all 40 topic pages and 26 cases (**67 files**) | ✅ `docs/applied-sections` |
+| 11 | **case diagrams** — a `flowchart` and a `sequenceDiagram` in every one of the 26 cases; the ASCII sketches they replaced deleted | ✅ `docs/applied-sections` |
+| 12 | **`11-behavioural/`** (folder created) — question bank · rubric · story inventory + README | ✅ `docs/applied-sections` |
+| 13 | cases: news-feed · chat-messaging · ride-hailing · payments-ledger · ticket-booking | next — **first case rewrites** |
+| 14–17 | see §6 batch order | planned |
 
 **40 / 123 written.** Fundamentals 25/47 · Patterns 10/20 · Comparisons 5/18 · Cases 0/38 rewritten.
+
+Batches 9–12 raised the existing corpus rather than adding topic pages, so the count above is
+unchanged and correct. What they did **not** do is the contract rewrite: all 26 cases still run the
+old `## 1. Clarify … ## 8. Ops & cost` skeleton and carry none of the ten contract headings.
+
+### Known drift, 2026-09-23
+
+| Gap | Where |
+|---|---|
+| Five primitive files have no successor page and no banner — 20 unwritten topics across network+edge, traffic management, operations, security+tenancy and cost | §1.1 · §1.2 · §1.10 · §1.11 · §1.12 |
+| Cases end `## Sources & further reading` (44 files); topic pages end `## Sources` (52 files). `gen_backlinks.py` matches the heading textually | §4 |
+| `08-reference/tech-selection.md` still not retired — 13 of its decisions have no comparison page | §3 |
+| `interview-prep/_templates/case-template.md` still teaches the pre-contract skeleton | §4 |
 
 ## See also
 

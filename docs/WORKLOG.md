@@ -2,7 +2,7 @@
 title: Worklog
 type: worklog
 status: current
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [history, decisions]
 ---
 
@@ -10,6 +10,69 @@ tags: [history, decisions]
 
 Dated entries. Newest first. Each entry records **what changed, how, why, and the trade-off** —
 the reasoning is the part that isn't recoverable from the diff.
+
+---
+
+## 2026-09-23 — Gap audit, and the stack that could not merge itself
+
+Branch: `docs/status-and-manifest-refresh` · PR #1 **merged**, #2–#9 open and conflicting
+
+### What
+
+A full content and navigation audit of the repo, then the two files the audit proved were lying —
+`STATUS.md` and `topics/manifest.md` §8 — brought back to the facts. Plus
+`scripts/merge-pr-stack.sh`, which publishes the rest of the stack.
+
+### What the audit found
+
+| Finding | Evidence |
+|---|---|
+| `main` was 48 commits and seven months stale — **zero** of the 40 staff pages on it | `git rev-list --count main..HEAD` → 48; `git ls-tree main interview-prep/fundamentals` → 0 files |
+| **All 26 cases fail the section contract.** None carry any of the ten headings; they still run `## 1. Clarify … ## 8. Ops & cost` | contract check over every `type: case` file |
+| Five primitive files have no successor and no banner — 20 unwritten topics, five whole domains absent from `fundamentals/`: network+edge, traffic management, operations, security+tenancy, cost | manifest §1.1 §1.2 §1.10 §1.11 §1.12 vs `fundamentals/` listing |
+| `updated:` not bumped on the files the applied-sections batch edited | `rag-assistant.md` committed 2026-09-21, frontmatter said 2026-09-02 |
+| Two Sources dialects — `## Sources` ×52, `## Sources & further reading` ×44 — and `gen_backlinks.py` matches the heading textually | grep |
+| `11-behavioural/` was created outside the duplicate rule: absent from the manifest, and its `question-bank.md` and `rubric.md` collide by name with `07-drills/` | manifest §5 |
+| The three doc scripts live only in `~/.claude/skills/`. A clone elsewhere cannot run the Definition of Done | `find . -name '*.py'` finds three unrelated files |
+| `.obsidian/` is in `.gitignore` yet 5 files are tracked, `workspace.json` among them; `app.json` is `{}`, so `useMarkdownLinks` is unset and a fresh clone defaults to the wikilinks this vault bans | `git ls-files .obsidian`; `.gitignore:12` |
+| Root `README.md` links none of `fundamentals/` `patterns/` `comparisons/` `11-behavioural/`, has no frontmatter, and opens with a 101 section the repo's own rules forbid | README.md |
+| `docs/resources-audit` and `docs/applied-sections` — 34 commits — had never been pushed | `git ls-remote --heads origin` |
+
+Links are healthy: **1971 checked, 4 broken**, all four the `path/to/…` placeholders inside
+`markdown files/md_blacklinks.md`.
+
+### The trade-off that cost the most
+
+**Squash-merging PR #1 broke the eight PRs above it.** The branches are strictly linear ancestors
+of each other, so the squash gave `main` a commit in no branch's history; #2's merge-base went
+stale and GitHub called it `CONFLICTING` although not one byte of its content had changed. The
+recovery is `git rebase --onto origin/main <original-base> <branch>`, which drops the merged prefix
+and replays only that batch's own commits — conflict-free, because `origin/main` is tree-identical
+to the commit each batch sits on. The script asserts that with `git diff --quiet` before every
+rebase and refuses to continue if it ever stops holding.
+
+That work could not be done from the session: `git rebase` and `git push --force-with-lease` are
+both denied by the auto-mode classifier. Hence a script the human runs, rather than a claim that
+the merge is done.
+
+### Not done, deliberately
+
+Batches 9–12 (resources audit, applied sections, case diagrams, behavioural) have **no worklog
+entries of their own**. They are recorded in manifest §8 now, but the reasoning behind them was
+never written down and cannot be recovered from the diffs by anyone but their author. Reconstructing
+it here would be inventing it.
+
+### Verification
+
+```
+$ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+checked 1971 relative links; broken: 4          # the {rel_path} placeholders, unchanged
+$ python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice
+232 files scanned, 907 inbound links mapped, 0 changed
+$ bash -n scripts/merge-pr-stack.sh
+                                                # syntax clean; all 11 rebase bases verified
+                                                # as ancestors of their branch
+```
 
 ---
 

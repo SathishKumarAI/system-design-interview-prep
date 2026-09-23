@@ -4,7 +4,8 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 
 | You want | Read |
 |---|---|
-| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands, batch 9 |
+| **To start working right now** | [docs/NEXT-SESSION.md](docs/NEXT-SESSION.md) — commands and the verify loop |
+| **To finish publishing the work** | `bash scripts/merge-pr-stack.sh` — PRs #2–#9 |
 | The stop point and the traps | This file |
 | Why things are the way they are | [docs/WORKLOG.md](docs/WORKLOG.md) |
 | Unscheduled ideas worth keeping | [docs/BACKLOG.md](docs/BACKLOG.md) |
@@ -12,14 +13,18 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 | Why the structure changed | [docs/adr/0001-split-primitives-into-atomic-fundamentals.md](docs/adr/0001-split-primitives-into-atomic-fundamentals.md) |
 | The repo map | [INDEX.md](INDEX.md) |
 
-**Last updated:** 2026-09-02
-**Branch:** `docs/comparisons-batch-8` · **PRs #1–#9** open, none merged
+**Last updated:** 2026-09-23
+**Branch:** `docs/status-and-manifest-refresh`, stacked on `docs/applied-sections`
+**PRs:** #1 **merged** 2026-09-23 · #2–#9 open and now *conflicting* — see the next action
 
 ---
 
 ## Where things stopped
 
-The restructure is decided, recorded, and **executing**. Batches 1–8 are written and verified. **All P0 fundamentals, patterns and comparisons scaffolding now exists**; batch 9 starts the case rewrites.
+The restructure is decided, recorded, and **executing**. Batches 1–8 wrote the mechanism layer;
+batches 9–12 raised the existing corpus instead of adding topics. **The 26 case files still have
+not been rewritten to the staff contract** — that is the open work, and it is the largest single
+gap in the repo.
 
 | Layer | State |
 |---|---|
@@ -27,19 +32,33 @@ The restructure is decided, recorded, and **executing**. Batches 1–8 are writt
 | `interview-prep/fundamentals/` | **25 pages** (consistency · replication · storage+caching · messaging · reliability) + README |
 | `interview-prep/comparisons/` | **5 pages** (SQL vs NoSQL · OLTP engines · messaging · consistency defaults · batch vs streaming) + README. **Folder created in batch 8** |
 | `interview-prep/patterns/` | **10 pages** — atomicity (outbox · saga · 2PC · derived data · expand–contract) and blast radius (fanout · cells · degradation · breakers · backfill) + README |
+| `interview-prep/11-behavioural/` | **3 pages** + README — question bank, rubric, and an empty story inventory only the reader can fill. **Folder created 2026-09-21, still absent from the manifest** |
+| Applied sections | `## On AWS and Azure` + `## In an LLM deployment` now on **67 files**. Contract in [`_templates/applied-sections.md`](interview-prep/_templates/applied-sections.md); **not yet added to the section-contract table in CLAUDE.md** |
+| Case diagrams | All 26 cases carry a `flowchart` **and** a `sequenceDiagram`, ASCII sketches removed. One exception: `06-ml-cases/feed-ranking.md` has a `stateDiagram` where the sequence should be |
+| Case **content** | **0 of 26 rewritten.** Every case still runs the old `## 1. Clarify … ## 8. Ops & cost` skeleton and carries none of the ten contract headings. They also end `## Sources & further reading`, not `## Sources` |
 | `02-primitives/` split so far | **7 of 12 files**, all kept and banner-marked, each still holding at least one topic with no successor: `consistency-and-consensus` (clocks, CRDTs) · `replication-and-partitioning` (rebalancing) · `caching` (Redis internals) · `storage-and-databases` (store selection, object storage, schema evolution) · `messaging-and-streams` (backpressure) · `transactions-and-idempotency` (2PC, outbox, sagas, ledgers) · `reliability-patterns` (**down to bulkheads and DR**). `transactions-and-idempotency` is down to **ledgers only** and is retired when `ledgers-and-double-entry.md` lands |
-| Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** |
+| `02-primitives/` **not started** | The other **5 of 12** have no successor page at all and no banner: `networking-and-edge` · `load-balancing-and-gateways` · `observability-and-delivery` · `security-and-multitenancy` · `cost-engineering`. That is 20 unwritten topics and five whole domains with nothing in `fundamentals/` |
+| Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** topic pages. Batches 9–12 added no topic pages, so the count is unchanged and correct |
 | `08-reference/tech-selection.md` | **Not retired** — it still uniquely covers 13 decisions with no comparison page yet. Banner added; becomes a stub when they land |
-| Links / backlinks | 1858 links checked, 4 broken (known placeholders), backlink pass idempotent |
+| Links / backlinks | **1967 links checked, 4 broken** (the `path/to/…` placeholders in `markdown files/md_blacklinks.md`), backlink pass idempotent |
 
 ## The next action
 
-Two things, in this order:
+Four things, in this order:
 
-1. **Merge the open PRs, oldest first** — #1 (plan) → #2 → … → #9. They are stacked, so each
-   retargets to `main` as the one below it lands. The session could not merge them (`gh pr merge`
-   blocked by the permission classifier): `gh pr merge 1 --squash --delete-branch`, then 2–9.
-2. **Batch 9 — the first case rewrites.** A genuinely different kind of work: five existing case
+1. **Finish merging the stack: `bash scripts/merge-pr-stack.sh`.** PR #1 is squash-merged. That
+   rewrote history, so #2–#9 now report `CONFLICTING` even though their content is unchanged —
+   their merge-base went stale. The script drops each already-merged prefix with
+   `git rebase --onto` and re-pushes, which replays cleanly because `origin/main` is tree-identical
+   to the commit each batch sits on. It cannot be run from a Claude session: `git rebase` and
+   `git push --force-with-lease` are both blocked by the auto-mode classifier.
+2. **Publish the front door.** `main` carried nothing but the 2026-02 README until #1 landed. Root
+   `README.md` still links neither `fundamentals/` nor `patterns/` nor `comparisons/` nor
+   `11-behavioural/`, and still claims "26 worked cases" as the whole offer.
+3. **Vendor the doc scripts.** `check_links.py`, `gen_backlinks.py` and `lint_docs.py` live only in
+   `~/.claude/skills/staff-technical-docs/scripts/`. A clone on any other machine cannot run the
+   Definition of Done.
+4. **Batch 13 — the first case rewrites.** A genuinely different kind of work: five existing case
    files rewritten **in place** to the staff contract, keeping the design skeleton (Clarify ·
    Requirements · Estimates · API · Data model · Architecture · Scale & failure · Ops & cost)
    *inside* `Mechanics & internals` and `Numbers that matter`:
@@ -54,6 +73,8 @@ fan-out or idempotency is a case that has not used the set.
 
 | Trap | What to do |
 |---|---|
+| **Squash-merging a stacked PR breaks every PR above it** | The branches are strictly linear ancestors of each other. Squashing #1 gave `main` a commit that is not in any branch's history, so #2's merge-base went stale and GitHub called it `CONFLICTING` — the content had not changed at all. Never `gh pr merge` a stack in a loop. Use `scripts/merge-pr-stack.sh`, which rebases each branch onto the new `main` first |
+| **`git rebase` and `git push --force` are blocked in Claude sessions** | The auto-mode classifier denies both. Anything needing them goes in a `scripts/*.sh` the human runs |
 | **Python `write_text` turns a whole LF file CRLF on Windows** | A read-modify-write of a doc silently rewrites every line ending. Harmless here — `core.autocrlf=true`, so the committed blob is unaffected and `git diff` stays empty — but a byte-level diff of the working tree will look like the whole file changed. Write bytes, or pass `newline="
 "`, when that matters |
 | **`gen_backlinks.py` edits inside code fences** | It matches `## Referenced by` / `## Sources` textually. A fenced example containing those headings gets a generated backlink list injected into it. This happened to `CLAUDE.md` and `CONVENTIONS.md`; both contracts are tables now. **Never put those headings in a fence** |
@@ -77,8 +98,11 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1858 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **1967 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
+
+Those three scripts are **not in this repo**. Until they are vendored into `scripts/`, the
+Definition of Done is only runnable on a machine with the `staff-technical-docs` skill installed.
 
 ## Related work outside this repo
 
