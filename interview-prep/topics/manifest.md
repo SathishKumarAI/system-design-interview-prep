@@ -430,6 +430,7 @@ old `## 1. Clarify … ## 8. Ops & cost` skeleton and carry none of the ten cont
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
+- [scripts/](../../scripts/README.md)
 - [System design prep](../../README.md)
 
 ## Sources

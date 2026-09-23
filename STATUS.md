@@ -40,7 +40,7 @@ gap in the repo.
 | `02-primitives/` **not started** | The other **5 of 12** have no successor page at all and no banner: `networking-and-edge` · `load-balancing-and-gateways` · `observability-and-delivery` · `security-and-multitenancy` · `cost-engineering`. That is 20 unwritten topics and five whole domains with nothing in `fundamentals/` |
 | Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** topic pages. Batches 9–12 added no topic pages, so the count is unchanged and correct |
 | `08-reference/tech-selection.md` | **Not retired** — it still uniquely covers 13 decisions with no comparison page yet. Banner added; becomes a stub when they land |
-| Links / backlinks | **2019 links checked, 4 broken** (the `path/to/…` placeholders in `markdown files/md_blacklinks.md`), backlink pass idempotent |
+| Links / backlinks | **2022 links checked, 0 broken** with `--exclude vendor "markdown files"`; without the exclusions, the four `path/to/…` placeholders in `markdown files/md_blacklinks.md` make it exit 1. Backlink pass idempotent |
 
 ## The next action
 
@@ -52,12 +52,11 @@ Four things, in this order:
    `git rebase --onto` and re-pushes, which replays cleanly because `origin/main` is tree-identical
    to the commit each batch sits on. It cannot be run from a Claude session: `git rebase` and
    `git push --force-with-lease` are both blocked by the auto-mode classifier.
-2. **Publish the front door.** `main` carried nothing but the 2026-02 README until #1 landed. Root
-   `README.md` still links neither `fundamentals/` nor `patterns/` nor `comparisons/` nor
-   `11-behavioural/`, and still claims "26 worked cases" as the whole offer.
-3. **Vendor the doc scripts.** `check_links.py`, `gen_backlinks.py` and `lint_docs.py` live only in
-   `~/.claude/skills/staff-technical-docs/scripts/`. A clone on any other machine cannot run the
-   Definition of Done.
+2. ~~**Publish the front door.**~~ Done — the root `README.md` now leads with the layer table and
+   links `fundamentals/`, `patterns/`, `comparisons/` and `11-behavioural/`. It reaches readers
+   only once step 1 lands.
+3. ~~**Vendor the doc scripts.**~~ Done — `check_links.py`, `gen_backlinks.py` and `lint_docs.py`
+   are in [`scripts/`](scripts/README.md). The Definition of Done now runs from a bare clone.
 4. **Batch 13 — the first case rewrites.** A genuinely different kind of work: five existing case
    files rewritten **in place** to the staff contract, keeping the design skeleton (Clarify ·
    Requirements · Estimates · API · Data model · Architecture · Scale & failure · Ops & cost)
@@ -92,17 +91,26 @@ fan-out or idempotency is a case that has not used the set.
 ## Verify before claiming anything is done
 
 ```bash
-python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
-python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # run twice: second must say "0 changed"
-python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # backlinks are links too
-python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
+python scripts/gen_backlinks.py .   # run twice: second must say "0 changed"
+python scripts/gen_backlinks.py .
+python scripts/check_links.py . --exclude vendor "markdown files"
+python scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **2019 links checked, 4 broken** (the placeholders above). Anything else is new
-breakage. Quote the output — "links verified" is an assertion, the count is evidence.
+Expected today:
 
-Those three scripts are **not in this repo**. Until they are vendored into `scripts/`, the
-Definition of Done is only runnable on a machine with the `staff-technical-docs` skill installed.
+```
+233 files scanned, 933 inbound links mapped, 0 changed
+checked 2022 relative links; broken: 0
+```
+
+Anything else is new breakage. Quote the output — "links verified" is an assertion, the count is
+evidence. Backlinks run **first**: generated links are links too.
+
+The exclusions are what make the check exit 0. Without them it exits 1 on the four `path/to/…`
+placeholders in `markdown files/md_blacklinks.md`, which are that file's own documentation.
+
+Full notes on the scripts, their known noise and the fenced-code bug: [scripts/README.md](scripts/README.md).
 
 ## Related work outside this repo
 

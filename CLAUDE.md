@@ -182,5 +182,6 @@ Source: [10 ADR anti-patterns — bool.dev](https://bool.dev/blog/detail/10-adr-
 - [Interview prep index](interview-prep/README.md)
 - [Next session — start here](docs/NEXT-SESSION.md)
 - [Repo index](INDEX.md)
+- [scripts/](scripts/README.md)
 - [System design prep](README.md)
 - [Topic manifest](interview-prep/topics/manifest.md)

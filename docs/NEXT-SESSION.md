@@ -34,7 +34,7 @@ stays until its remaining topics land.
 2. **Baseline the repo** before touching anything:
    ```bash
    cd ~/Documents/coding/learn/system-design-prep
-   python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .
+   python scripts/check_links.py .
    # expect: checked 1858 relative links; broken: 4   (the {rel_path} placeholders)
    ```
 
@@ -93,9 +93,9 @@ separates a good page from a passable one:
 Then, from the **repository root**:
 
 ```bash
-python ~/.claude/skills/staff-technical-docs/scripts/gen_backlinks.py .   # twice — second run must print "0 changed"
-python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # backlinks are links too
-python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
+python scripts/gen_backlinks.py .   # twice — second run must print "0 changed"
+python scripts/check_links.py .     # backlinks are links too
+python scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
 Quote the counts in the commit or PR body. "Links verified" is an assertion; the count is evidence.
