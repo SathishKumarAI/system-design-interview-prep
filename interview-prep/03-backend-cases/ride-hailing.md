@@ -5,7 +5,7 @@ track: backend
 difficulty: advanced
 status: drafted
 sources: [Alex Xu v2 ch. proximity service, Uber engineering]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [geospatial, matching, state-machine, high-write]
 ---
 
@@ -289,7 +289,7 @@ of magnitude.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 2 — proximity service, nearby friends chapters
   (`AI/ML-Foundations/Alex Xu_ Sahn Lam - System Design Interview ... Volume 2.epub`)

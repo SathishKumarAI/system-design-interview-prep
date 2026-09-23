@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [AWS Well-Architected cost pillar]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [cost, finops, egress, gpu]
 ---
 
@@ -113,7 +113,7 @@ See the cost anchors table in [../01-numbers.md](../01-numbers.md#6-cost-anchors
 - [Networking and the edge](networking-and-edge.md)
 - [Primitives index](README.md)
 
-## Sources & further reading
+## Sources
 
 - [AWS Well-Architected — Cost Optimization Pillar](https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html)
 - [FinOps Foundation — framework](https://www.finops.org/framework/)

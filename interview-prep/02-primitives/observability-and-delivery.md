@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [Google SRE book, OpenTelemetry]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [slo, metrics, tracing, canary, deploy]
 ---
 
@@ -118,7 +118,7 @@ requires it in the same release.
 - [Primitives index](README.md)
 - [Tail latency](../fundamentals/tail-latency.md)
 
-## Sources & further reading
+## Sources
 
 - [Google SRE Book — SLOs, monitoring, releases](https://sre.google/sre-book/table-of-contents/)
 - [OpenTelemetry docs](https://opentelemetry.io/docs/)

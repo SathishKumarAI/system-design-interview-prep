@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [latency gist 2026, DDIA ch.1, Alex Xu v1 ch.2]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [estimation, latency, capacity, cost]
 ---
 
@@ -231,7 +231,7 @@ vCPU ≈ $30/month            Egress ≈ $0.05–0.09/GB
 - [Resources index](10-resources/README.md)
 - [System design prep](../README.md)
 
-## Sources & further reading
+## Sources
 
 - [Latency numbers every programmer should know — 2026 edition (gist)](https://gist.github.com/andreasbros/87fec32cf97aa41a1cbb64cc4dbdcd43)
 - [Jeff Dean's original latency numbers (jboner gist)](https://gist.github.com/jboner/2841832)

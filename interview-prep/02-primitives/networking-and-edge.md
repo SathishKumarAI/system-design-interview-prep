@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [system-design-primer, HTTP/3 RFC 9114]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [dns, cdn, tls, http3, websocket, grpc]
 ---
 
@@ -137,7 +137,7 @@ back to origin is standard.
 - [Design video streaming (YouTube / Netflix)](../03-backend-cases/video-streaming.md)
 - [Primitives index](README.md)
 
-## Sources & further reading
+## Sources
 
 - Vendor: `10-resources/vendor/system-design-primer/README.md` — DNS, CDN sections
 - Vendor: `10-resources/vendor/system-design-101/` — networking diagrams

@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [system-design-primer]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [load-balancer, gateway, proxy, mesh]
 ---
 
@@ -132,7 +132,7 @@ into infrastructure.
 - [Consistent hashing](../fundamentals/consistent-hashing.md)
 - [Primitives index](README.md)
 
-## Sources & further reading
+## Sources
 
 - Repo notes: [../../basic/prep/Load%20Balancer.md](../../basic/prep/Load%20Balancer.md), [../../basic/prep/Reverse%20proxy%20%28web%20server%29.md](../../basic/prep/Reverse%20proxy%20%28web%20server%29.md)
 - Vendor: `10-resources/vendor/system-design-primer/README.md` — load balancer, reverse proxy

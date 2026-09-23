@@ -5,7 +5,7 @@ track: universal
 difficulty: advanced
 status: drafted
 sources: [DDIA ch.7, ch.9]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [idempotency, saga, outbox, ledger, 2pc]
 ---
 
@@ -160,7 +160,7 @@ transitions, and reconciliation against the provider's daily file.
 - [Replication and partitioning](replication-and-partitioning.md)
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.7 (transactions), ch.9 (distributed)
 - [Stripe — designing robust and predictable APIs with idempotency](https://stripe.com/blog/idempotency)

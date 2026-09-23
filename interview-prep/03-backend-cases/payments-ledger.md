@@ -5,7 +5,7 @@ track: backend
 difficulty: advanced
 status: drafted
 sources: [Stripe engineering, DDIA ch.7-9]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [idempotency, ledger, saga, reconciliation, exactly-once]
 ---
 
@@ -323,7 +323,7 @@ years as the entries.
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 - [Transactions, sagas and idempotency](../02-primitives/transactions-and-idempotency.md)
 
-## Sources & further reading
+## Sources
 
 - [Stripe — Designing robust and predictable APIs with idempotency](https://stripe.com/blog/idempotency)
 - [Stripe — Online migrations at scale](https://stripe.com/blog/online-migrations)

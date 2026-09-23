@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.13, Elasticsearch docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [inverted-index, trie, ranking, indexing-pipeline]
 ---
 
@@ -277,7 +277,7 @@ and the reason `(content_hash, model_version)` belongs in the key from day one.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.13 (search autocomplete)
 - [Elasticsearch — near real-time search](https://www.elastic.co/guide/en/elasticsearch/reference/current/near-real-time.html)

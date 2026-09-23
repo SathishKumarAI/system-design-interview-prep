@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [DDIA ch.5-6]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [replication, sharding, consistent-hashing, hot-shard]
 ---
 
@@ -157,7 +157,7 @@ Fixes, cheapest first:
 - [Quorums and anti-entropy](../fundamentals/quorums-and-anti-entropy.md)
 - [Storage and databases](storage-and-databases.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.5 (replication), ch.6 (partitioning)
 - Repo notes: [../../basic/prep/Sharding.md](../../basic/prep/Sharding.md), [../../basic/prep/Database%20replication.md](../../basic/prep/Database%20replication.md), [../../basic/prep/Database%20partitioning.md](../../basic/prep/Database%20partitioning.md), [../../basic/prep/Federation.md](../../basic/prep/Federation.md)

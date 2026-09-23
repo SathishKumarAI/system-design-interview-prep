@@ -5,7 +5,7 @@ track: ml
 difficulty: advanced
 status: drafted
 sources: [Designing ML Systems, payments practice]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [fraud, imbalance, delayed-labels, streaming-features, thresholds]
 ---
 
@@ -300,7 +300,7 @@ data, never as instruction, and keep the decision in the deterministic path.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — imbalance, delayed labels, drift
 - Vendor: `10-resources/vendor/applied-ml/README.md` — fraud/abuse case studies

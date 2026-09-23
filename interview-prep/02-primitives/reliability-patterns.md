@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [AWS Builders Library, Google SRE book]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [timeouts, retries, circuit-breaker, load-shedding, dr]
 ---
 
@@ -170,7 +170,7 @@ and regular region evacuation drills are the answer.
 - [Primitives index](README.md)
 - [Replication topologies](../fundamentals/replication-topologies.md)
 
-## Sources & further reading
+## Sources
 
 - [AWS Builders' Library — Timeouts, retries and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
 - [AWS Builders' Library — Using load shedding to avoid overload](https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/)

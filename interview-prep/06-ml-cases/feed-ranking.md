@@ -5,7 +5,7 @@ track: ml
 difficulty: advanced
 status: drafted
 sources: [Meta/Twitter ranking systems, Designing ML Systems]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [ranking, multi-task, real-time-features, calibration]
 ---
 
@@ -283,7 +283,7 @@ multi-objective weights. All batch, all off the 50 ms path.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Vendor: `10-resources/vendor/applied-ml/README.md` — ranking/feed case studies
 - [Meta engineering — how the feed is ranked](https://engineering.fb.com/)

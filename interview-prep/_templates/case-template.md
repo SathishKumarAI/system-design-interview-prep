@@ -5,7 +5,7 @@ track: backend        # backend | frontend | data | ml
 difficulty: core      # intro | core | advanced
 status: seed
 sources: []
-updated: 2026-01-01
+updated: 2026-09-23
 tags: []
 ---
 
@@ -89,6 +89,6 @@ client → ... → store
 - **$/month, dominant term:**
 - **First thing I'd cut:**
 
-## Sources & further reading
+## Sources
 
 -

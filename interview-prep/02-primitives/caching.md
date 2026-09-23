@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [system-design-primer, DDIA]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [cache, redis, invalidation, hot-key]
 ---
 
@@ -139,7 +139,7 @@ size for that, not for the whole dataset.
 - [Primitives index](README.md)
 - [Replication lag and session guarantees](../fundamentals/replication-lag-and-session-guarantees.md)
 
-## Sources & further reading
+## Sources
 
 - Repo notes: [../../basic/prep/Cache.md](../../basic/prep/Cache.md), [../../basic/prep/Caching.md](../../basic/prep/Caching.md)
 - Vendor: `10-resources/vendor/system-design-primer/README.md` — caching section

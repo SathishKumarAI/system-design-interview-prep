@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.11, Meta/Twitter engineering]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [fanout, feed, cache, ranking, celebrity-problem]
 ---
 
@@ -298,7 +298,7 @@ Version the key namespace with the model version and let the old generation age 
 - [Replication lag and session guarantees](../fundamentals/replication-lag-and-session-guarantees.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.11 (news feed)
 - Vendor: `10-resources/vendor/system-design-primer/` — Twitter timeline exercise

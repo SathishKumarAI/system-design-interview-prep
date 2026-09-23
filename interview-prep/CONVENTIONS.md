@@ -3,7 +3,7 @@ title: File conventions
 type: index
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [meta, conventions]
 ---
 
@@ -20,10 +20,10 @@ answer is without reading the whole thing. Templates live in
 title: Design a news feed          # human title, no "the"
 type: case                         # index | topic | case | comparison | playbook | drill | reference | resource | adr | primitive (legacy)
 track: backend                     # universal | backend | frontend | data | ml
-difficulty: core                   # intro | core | advanced
+tier: P0                           # P0 write first | P1 next | P2 nice to have
 status: seed                       # seed | drafted | drilled | mastered
 sources: [DDIA ch.11, Alex Xu v1 ch.11]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [feed, fanout, cache]
 ---
 ```
@@ -45,7 +45,7 @@ Query the board in Obsidian search with `status: drilled` — that's your revisi
 this order, even if a section is one line:
 
 `1. Clarify` · `2. Requirements` · `3. Estimates` · `4. API / contract` · `5. Data model` ·
-`6. Architecture` · `7. Scale & failure` · `8. Ops & cost` · `Sources & further reading`
+`6. Architecture` · `7. Scale & failure` · `8. Ops & cost` · `Sources`
 
 Case files being rewritten to the staff contract keep this skeleton **inside**
 `Mechanics & internals` and `Numbers that matter` — see the `topic` contract below.
@@ -84,8 +84,7 @@ per [ADR-0001](../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)). 
 files in this format:
 
 `What it is (3 lines)` · `When to reach for it` · `Options & trade-offs` (table, always) ·
-`Failure modes` · `Interview lines` (sentences to say out loud) · `Numbers` ·
-`Sources & further reading`
+`Failure modes` · `Interview lines` (sentences to say out loud) · `Numbers` · `Sources`
 
 **`index`** (any folder README): first section after the title is a **change → file**
 table, so a reader picks the file without opening any other.
@@ -132,7 +131,8 @@ Obsidian callout syntax, used sparingly and only for these four:
 
 ## 6. Sources
 
-Every file ends with `## Sources & further reading`, listing:
+Every file ends with `## Sources` — that exact spelling, normalised across all 96 pages on
+2026-09-23. Listing:
 
 1. **Local books** — path relative to the library root, with chapter.
    See [10-resources/books-on-this-machine.md](10-resources/books-on-this-machine.md).

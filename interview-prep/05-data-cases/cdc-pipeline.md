@@ -5,7 +5,7 @@ track: data
 difficulty: advanced
 status: drafted
 sources: [Debezium docs, DDIA ch.11]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [cdc, debezium, upsert, schema-evolution, backfill]
 ---
 
@@ -312,7 +312,7 @@ and treat a template change as a full re-embed — because that is what it is.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - [Debezium — incremental snapshots (DDD-3)](https://debezium.io/documentation/reference/stable/connectors/postgresql.html)
 - [Netflix — DBLog: a generic change-data-capture framework](https://netflixtechblog.com/dblog-a-generic-change-data-capture-framework-69351fb9099b)

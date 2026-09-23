@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [DDIA ch.11, Kafka docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [kafka, queue, streaming, backpressure, delivery-semantics]
 ---
 
@@ -164,7 +164,7 @@ change; a relay (or CDC on that table) publishes it. At-least-once, no lost even
 - [Storage and databases](storage-and-databases.md)
 - [Stream processing semantics](../fundamentals/stream-processing-semantics.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.11 (stream processing), ch.10 (batch)
 - Repo notes: [../../basic/prep/Asynchronism.md](../../basic/prep/Asynchronism.md), [../../data%20engineering/](../../data%20engineering/) (Kafka, Kinesis, Event Hub notes)

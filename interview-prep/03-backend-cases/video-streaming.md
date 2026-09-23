@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.14, Netflix Open Connect]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [transcoding, abr, cdn, egress, pipeline]
 ---
 
@@ -278,7 +278,7 @@ untouched by any of it.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.14 (YouTube)
 - Repo notes: [../../basic/advanced/designs%20%28needs%20update%20as%20we%20go%29/Video%20Stream/](../../basic/advanced/designs%20%28needs%20update%20as%20we%20go%29/Video%20Stream/)

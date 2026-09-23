@@ -5,7 +5,7 @@ track: data
 difficulty: core
 status: drafted
 sources: [DDIA ch.10-11, Iceberg docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [playbook, lakehouse, batch, streaming]
 ---
 
@@ -135,7 +135,7 @@ per table — typically a large fraction of pipelines feed nothing).
 - [Design a feature store](../06-ml-cases/feature-store.md)
 - [Interview playbook](../00-interview-playbook.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.10 (batch), ch.11 (streaming)
 - Local book: `DE/Fundamentals/Big Book of Data Engineering.pdf`

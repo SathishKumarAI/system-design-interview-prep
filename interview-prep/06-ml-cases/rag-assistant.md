@@ -5,7 +5,7 @@ track: ml
 difficulty: advanced
 status: drafted
 sources: [AI Engineering (Huyen), RAG survey 2026, Harmonia RAG serving]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [rag, retrieval, embeddings, eval, guardrails]
 ---
 
@@ -343,7 +343,7 @@ with no source is visibly unsupported.
 - [Repo index](../../INDEX.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `AI/LLM-Apps/AI Engineering — Chip Huyen (2025).pdf` — **the best single reference for this case**
 - Local book: `AI/RAG-Knowledge-Graphs/A Simple Guide to Retrieval Augmented Generation.pdf`

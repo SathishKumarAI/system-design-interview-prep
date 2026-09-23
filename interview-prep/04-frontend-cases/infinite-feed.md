@@ -5,7 +5,7 @@ track: frontend
 difficulty: core
 status: drafted
 sources: [web.dev, Front End Interview Handbook]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [virtualization, pagination, optimistic-ui, images, cwv]
 ---
 
@@ -294,7 +294,7 @@ the bug you will actually ship.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - [web.dev — optimize INP](https://web.dev/articles/optimize-inp), [optimize LCP](https://web.dev/articles/optimize-lcp), [optimize CLS](https://web.dev/articles/optimize-cls)
 - [TanStack Virtual](https://tanstack.com/virtual) · [TanStack Query — optimistic updates](https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates)

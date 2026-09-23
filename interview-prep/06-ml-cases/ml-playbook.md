@@ -5,7 +5,7 @@ track: ml
 difficulty: core
 status: drafted
 sources: [Designing ML Systems (Huyen), AI Engineering (Huyen), Exponent 2026 guide]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [playbook, ml, framework]
 ---
 
@@ -151,7 +151,7 @@ alert on and what the alert's action is.
 - [Interview playbook](../00-interview-playbook.md)
 - [ML and GenAI cases index](README.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/Warehouse-ETL/Designing machine learning systems — Chip Huyen.pdf` — **the single
   best book for this round**

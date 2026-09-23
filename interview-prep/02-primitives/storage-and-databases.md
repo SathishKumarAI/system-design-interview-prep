@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [DDIA ch.2-3, system-design-primer]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [sql, nosql, lsm, btree, indexes]
 ---
 
@@ -142,7 +142,7 @@ and OLAP tables alike. See [messaging-and-streams.md](messaging-and-streams.md).
 - [Storage engines — B-tree vs LSM](../fundamentals/storage-engines.md)
 - [Transaction isolation levels](../fundamentals/transaction-isolation-levels.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.2 (data models), ch.3 (storage engines), ch.4 (encoding)
 - Local book: `DE/SQL-Databases/Database Design and Modeling with PostgreSQL and MySQL ...pdf`

@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.10]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [fanout, queues, dedup, providers, preferences]
 ---
 
@@ -289,7 +289,7 @@ twice.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.10 (notification system)
 - [AWS Builders' Library — Avoiding fallback in distributed systems](https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/)

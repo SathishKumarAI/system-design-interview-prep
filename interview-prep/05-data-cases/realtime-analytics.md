@@ -5,7 +5,7 @@ track: data
 difficulty: advanced
 status: drafted
 sources: [Alex Xu v2 ch. ad click aggregation, Pinot/Druid docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [streaming, olap, windows, exactly-once, cardinality]
 ---
 
@@ -299,7 +299,7 @@ cheap, reversible, and the single highest-leverage decision on the page.
 - [Repo index](../../INDEX.md)
 - [Stream processing semantics](../fundamentals/stream-processing-semantics.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 2 — ad click event aggregation chapter (`AI/ML-Foundations/`)
 - [Apache Pinot — real-time upserts](https://docs.pinot.apache.org/)

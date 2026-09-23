@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: seed
 sources: []
-updated: 2026-01-01
+updated: 2026-09-23
 tags: []
 ---
 
@@ -42,6 +42,6 @@ Three lines. No history lesson.
 | Quantity | Order of magnitude |
 |---|---|
 
-## Sources & further reading
+## Sources
 
 -

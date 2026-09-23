@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.12, Discord engineering]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [websocket, ordering, delivery, offline-sync, presence]
 ---
 
@@ -309,7 +309,7 @@ id the server expands, hits a transport limit before a model limit. Send the id.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.12 (chat system)
 - [Discord — How Discord stores trillions of messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)

@@ -5,7 +5,7 @@ track: ml
 difficulty: advanced
 status: drafted
 sources: [vLLM docs/blog 2025-2026, PD disaggregation papers, Anthropic API pricing]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [llm, vllm, kv-cache, batching, gpu, cost]
 ---
 
@@ -316,7 +316,7 @@ failure, only each retry costs a dollar instead of a disk seek.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - [Inside vLLM: anatomy of a high-throughput inference system](https://vllm.ai/blog/2025-09-05-anatomy-of-vllm)
 - [vLLM — PagedAttention and continuous batching explained](https://www.runpod.io/articles/guides/vllm-pagedattention-continuous-batching)

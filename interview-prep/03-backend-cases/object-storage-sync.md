@@ -5,7 +5,7 @@ track: backend
 difficulty: core
 status: drafted
 sources: [Alex Xu v1 ch.15, Alex Xu v2 (object storage), Dropbox engineering]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [chunking, dedup, delta-sync, metadata, conflict]
 ---
 
@@ -282,7 +282,7 @@ ACL**, or the index becomes a way to read documents you cannot open.
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.15 (Google Drive); vol. 2 has the S3-like object storage
   chapter — `AI/ML-Foundations/Alex Xu_ Sahn Lam - System Design Interview ... Volume 2.epub`

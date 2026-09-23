@@ -5,7 +5,7 @@ track: backend
 difficulty: intro
 status: drafted
 sources: [Alex Xu v1 ch.4, AWS Builders Library]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [rate-limit, token-bucket, redis, hot-key]
 ---
 
@@ -271,7 +271,7 @@ unavailable limiter should fail *closed*, and that flip is the one line worth sa
 - [Reliability patterns](../02-primitives/reliability-patterns.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: Alex Xu vol. 1 ch.4 (rate limiter)
 - [AWS Builders' Library — Using load shedding to avoid overload](https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/)

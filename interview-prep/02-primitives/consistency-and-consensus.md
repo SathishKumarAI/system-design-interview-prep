@@ -5,7 +5,7 @@ track: universal
 difficulty: advanced
 status: drafted
 sources: [DDIA ch.7-9]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [cap, pacelc, isolation, raft, clocks]
 ---
 
@@ -180,7 +180,7 @@ See [../04-frontend-cases/collaborative-editor.md](../04-frontend-cases/collabor
 - [Primitives index](README.md)
 - [Transactions, sagas and idempotency](transactions-and-idempotency.md)
 
-## Sources & further reading
+## Sources
 
 - Local book: `DE/System-Design/Designing Data Intensive Applications.pdf` — ch.7 (transactions), ch.8 (trouble with distributed systems), ch.9 (consistency & consensus). **The single best 150 pages in this whole curriculum.**
 - Repo notes: [../../basic/prep/CAP%20theorem.md](../../basic/prep/CAP%20theorem.md), [../../basic/prep/Consistency.md](../../basic/prep/Consistency.md), [../../basic/prep/Availability.md](../../basic/prep/Availability.md)

@@ -5,7 +5,7 @@ track: frontend
 difficulty: core
 status: drafted
 sources: [Front End Interview Handbook, web.dev]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [radio, rendering, state, performance, a11y]
 ---
 
@@ -136,7 +136,7 @@ never trust client-side validation as an authorisation boundary.
 - [Interview playbook](../00-interview-playbook.md)
 - [Load balancing and gateways](../02-primitives/load-balancing-and-gateways.md)
 
-## Sources & further reading
+## Sources
 
 - Vendor: `10-resources/vendor/front-end-interview-handbook/` — the front-end system design section
 - [Front End Interview Handbook — front end system design](https://www.frontendinterviewhandbook.com/front-end-system-design)

@@ -5,7 +5,7 @@ track: data
 difficulty: core
 status: drafted
 sources: [Iceberg docs, Flink docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [kafka, flink, iceberg, compaction, late-data]
 ---
 
@@ -300,7 +300,7 @@ gold and embedding *sessions* is three orders of magnitude fewer calls for most 
 - [Repo index](../../INDEX.md)
 - [Storage engines — B-tree vs LSM](../fundamentals/storage-engines.md)
 
-## Sources & further reading
+## Sources
 
 - [Apache Iceberg — maintenance and compaction](https://iceberg.apache.org/docs/latest/maintenance/)
 - [Flink — Iceberg connector and exactly-once sinks](https://iceberg.apache.org/docs/latest/flink/)

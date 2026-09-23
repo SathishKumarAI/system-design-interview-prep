@@ -410,7 +410,8 @@ old `## 1. Clarify … ## 8. Ops & cost` skeleton and carry none of the ten cont
 | Gap | Where |
 |---|---|
 | Five primitive files have no successor page and no banner — 20 unwritten topics across network+edge, traffic management, operations, security+tenancy and cost | §1.1 · §1.2 · §1.10 · §1.11 · §1.12 |
-| Cases end `## Sources & further reading` (44 files); topic pages end `## Sources` (52 files). `gen_backlinks.py` matches the heading textually | §4 |
+| ~~Two `Sources` spellings~~ — **fixed 2026-09-23**, all 96 are `## Sources`, matching the contract | §4 |
+| Case frontmatter still carries `difficulty:`, which [CONVENTIONS.md](../CONVENTIONS.md) replaced with `tier:` | §4 |
 | `08-reference/tech-selection.md` still not retired — 13 of its decisions have no comparison page | §3 |
 | `interview-prep/_templates/case-template.md` still teaches the pre-contract skeleton | §4 |
 

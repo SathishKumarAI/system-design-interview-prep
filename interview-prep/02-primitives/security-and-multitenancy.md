@@ -5,7 +5,7 @@ track: universal
 difficulty: core
 status: drafted
 sources: [OWASP, AWS Well-Architected security pillar]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [auth, tenancy, privacy, abuse]
 ---
 
@@ -111,7 +111,7 @@ Every enterprise design needs it and almost no candidate mentions it.
 - [ML system design playbook](../06-ml-cases/ml-playbook.md)
 - [Primitives index](README.md)
 
-## Sources & further reading
+## Sources
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [AWS Well-Architected — Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html)

@@ -5,7 +5,7 @@ track: frontend
 difficulty: core
 status: drafted
 sources: [web.dev, observability practice]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [websocket, sse, charts, backpressure, rendering]
 ---
 
@@ -277,7 +277,7 @@ than no narration. Show the evidence next to the sentence, and never let it move
 - [Question bank](../07-drills/question-bank.md)
 - [Repo index](../../INDEX.md)
 
-## Sources & further reading
+## Sources
 
 - [web.dev — optimize long tasks](https://web.dev/articles/optimize-long-tasks), [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 - [LTTB downsampling paper (Steinarsson, 2013)](https://skemman.is/handle/1946/15343)
