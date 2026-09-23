@@ -129,6 +129,48 @@ flowchart LR
     class lc cache
 ```
 
+The boxes hide the thing that decides whether this design is buildable: **how many blocking round
+trips stand between the request and the response**, and what each one costs out of 50 ms. Walk it
+in order and the budget either closes or it does not.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant R as Ranking service
+    participant L as Local cache — in-process, TTL 1 to 5 s
+    participant F as Online store — one columnar multi-get
+    participant M as Ranker — batched forward pass
+    participant G as Impression log
+
+    C->>R: GET /feed, 500 candidates already retrieved
+    Note over R: budget: p99 < 50 ms of a 200 ms page.<br/>Two blocking hops are affordable. Three are not.
+
+    R->>L: velocity counters for the viral posts in this batch
+    L-->>R: hit — a post read by millions of requests/min<br/>never reaches the store at all
+    Note over L: this hop exists only to delete a hot key.<br/>1 to 5 s stale is irrelevant at feed timescale,<br/>and without it one post melts a single shard.
+
+    R->>F: 150 features x 500 items = 75k values, ONE round trip
+    F-->>R: feature matrix, ~10 ms
+    Note over R,F: 500 separate gets would be ~40 ms and a<br/>tail governed by the slowest of 500. The<br/>batching is the design, not an optimisation.
+
+    R->>M: one forward pass over all 500 items
+    M-->>R: 5 calibrated probabilities per item, ~25 ms
+    Note over M: heads: click, like, share, hide, dwell.<br/>Calibrated, or the weighted sum is meaningless.
+
+    R->>R: value combine + re-rank — diversity, author cap, integrity
+    R-->>C: top N, ~45 ms
+
+    R-)G: per-head predictions + feature snapshot ref + propensity
+    Note over G: fire-and-forget. If this blocked, serving<br/>would inherit the log's availability — and<br/>if it is dropped, tomorrow's training set<br/>silently bakes in today's exposure decision.
+```
+
+Two things a staff answer says out loud here. **The async arrow is load-bearing**: logging is the
+only path that may fail without failing the request, and it is also the path whose loss is
+invisible for a day and then poisons retraining. And **there is no fallback arrow to a second
+model** — under ranker failure the degraded mode is chronological, covered in §7, because a
+standby ranker doubles cost to protect a path that already has a free correct answer.
+
 ### Deep dive A — multi-task scoring
 
 One model, several heads sharing a trunk. Buys: shared representation, one forward pass, and
