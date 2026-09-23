@@ -5,6 +5,24 @@ I am learning and making study materials for preparation.
 ** Documenting my journey of continuous learning and growth through daily challenges. ** 
 
 ---
+## Where to look
+
+| I want to… | Go to |
+|---|---|
+| **See everything in this repo** | [INDEX.md](INDEX.md) |
+| **Prepare for a design interview** | [interview-prep/](interview-prep/README.md) — framework, numbers, 26 worked cases, drills |
+| Run the 45 minutes | [interview-prep/00-interview-playbook.md](interview-prep/00-interview-playbook.md) |
+| Memorise the numbers | [interview-prep/01-numbers.md](interview-prep/01-numbers.md) |
+| Practise, with a plan | [interview-prep/07-drills/](interview-prep/07-drills/README.md) |
+| Prep for a specific company | [interview-prep/09-company-styles/](interview-prep/09-company-styles/README.md) |
+| Find books, repos, blogs | [interview-prep/10-resources/](interview-prep/10-resources/README.md) |
+| Read background concept notes | `basic/prep/` (see [INDEX.md](INDEX.md)) |
+| Read data-engineering notes | `data engineering/` (see [INDEX.md](INDEX.md)) |
+
+**Adding a note?** Follow [interview-prep/CONVENTIONS.md](interview-prep/CONVENTIONS.md) and copy
+a template from [interview-prep/_templates/](interview-prep/_templates/).
+
+---
 ## Resources
 
 - I am currently learning from [System-design-primer](https://github.com/donnemartin/system-design-primer) from this GitHub Repo.
