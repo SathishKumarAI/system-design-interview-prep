@@ -105,4 +105,4 @@ echo
 echo "Verify:"
 echo "  python scripts/gen_backlinks.py .                                  # twice, 0 changed"
 echo "  python scripts/check_links.py . --exclude vendor \"markdown files\""
-echo "  expected: 2022 relative links checked, 0 broken, exit 0"
+echo "  expected: 2023 relative links checked, 0 broken, exit 0"

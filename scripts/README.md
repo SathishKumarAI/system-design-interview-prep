@@ -27,7 +27,7 @@ Expected today:
 
 ```
 233 files scanned, 933 inbound links mapped, 0 changed
-checked 2022 relative links; broken: 0
+checked 2023 relative links; broken: 0
 all relative links resolve
 ```
 
