@@ -104,5 +104,5 @@ git log --oneline -12 main
 echo
 echo "Verify:"
 echo "  python scripts/gen_backlinks.py .                                  # twice, 0 changed"
-echo "  python scripts/check_links.py . --exclude vendor \"markdown files\""
+echo "  python scripts/check_links.py ."
 echo "  expected: 2023 relative links checked, 0 broken, exit 0"

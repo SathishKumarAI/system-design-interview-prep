@@ -19,6 +19,9 @@ import re
 import sys
 import urllib.parse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _md import in_code, mask_code                    # noqa: E402
+
 # Matches [text](target) and ![alt](target). Target stops at the first ')' — which is exactly
 # why unescaped parentheses in filenames are a bug worth reporting rather than parsing around.
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
@@ -46,7 +49,14 @@ def check(root: str, excludes: set[str]):
             continue
 
         base = os.path.dirname(path)
+        # `path/to/file.md` inside a fenced usage example is documentation, not a link, and
+        # it is never going to resolve. Reporting it forever is worse than not reporting it:
+        # a gate that is permanently red teaches everyone to read past the number, and the
+        # next real break goes with it.
+        mask = mask_code(text)
         for match in LINK_RE.finditer(text):
+            if in_code(mask, match.start()):
+                continue
             target = match.group(1).strip()
             if target.startswith(SKIP_PREFIXES) or not target:
                 continue

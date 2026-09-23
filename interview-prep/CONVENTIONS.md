@@ -69,10 +69,11 @@ carry is in [../CLAUDE.md](../CLAUDE.md) → *Section contract*:
 | 11 | `Referenced by` | **Generated** by `gen_backlinks.py`. Never hand-edited |
 | 12 | `Sources` | Every cloud claim in §7 carries its vendor doc link here |
 
-> [!warning] Trap
-> Do not put a literal `## Referenced by` line inside a code fence anywhere in this repo.
-> `gen_backlinks.py` matches the heading textually and will inject a backlink list **into your
-> example block**. That is why the contract above is a table, not a fenced snippet.
+> [!note] Fixed 2026-09-23
+> `gen_backlinks.py` used to match `## Referenced by` and `## Sources` textually and would inject
+> a backlink list **into a fenced example** of the format. It masks code first now, so a fenced or
+> backticked heading is documentation and is left alone. The contract above stays a table because
+> a table reads better, not because a fence would break it.
 
 Frontmatter for `topic`/`case` uses `tier: P0|P1|P2` and `status: seed|drafted|reviewed|mastered`
 (no `difficulty`). Diagrams: ≥ 2 types per page, reusing

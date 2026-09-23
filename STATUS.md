@@ -45,7 +45,7 @@ gap in the repo.
 | `02-primitives/` **not started** | The other **5 of 12** have no successor page at all and no banner: `networking-and-edge` · `load-balancing-and-gateways` · `observability-and-delivery` · `security-and-multitenancy` · `cost-engineering`. That is 20 unwritten topics and five whole domains with nothing in `fundamentals/` |
 | Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** topic pages. Batches 9–12 added no topic pages, so the count is unchanged and correct |
 | `08-reference/tech-selection.md` | **Not retired** — it still uniquely covers 13 decisions with no comparison page yet. Banner added; becomes a stub when they land |
-| Links / backlinks | **2023 links checked, 0 broken** with `--exclude vendor "markdown files"`; without the exclusions, the four `path/to/…` placeholders in `markdown files/md_blacklinks.md` make it exit 1. Backlink pass idempotent |
+| Links / backlinks | **2023 links checked, 0 broken, exit 0**, no exclusions. Backlink pass idempotent on the first run. `scripts/test_doc_scripts.py` — 13 assertions — guards the code-masking the scripts depend on |
 
 ## The next action
 
@@ -81,7 +81,8 @@ fan-out or idempotency is a case that has not used the set.
 | **`git rebase` and `git push --force` are blocked in Claude sessions** | The auto-mode classifier denies both. Anything needing them goes in a `scripts/*.sh` the human runs |
 | **Python `write_text` turns a whole LF file CRLF on Windows** | A read-modify-write of a doc silently rewrites every line ending. Harmless here — `core.autocrlf=true`, so the committed blob is unaffected and `git diff` stays empty — but a byte-level diff of the working tree will look like the whole file changed. Write bytes, or pass `newline="
 "`, when that matters |
-| **`gen_backlinks.py` edits inside code fences** | It matches `## Referenced by` / `## Sources` textually. A fenced example containing those headings gets a generated backlink list injected into it. This happened to `CLAUDE.md` and `CONVENTIONS.md`; both contracts are tables now. **Never put those headings in a fence** |
+| ~~`gen_backlinks.py` edits inside code fences~~ | **Fixed 2026-09-23.** Both scripts mask fenced blocks and inline backticks before matching, so an example of the format is never treated as an instance of it. A heading in a fence is safe now |
+| **A one-line ` ```like this``` ` is NOT a fence** | CommonMark: a backtick fence's info string may not contain a backtick. `basic/prep/CAP theorem.md:8` is that shape, and reading it as an opener masks every line below it. The fix caused exactly this bug once; `test_same_line_triple_backticks_are_not_a_fence` exists so it cannot come back |
 | **Run doc scripts from the repo root** | `gen_backlinks.py` scoped to a subfolder cannot see inbound links from outside it and strips them as though gone |
 | **`lint_docs.py --contract` false positive** | Reports "missing: Follow-up questions" on every staff page. The skill's generic name is `Follow-up questions`; this repo's contract says `Staff-level follow-ups`. Repo wins — ignore that line, do not rename the section |
 | **Never rename legacy files to tidy them up** | Inbound links are relative and break silently. Percent-encode the link target instead. `main.md` was fixed this way, not by renaming |
@@ -98,14 +99,14 @@ fan-out or idempotency is a case that has not used the set.
 ```bash
 python scripts/gen_backlinks.py .   # run twice: second must say "0 changed"
 python scripts/gen_backlinks.py .
-python scripts/check_links.py . --exclude vendor "markdown files"
+python scripts/check_links.py .
 python scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
 Expected today:
 
 ```
-233 files scanned, 933 inbound links mapped, 0 changed
+233 files scanned, 934 inbound links mapped, 0 changed
 checked 2023 relative links; broken: 0
 ```
 
@@ -119,10 +120,13 @@ Full notes on the scripts, their known noise and the fenced-code bug: [scripts/R
 
 ## Related work outside this repo
 
-`~/.claude/skills/staff-technical-docs/` — the method as a reusable skill. Three open items:
-`evals/evals.json` v2 has never been run; eval-3's fixture (`fixtures/existing-set/`) is specified
-but not built; and `gen_backlinks.py` should skip fenced code blocks — this repo hit that bug today
-and worked around it in the docs rather than in the script.
+`~/.claude/skills/staff-technical-docs/` — the method as a reusable skill. Two open items:
+`evals/evals.json` v2 has never been run, and eval-3's fixture (`fixtures/existing-set/`) is
+specified but not built.
+
+The code-fence bug is **fixed in this repo's vendored copies only**. `scripts/_md.py`,
+the masking in `check_links.py` and `gen_backlinks.py`, and `scripts/test_doc_scripts.py` should
+go upstream — the skill still ships the broken version to every other vault.
 
 ## Referenced by
 

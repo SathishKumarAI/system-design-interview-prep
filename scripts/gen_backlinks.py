@@ -20,6 +20,9 @@ import sys
 import urllib.parse
 from collections import defaultdict
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _md import blank_span, in_code, mask_code        # noqa: E402
+
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 DEFAULT_EXCLUDES = {".git", "node_modules", "vendor", ".obsidian", "__pycache__", ".venv"}
 SKIP_PREFIXES = ("http://", "https://", "#", "mailto:", "tel:", "data:", "//")
@@ -79,10 +82,18 @@ def build_index(root: str, excludes: set[str]):
         except OSError:
             continue
         base = os.path.dirname(path)
-        # Ignore links that live inside an existing Referenced by block, or a
-        # regenerated section would keep citing itself into a fixed point.
-        text = re.sub(r"\n##\s+Referenced by\b.*?(?=\n##\s|\Z)", "\n", text, flags=re.DOTALL)
+        # Mask code first: a link inside a usage example is an illustration, not a
+        # reference, and counting it makes the generated backlinks assert a relationship
+        # that does not exist.
+        mask = mask_code(text)
+        # Then mask any existing Referenced by block, or a regenerated section would keep
+        # citing itself into a fixed point. Masking rather than deleting keeps every offset
+        # aligned with `text`.
+        for block in re.finditer(r"\n##\s+Referenced by\b.*?(?=\n##\s|\Z)", mask, re.DOTALL):
+            mask = blank_span(mask, block.start(), block.end())
         for match in LINK_RE.finditer(text):
+            if in_code(mask, match.start()):
+                continue
             target = match.group(1).strip()
             if target.startswith(SKIP_PREFIXES) or not target:
                 continue
@@ -107,13 +118,23 @@ def render_section(target: str, sources: set[str], heading: str) -> str:
 
 
 def apply_section(text: str, section: str, heading: str) -> str:
+    """Replace, insert or remove the generated section.
+
+    Every heading search runs against a code-masked copy and then slices `text` by the
+    offsets it finds. A `## Referenced by` or `## Sources` that appears only inside a code
+    fence or an inline span is documentation *of* the format, not an instance of it, and
+    writing into one corrupts the example it was explaining.
+    """
+    mask = mask_code(text)
+
     pattern = re.compile(rf"\n##\s+{re.escape(heading)}\b.*?(?=\n##\s|\Z)", re.DOTALL)
-    if pattern.search(text):
-        return pattern.sub("\n" + section.rstrip() + "\n" if section else "\n", text).rstrip() + "\n"
+    existing = pattern.search(mask)
+    if existing:
+        replacement = "\n" + section.rstrip() + "\n" if section else "\n"
+        return (text[: existing.start()] + replacement + text[existing.end():]).rstrip() + "\n"
     if not section:
         return text
-    sources_re = re.compile(r"\n##\s+Sources\b")
-    m = sources_re.search(text)
+    m = re.search(r"\n##\s+Sources\b", mask)
     if m:                                   # keep See also / Referenced by / Sources order
         return text[: m.start()] + "\n" + section + text[m.start():].rstrip() + "\n"
     return text.rstrip() + "\n\n" + section

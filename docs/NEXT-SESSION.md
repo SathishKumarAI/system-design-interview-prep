@@ -106,7 +106,7 @@ Full list in [../STATUS.md](../STATUS.md). The three that are new since last ses
 
 | Trap | Rule |
 |---|---|
-| **`gen_backlinks.py` writes inside code fences** | It matches `## Referenced by` / `## Sources` textually. It injected backlink lists into the contract examples in `CLAUDE.md` and `CONVENTIONS.md`; both are tables now. Never put those headings inside a fence |
+| ~~`gen_backlinks.py` writes inside code fences~~ | **Fixed 2026-09-23** in the vendored `scripts/` copies: both scripts mask fenced blocks and inline backticks before matching headings. A heading inside a fence is documentation now, and is left alone |
 | **`lint_docs.py --contract` always reports "missing: Follow-up questions"** | Skill-generic name vs this repo's `Staff-level follow-ups`. Expected noise; do not rename the section |
 | **A primitive file is deleted only when empty of unique topics** | Not when "most of it" has moved |
 
@@ -122,8 +122,8 @@ scripts from the repo root, wikilinks stay disabled, `vendor/` is read-only.
 
 **In `~/.claude/skills/staff-technical-docs/`**
 - `evals/evals.json` v2 written but never run; eval-3's fixture not built.
-- `gen_backlinks.py` should skip fenced code blocks. This repo hit that bug and worked around it in
-  the docs; the script itself is still wrong.
+- `gen_backlinks.py` skipping code is fixed **here only** — `scripts/_md.py` plus the masking and
+  `scripts/test_doc_scripts.py` need to go upstream; the skill still ships the broken version.
 - No human ever reviewed the iteration-1 outputs — still the weakest evidence in the effort.
 
 ## Referenced by
