@@ -51,8 +51,6 @@ Whatever the badge on the door:
 - [8-week study plan](../07-drills/8-week-plan.md)
 - [Behavioural question bank](../11-behavioural/question-bank.md)
 - [Interview prep index](../README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)
 
 ## Sources
 

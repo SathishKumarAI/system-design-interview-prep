@@ -280,6 +280,7 @@ minute per model, with some models carrying no requests-per-minute quota at all.
 
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Circuit breaker](../patterns/circuit-breaker.md)
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)

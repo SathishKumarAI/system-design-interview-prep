@@ -321,7 +321,6 @@ nothing.
 
 - [Backend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

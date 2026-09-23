@@ -285,6 +285,7 @@ compensates steps a previous incarnation never took.
 
 ## Referenced by
 
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Distributed transactions](distributed-transactions.md)
 - [Outbox pattern](outbox-pattern.md)
 - [Patterns index](README.md)

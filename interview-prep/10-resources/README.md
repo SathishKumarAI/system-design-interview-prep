@@ -83,5 +83,3 @@ one of them survives a follow-up question.
 ## Referenced by
 
 - [Interview prep index](../README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

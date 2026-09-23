@@ -279,6 +279,8 @@ The ceiling arrives as a wall rather than a slope. **Azure AI Search enforces it
 ## Referenced by
 
 - [Consistent hashing](consistent-hashing.md)
+- [Design a distributed message queue](../03-backend-cases/message-queue.md)
+- [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Hot shard mitigation](hot-shard-mitigation.md)

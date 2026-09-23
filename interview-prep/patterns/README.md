@@ -95,5 +95,3 @@ Each page ends with **Staff-level follow-ups**: multi-part questions with no def
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
 - [Primitives index](../02-primitives/README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

@@ -276,7 +276,6 @@ untouched by any of it.
 - [Backend cases index](README.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

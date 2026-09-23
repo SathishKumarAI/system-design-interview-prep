@@ -264,7 +264,6 @@ because a model that has seen the existing codes is not an index and will collid
 
 - [Backend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

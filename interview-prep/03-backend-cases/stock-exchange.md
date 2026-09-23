@@ -357,7 +357,6 @@ outside the boundary, consuming the log rather than contributing to it.
 
 - [Backend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

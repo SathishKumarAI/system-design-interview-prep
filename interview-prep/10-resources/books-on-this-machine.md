@@ -254,5 +254,4 @@ More free replacements, with the corpus's own citation counts: [primary-sources.
 - [File conventions](../CONVENTIONS.md)
 - [GitHub repositories](github-repos.md)
 - [Primary sources](primary-sources.md)
-- [Repo index](../../INDEX.md)
 - [Resources index](README.md)

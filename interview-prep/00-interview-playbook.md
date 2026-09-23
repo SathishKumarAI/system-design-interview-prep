@@ -229,6 +229,4 @@ here is X." Cost reasoning is explicitly in the senior rubric now.
 - [8-week study plan](07-drills/8-week-plan.md)
 - [Company interview styles](09-company-styles/README.md)
 - [Interview prep index](README.md)
-- [Repo index](../INDEX.md)
 - [Resources index](10-resources/README.md)
-- [System design prep](../README.md)

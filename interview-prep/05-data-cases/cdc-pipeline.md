@@ -310,7 +310,6 @@ and treat a template change as a full re-embed — because that is what it is.
 - [Materialized views and derived data](../patterns/materialized-views-and-derived-data.md)
 - [Outbox pattern](../patterns/outbox-pattern.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

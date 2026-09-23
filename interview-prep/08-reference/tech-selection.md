@@ -131,4 +131,3 @@ things nobody on the team can debug at 3am.
 
 - [Comparisons index](../comparisons/README.md)
 - [Reference index](README.md)
-- [Repo index](../../INDEX.md)

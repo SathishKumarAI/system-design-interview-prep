@@ -340,7 +340,6 @@ with no source is visibly unsupported.
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 
 ## Sources

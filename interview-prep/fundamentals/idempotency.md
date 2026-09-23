@@ -272,6 +272,10 @@ redelivered repeatedly while the first attempt is still running, so the concurre
 
 - [Circuit breaker](../patterns/circuit-breaker.md)
 - [Delivery semantics](delivery-semantics.md)
+- [Design a distributed message queue](../03-backend-cases/message-queue.md)
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
+- [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)

@@ -307,10 +307,11 @@ a trickle elsewhere — and compute the bill before you turn it on.
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Design a metrics and alerting system](../03-backend-cases/metrics-monitoring.md)
 - [Design a RAG assistant over company documents](rag-assistant.md)
+- [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
 - [Design a recommender system](recommender.md)
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

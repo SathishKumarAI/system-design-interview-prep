@@ -96,5 +96,3 @@ If you cannot answer them out loud in two minutes, the page is not finished with
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
 - [Primitives index](../02-primitives/README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

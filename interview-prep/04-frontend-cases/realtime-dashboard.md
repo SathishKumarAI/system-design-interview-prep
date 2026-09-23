@@ -275,7 +275,6 @@ than no narration. Show the evidence next to the sentence, and never let it move
 
 - [Frontend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

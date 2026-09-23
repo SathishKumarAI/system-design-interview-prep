@@ -281,6 +281,7 @@ participant that cannot be rolled back cannot honour a prepare vote.
 
 ## Referenced by
 
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Outbox pattern](outbox-pattern.md)
 - [Patterns index](README.md)
 - [Saga pattern](saga-pattern.md)

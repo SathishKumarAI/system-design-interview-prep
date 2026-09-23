@@ -284,6 +284,7 @@ fallback becomes a full re-embed — and at 1,000 documents/second a 10 M-docume
 
 ## Referenced by
 
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Distributed transactions](distributed-transactions.md)
 - [Materialized views and derived data](materialized-views-and-derived-data.md)
 - [Patterns index](README.md)

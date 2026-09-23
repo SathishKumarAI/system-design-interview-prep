@@ -288,6 +288,7 @@ Version the key namespace with the model version and let the old generation age 
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Design a real-time leaderboard](leaderboard.md)
 - [Design an infinite feed (frontend)](../04-frontend-cases/infinite-feed.md)
 - [Design feed ranking (engagement prediction)](../06-ml-cases/feed-ranking.md)
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
@@ -296,7 +297,6 @@ Version the key namespace with the model version and let the old generation age 
 - [Meta interview style](../09-company-styles/meta.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Replication lag and session guarantees](../fundamentals/replication-lag-and-session-guarantees.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

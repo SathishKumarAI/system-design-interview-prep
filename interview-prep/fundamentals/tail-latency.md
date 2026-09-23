@@ -267,6 +267,7 @@ least-outstanding-requests when the warm state is tens of GB.
 
 ## Referenced by
 
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Queueing theory basics](queueing-theory-basics.md)

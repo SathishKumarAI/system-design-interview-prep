@@ -297,7 +297,6 @@ gold and embedding *sessions* is three orders of magnitude fewer calls for most 
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 - [Storage engines — B-tree vs LSM](../fundamentals/storage-engines.md)
 
 ## Sources

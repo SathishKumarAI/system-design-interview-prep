@@ -92,5 +92,4 @@ Interviewers usually pick something adjacent to their product. Prepare the row t
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Drills index](README.md)
 - [File conventions](../CONVENTIONS.md)
-- [Repo index](../../INDEX.md)
 - [Resources index](../10-resources/README.md)

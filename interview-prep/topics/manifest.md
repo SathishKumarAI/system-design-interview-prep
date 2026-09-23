@@ -423,16 +423,11 @@ old `## 1. Clarify … ## 8. Ops & cost` skeleton and carry none of the ten cont
 
 ## Referenced by
 
-- [ADR-0001: Split bundled primitives into atomic fundamentals pages](../../docs/adr/0001-split-primitives-into-atomic-fundamentals.md)
-- [CLAUDE.md — system-design-prep](../../CLAUDE.md)
 - [Comparisons index](../comparisons/README.md)
 - [Diagram component library](../diagrams/components.md)
-- [Docs index](../../docs/README.md)
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
-- [scripts/](../../scripts/README.md)
-- [System design prep](../../README.md)
 
 ## Sources
 

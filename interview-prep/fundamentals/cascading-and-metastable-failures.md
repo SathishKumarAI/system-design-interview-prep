@@ -279,6 +279,7 @@ The one exit this workload has that an ordinary service does not: **shed tokens,
 ## Referenced by
 
 - [Cell-based architecture](../patterns/cell-based-architecture.md)
+- [Design a distributed message queue](../03-backend-cases/message-queue.md)
 - [Fundamentals index](README.md)
 - [Load shedding and admission control](load-shedding-and-admission-control.md)
 - [Messaging matrix](../comparisons/messaging-matrix.md)

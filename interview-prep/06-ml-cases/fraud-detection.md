@@ -298,7 +298,6 @@ data, never as instruction, and keep the decision in the deterministic path.
 
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

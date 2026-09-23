@@ -24,5 +24,3 @@ system-design-primer) and [../../data%20engineering/](../../data%20engineering/)
 ## Referenced by
 
 - [Interview prep index](../README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

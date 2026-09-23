@@ -283,6 +283,7 @@ What is genuinely new is that the hot key is **self-sustaining while hot and cli
 - [Cache failure modes](cache-failure-modes.md)
 - [Cell-based architecture](../patterns/cell-based-architecture.md)
 - [Consistent hashing](consistent-hashing.md)
+- [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)

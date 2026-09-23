@@ -271,6 +271,7 @@ asynchronously from S3 to S3 — at the price of dropping tool calling and struc
 
 ## Referenced by
 
+- [Design a distributed message queue](../03-backend-cases/message-queue.md)
 - [Fundamentals index](README.md)
 - [Idempotency](idempotency.md)
 - [Kafka internals](kafka-internals.md)

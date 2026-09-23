@@ -90,9 +90,3 @@ the same mechanism behaves differently in front of a GPU.
 Latency and hardware numbers are 2026 figures (see sources in `01-numbers.md`). Cloud
 prices are **order-of-magnitude anchors for interview arithmetic**, not quotes — check
 the vendor calculator before putting any of them in a real design doc.
-
-## Referenced by
-
-- [CLAUDE.md — system-design-prep](../CLAUDE.md)
-- [Repo index](../INDEX.md)
-- [System design prep](../README.md)
