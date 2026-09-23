@@ -26,10 +26,11 @@ a real architecture to compare against (see [../10-resources/engineering-blogs.m
 | **Multi-channel delivery** | [Notification system](../03-backend-cases/notification-system.md) · Email marketing platform · Webhook delivery service |
 | **Search & retrieval** | [Search + typeahead](../03-backend-cases/search-typeahead.md) · Product search · Log search · Code search |
 | **Big bytes** | [File sync / object store](../03-backend-cases/object-storage-sync.md) · [Video streaming](../03-backend-cases/video-streaming.md) · Photo storage · Backup service |
-| **Geospatial & matching** | [Ride hailing](../03-backend-cases/ride-hailing.md) · Food delivery · Nearby friends · Yelp/proximity · Ad targeting by location |
-| **Money & correctness** | [Payments + ledger](../03-backend-cases/payments-ledger.md) · [Hotel reservations](../03-backend-cases/hotel-reservation.md) · Ticketmaster/seat booking · Inventory reservation · Wallet/points |
+| **Edge & delivery** | [Design a CDN](../03-backend-cases/cdn.md) · Image resizing at the edge · Global config distribution · Software update delivery |
+| **Geospatial & matching** | [Ride hailing](../03-backend-cases/ride-hailing.md) · [Proximity service](../03-backend-cases/proximity-service.md) · Food delivery · Nearby friends · Ad targeting by location |
+| **Money & correctness** | [Payments + ledger](../03-backend-cases/payments-ledger.md) · [Digital wallet](../03-backend-cases/digital-wallet.md) · [Hotel reservations](../03-backend-cases/hotel-reservation.md) · Ticketmaster/seat booking · Inventory reservation |
 | **Time series & telemetry** | [Metrics + alerting](../03-backend-cases/metrics-monitoring.md) · Distributed tracing backend · IoT ingestion |
-| **Messaging infrastructure** | [Distributed message queue](../03-backend-cases/message-queue.md) · Pub/sub broker · Webhook fanout bus · Change-log transport |
+| **Messaging infrastructure** | [Distributed message queue](../03-backend-cases/distributed-message-queue.md) · Pub/sub broker · Webhook fanout bus · Change-log transport |
 | **Determinism & low latency** | [Stock exchange](../03-backend-cases/stock-exchange.md) · Ad auction server · Multiplayer game tick server · Real-time bidding exchange |
 | **Coordination** | Distributed job scheduler · Cron at scale · Distributed lock service · Config/feature-flag service · Service discovery |
 | **Crawl & pipeline** | Web crawler · Sitemap indexer · Price scraper (respecting robots.txt) |

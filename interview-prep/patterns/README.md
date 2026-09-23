@@ -32,6 +32,9 @@ database.
 | How do I change a schema or move a store with no downtime and a revert at every step? | [expand-contract-migration.md](expand-contract-migration.md) |
 | Precompute timelines or merge at read? Where does the celebrity threshold sit? | [fanout-write-vs-read.md](fanout-write-vs-read.md) |
 | How do I stop one tenant, or one bad deploy, from affecting everyone? | [cell-based-architecture.md](cell-based-architecture.md) |
+| Should current state be a fold over events, and what does that cost me forever? | [event-sourcing.md](event-sourcing.md) |
+| When is a separate read model worth the replication lag it imports into my product? | [cqrs.md](cqrs.md) |
+| Why does page 500 time out, and why does the user see the same item twice? | [pagination-patterns.md](pagination-patterns.md) |
 | What does my product do when a dependency is down? | [graceful-degradation.md](graceful-degradation.md) |
 | How do I stop spending threads on a dependency that is already failing? | [circuit-breaker.md](circuit-breaker.md) |
 | I have to recompute six weeks of wrong data. How, without breaking production? | [backfill-and-reprocessing.md](backfill-and-reprocessing.md) |

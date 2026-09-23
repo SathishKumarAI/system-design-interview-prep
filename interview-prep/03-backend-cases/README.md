@@ -9,7 +9,7 @@ tags: [index, cases]
 
 # Backend cases
 
-Fifteen designs that between them cover every pattern the classic distributed-systems round
+Eighteen designs that between them cover every pattern the classic distributed-systems round
 tests. Do them in order — each introduces something the next one assumes.
 
 ## Where to look
@@ -19,6 +19,7 @@ tests. Do them in order — each introduces something the next one assumes.
 | [url-shortener.md](url-shortener.md) | ID generation, KV at scale, cache, read-heavy | intro |
 | [rate-limiter.md](rate-limiter.md) | Algorithms, distributed counters, hot keys, edge enforcement | intro |
 | [leaderboard.md](leaderboard.md) | Top-K, the single hot key, exact vs approximate rank, rollover | core |
+| [proximity-service.md](proximity-service.md) | Static geo search, filter-then-rank, cell resolution by density, stable paging | core |
 | [news-feed.md](news-feed.md) | Fanout write vs read, celebrity problem, ranking, precompute | core |
 | [chat-messaging.md](chat-messaging.md) | WebSockets, connection state, ordering, delivery + read receipts, offline sync | core |
 | [notification-system.md](notification-system.md) | Multi-channel fanout, dedup, retries, provider failure, preferences | core |
@@ -29,8 +30,10 @@ tests. Do them in order — each introduces something the next one assumes.
 | [ride-hailing.md](ride-hailing.md) | Geospatial indexing, matching, high-frequency location writes, state machines | advanced |
 | [payments-ledger.md](payments-ledger.md) | Idempotency, double-entry ledger, sagas, exactly-once effects, reconciliation | advanced |
 | [metrics-monitoring.md](metrics-monitoring.md) | Time-series ingest, cardinality, downsampling, alert evaluation | advanced |
-| [message-queue.md](message-queue.md) | Replicated log, ISR and acks, consumer-group rebalance, exactly-once | advanced |
+| [message-queue.md](distributed-message-queue.md) | Replicated log, ISR and acks, consumer-group rebalance, exactly-once | advanced |
 | [stock-exchange.md](stock-exchange.md) | Determinism, single-writer matching, sequencer, microsecond tails | advanced |
+| [digital-wallet.md](digital-wallet.md) | Closed-loop balances, two-partition transfer, holds, continuous reconciliation | advanced |
+| [cdn.md](cdn.md) | Being the CDN: PoP hierarchy, anycast routing, request collapsing, global purge | advanced |
 
 ## How to drill a case
 

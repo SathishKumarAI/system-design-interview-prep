@@ -66,11 +66,11 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `dns-and-anycast.md` | P1 | dns.md, geodns.md, anycast.md | Resolution, TTL semantics, why DNS failover is minutes not seconds, anycast withdrawal | split ← networking-and-edge |
-| `cdn-and-edge-caching.md` | P0 | cdn.md, edge-cache.md, pop.md | Pull vs push, cache-key design, purge vs versioned URLs, origin shield, edge compute | split ← networking-and-edge |
-| `tls-and-connection-setup.md` | P1 | tls.md, quic.md, handshake.md | RTT ladder 1.2/1.3/0-RTT/QUIC, replay risk, termination placement, session resumption | split ← networking-and-edge |
-| `application-protocols.md` | P1 | http2.md, http3.md, grpc.md, rest-protocol.md | h1/h2/h3 head-of-line behaviour, gRPC streaming, when UDP is blocked | split ← networking-and-edge |
-| `long-lived-connections.md` | P0 | websockets.md, sse.md, connection-tier.md | Capacity as *connections* not rps, reconnect storms, draining, presence fan-out | split ← networking-and-edge |
+| [`dns-and-anycast.md`](../fundamentals/dns-and-anycast.md) ✅ | P1 | dns.md, geodns.md, anycast.md | Resolution, TTL semantics, why DNS failover is minutes not seconds, anycast withdrawal | **written** ← networking-and-edge |
+| [`cdn-and-edge-caching.md`](../fundamentals/cdn-and-edge-caching.md) ✅ | P0 | edge-cache.md, pop.md | Pull vs push, cache-key design, purge vs versioned URLs, origin shield, edge compute | **written** ← networking-and-edge |
+| [`tls-and-connection-setup.md`](../fundamentals/tls-and-connection-setup.md) ✅ | P1 | tls.md, quic.md, handshake.md | RTT ladder 1.2/1.3/0-RTT/QUIC, replay risk, termination placement, session resumption | **written** ← networking-and-edge |
+| [`application-protocols.md`](../fundamentals/application-protocols.md) ✅ | P1 | http2.md, http3.md, grpc.md, rest-protocol.md | h1/h2/h3 head-of-line behaviour, gRPC streaming, when UDP is blocked | **written** ← networking-and-edge |
+| `long-lived-connections.md` | P0 | websockets.md, sse.md, connection-tier.md | Capacity as *connections* not rps, reconnect storms, draining, presence fan-out | **written** ← networking-and-edge |
 
 ### 1.2 Traffic management
 
@@ -100,7 +100,7 @@ their content has landed in the split pages — each row below names its source.
 | `serialization-and-schema-evolution.md` | P1 | protobuf.md, avro.md, encoding.md, schema-registry.md | Field-number compatibility, rolling deploys with both versions live, registry rules | new |
 | `object-storage-internals.md` | P1 | s3-internals.md, blob-storage.md, erasure-coding.md | Erasure coding vs replication, durability arithmetic, scrubbing, first-byte latency | split ← storage-and-databases |
 | `bloom-filters-and-sketches.md` | P1 | hyperloglog.md, hll.md, count-min.md, t-digest.md | Space/error trade, mergeability, where sketches silently mislead | new |
-| `geospatial-indexing.md` | P1 | h3.md, s2.md, geohash.md, quadtree.md | Geohash edge problem, S2 vs H3 neighbour geometry, moving-object update cost | split ← 03/ride-hailing |
+| [`geospatial-indexing.md`](../fundamentals/geospatial-indexing.md) ✅ | P1 | h3.md, s2.md, geohash.md, quadtree.md | Geohash edge problem, S2 vs H3 neighbour geometry, moving-object update cost | **written** ← 03/ride-hailing |
 | `vector-search-and-ann.md` | P0 | ann.md, hnsw.md, ivf-pq.md, embeddings-index.md | HNSW vs IVF-PQ, recall@k vs exact, quantisation, filtered search correctness | split ← 06/rag-assistant |
 
 ### 1.5 Replication and partitioning
@@ -142,7 +142,7 @@ their content has landed in the split pages — each row below names its source.
 |---|---|---|---|---|
 | [`idempotency.md`](../fundamentals/idempotency.md) ✅ | P0 | idempotency-keys.md, dedup.md, retry-safety.md | Key scope, in-flight collisions, storing the response, natural vs synthetic idempotence | **written** ← transactions-and-idempotency |
 | [`distributed-transactions.md`](../patterns/distributed-transactions.md) ✅ | P0 | 2pc.md, two-phase-commit.md, tcc.md, xa.md | 2PC blocking window, TCC reservations, single-partition avoidance as the real answer | **written** |
-| `ledgers-and-double-entry.md` | P1 | ledger.md, double-entry.md, accounting.md | Append-only entries, balance materialisation, continuous invariant checking | split ← transactions-and-idempotency |
+| [`ledgers-and-double-entry.md`](../fundamentals/ledgers-and-double-entry.md) ✅ | P1 | ledger.md, double-entry.md, accounting.md | Append-only entries, balance materialisation, continuous invariant checking | **written** ← transactions-and-idempotency |
 
 ### 1.9 Reliability
 
@@ -172,7 +172,7 @@ their content has landed in the split pages — each row below names its source.
 | `authn-and-authz.md` | P0 | auth.md, jwt.md, oauth.md, rbac.md, zanzibar.md | Token lifetimes vs revocation lag, RBAC→ABAC→ReBAC, where each check belongs | split ← security-and-multitenancy |
 | `multi-tenancy-isolation.md` | P0 | tenancy.md, noisy-neighbour.md | Isolation ladder, RLS as enforcement, whale tenants, per-tenant quotas | split ← security-and-multitenancy |
 | `secrets-and-key-management.md` | P2 | kms.md, secrets.md, envelope-encryption.md | Envelope encryption, rotation, short-lived dynamic credentials | split ← security-and-multitenancy |
-| `abuse-and-ddos.md` | P1 | ddos.md, bot-defence.md, scraping.md | Volumetric vs application-layer, edge absorption, enumeration defence | split ← security-and-multitenancy |
+| [`abuse-and-ddos.md`](../fundamentals/abuse-and-ddos.md) ✅ | P1 | ddos.md, bot-defence.md, scraping.md | Volumetric vs application-layer, edge absorption, enumeration defence | **written** ← security-and-multitenancy |
 | `privacy-and-data-deletion.md` | P1 | gdpr.md, pii.md, right-to-erasure.md | Deletion across derived stores, backups and logs; residency in replication topology | new |
 
 ### 1.12 Cost
@@ -193,8 +193,8 @@ complexity, and the failure mode of applying it too early.
 |---|---|---|---|---|
 | [`outbox-pattern.md`](../patterns/outbox-pattern.md) ✅ | P0 | dual-write.md, transactional-outbox.md | The dual-write problem; relay vs CDC; ordering and dedup downstream | **written** |
 | [`saga-pattern.md`](../patterns/saga-pattern.md) ✅ | P0 | saga.md, compensating-transaction.md | Choreography vs orchestration, compensation ≠ rollback, stuck-workflow detection | **written** |
-| `cqrs.md` | P1 | command-query-separation.md | Read/write model split, when it's over-engineering, sync lag as product behaviour | new |
-| `event-sourcing.md` | P1 | event-store.md | Append-only truth, projections, snapshotting, schema evolution over years of events | new |
+| [`cqrs.md`](../patterns/cqrs.md) ✅ | P1 | command-query-separation.md | Read/write model split, when it's over-engineering, sync lag as product behaviour | **written** |
+| [`event-sourcing.md`](../patterns/event-sourcing.md) ✅ | P1 | event-store.md | Append-only truth, projections, snapshotting, schema evolution over years of events | **written** |
 | `change-data-capture.md` | P0 | cdc.md, debezium.md, binlog.md | Log-based capture, snapshot→stream handover, WAL-retention cliff | split ← 05/cdc-pipeline |
 | [`materialized-views-and-derived-data.md`](../patterns/materialized-views-and-derived-data.md) ✅ | P0 | derived-data.md, read-models.md | Rebuildable derived stores as the core scaling idea; staleness contracts | **written** |
 | [`fanout-write-vs-read.md`](../patterns/fanout-write-vs-read.md) ✅ | P0 | fanout.md, timeline-fanout.md, push-vs-pull-feed.md | The hybrid threshold, active-user-only fanout, cost arithmetic both ways | **written** |
@@ -209,7 +209,7 @@ complexity, and the failure mode of applying it too early.
 | `strangler-fig-migration.md` | P1 | strangler.md, legacy-migration.md | Routing façade, per-endpoint cutover, verification by shadow comparison | new |
 | [`backfill-and-reprocessing.md`](../patterns/backfill-and-reprocessing.md) ✅ | P0 | backfill.md, replay.md, restatement.md | Same code path as live, idempotent partitions, restatement policy | **written** |
 | `write-audit-publish.md` | P0 | wap.md, data-gating.md | Write to a branch, validate, atomic publish; stale beats wrong | split ← 05/data-quality-and-contracts |
-| `pagination-patterns.md` | P1 | cursor-pagination.md, keyset-pagination.md, offset.md | Cursor vs keyset vs offset, stability under mutation, deep-page cost | new |
+| [`pagination-patterns.md`](../patterns/pagination-patterns.md) ✅ | P1 | cursor-pagination.md, keyset-pagination.md, offset.md | Cursor vs keyset vs offset, stability under mutation, deep-page cost | **written** |
 | `api-versioning.md` | P2 | versioning.md, backward-compatibility.md | Compatibility rules, sunset policy, client-version skew during rollout | new |
 
 ---
@@ -259,7 +259,7 @@ are new. Case studies are expected to run long.
 | `search-typeahead.md` | P0 | autocomplete.md, search.md | rewrite |
 | `object-storage-sync.md` | P1 | dropbox.md, google-drive.md, file-sync.md | rewrite + split out `s3-like-object-store.md` |
 | `video-streaming.md` | P1 | youtube.md, netflix.md | rewrite |
-| `ride-hailing.md` | P0 | uber.md, lyft.md, proximity-service.md | rewrite (geo index moves to fundamentals) |
+| `ride-hailing.md` | P0 | uber.md, lyft.md | rewrite (geo index now split out to fundamentals/geospatial-indexing.md) |
 | `payments-ledger.md` | P0 | payments.md, stripe.md | rewrite |
 | `metrics-monitoring.md` | P0 | prometheus.md, time-series.md, observability-backend.md | rewrite |
 
@@ -267,7 +267,14 @@ are new. Case studies are expected to run long.
 
 | Canonical file | Tier | Aliases — never create | Scope |
 |---|---|---|---|
-| `ticket-booking.md` | P0 | ticketmaster.md, seat-reservation.md, inventory-reservation.md | Strong-consistency reservation under contention; the case that punishes eventual consistency |
+| [`distributed-message-queue.md`](../03-backend-cases/distributed-message-queue.md) ✅ | P0 | message-broker.md, kafka-case.md, pubsub-case.md (`message-queue.md` remains an alias of fundamentals/log-vs-queue.md) | **written** — replicated log, ISR and acks, consumer-group rebalance, exactly-once |
+| [`hotel-reservation.md`](../03-backend-cases/hotel-reservation.md) ✅ | P0 | ticket-booking.md, ticketmaster.md, seat-reservation.md, inventory-reservation.md, booking.md | **written** — strong-consistency reservation under contention; the case that punishes eventual consistency |
+| [`stock-exchange.md`](../03-backend-cases/stock-exchange.md) ✅ | P1 | matching-engine.md, order-book.md, trading-system.md | **written** — determinism, single-writer matching, sequencer, microsecond tails |
+| [`leaderboard.md`](../03-backend-cases/leaderboard.md) ✅ | P1 | ranking-board.md, top-k-service.md, gaming-leaderboard.md | **written** — top-K, the single hot key, exact vs approximate rank |
+| [`digital-wallet.md`](../03-backend-cases/digital-wallet.md) ✅ | P1 | wallet.md, stored-value.md, balance-service.md | **written** — closed-loop balances, two-partition transfer, holds, reconciliation |
+| [`proximity-service.md`](../03-backend-cases/proximity-service.md) ✅ | P1 | yelp.md, nearby.md, places-search.md, store-locator.md | **written** — static geo search, filter-then-rank, cell resolution by density |
+| [`cdn.md`](../03-backend-cases/cdn.md) ✅ | P1 | cdn-case.md, edge-network.md (the MECHANISM page is fundamentals/cdn-and-edge-caching.md — this is the build-one case) | **written** — PoP hierarchy, anycast routing, request collapsing, global purge |
+| ~~`ticket-booking.md`~~ | — | — | **retired into `hotel-reservation.md`** — same topic under a different name. Its aliases move there |
 | `distributed-job-scheduler.md` | P0 | cron-at-scale.md, scheduler.md, task-queue.md | Exactly-once-ish execution, leader election, clock skew, long jobs |
 | `s3-like-object-store.md` | P1 | object-store.md, blob-store.md | Split from object-storage-sync: placement, EC, repair, index scaling |
 | `web-crawler.md` | P2 | crawler.md, spider.md | Politeness, frontier, dedup at 10^10 URLs, trap detection |
