@@ -125,7 +125,7 @@ tags: []
 | **Wikilinks are disabled** in this vault | Markdown links only. Legacy `[[...]]` links stay; add no more |
 | Legacy filenames contain spaces and parentheses | Escape them; **do not rename legacy files** — it breaks inbound links |
 | `interview-prep/10-resources/vendor/` | Upstream clones. Read-only, gitignored. Refresh with `fetch-references.sh` |
-| `.obsidian/` | Gitignored; don't commit workspace state |
+| `.obsidian/` | Vault behaviour is versioned, pane state is not. `app.json` `appearance.json` `core-plugins.json` are tracked; everything else under `.obsidian/` is ignored. **`app.json` sets `useMarkdownLinks`** — that setting is what keeps the vault off wikilinks, so never drop it |
 | New files | `kebab-case.md`, no spaces, listed in the manifest and in the folder's `index.md` |
 
 ## Git workflow

@@ -9,7 +9,6 @@ __pycache__/
 
 # C extensions
 *.so
-.obsidian/
 
 # Distribution / packaging
 .Python
@@ -163,3 +162,12 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Obsidian vault
+# Vault behaviour is shared and versioned; per-machine pane state is not.
+# useMarkdownLinks in app.json is what keeps this vault off wikilinks — without it
+# a fresh clone silently generates [[...]] links, which this repo bans.
+.obsidian/*
+!.obsidian/app.json
+!.obsidian/appearance.json
+!.obsidian/core-plugins.json
