@@ -46,6 +46,7 @@ STACK=(
   "fix/gen-backlinks-code-fences:44c50d1"
   "docs/normalise-sources-heading:bce692b"
   "docs/feed-ranking-sequence-diagram:54d788f"
+  "fix/mermaid-parse-errors:f9b091b"
 )
 
 start_branch=$(git rev-parse --abbrev-ref HEAD)
