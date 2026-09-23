@@ -280,7 +280,7 @@ it will, that is the named replay requirement this page asks you to produce befo
 - [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Delivery semantics](delivery-semantics.md)
-- [Design a distributed message queue](../03-backend-cases/message-queue.md)
+- [Design a distributed message queue](../03-backend-cases/distributed-message-queue.md)
 - [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)

@@ -286,6 +286,7 @@ route the overflow to a smaller model rather than returning 429, and goodput sta
 
 ## Referenced by
 
+- [Abuse and DDoS](abuse-and-ddos.md)
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Circuit breaker](../patterns/circuit-breaker.md)
 - [Fundamentals index](README.md)

@@ -270,6 +270,7 @@ Conflict resolution is where the analogy genuinely breaks. Last-writer-wins on a
 
 ## Referenced by
 
+- [DNS and anycast](dns-and-anycast.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
 - [Partitioning strategies](partitioning-strategies.md)

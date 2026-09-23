@@ -287,6 +287,8 @@ compensates steps a previous incarnation never took.
 
 - [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Distributed transactions](distributed-transactions.md)
+- [Event sourcing](event-sourcing.md)
+- [Ledgers and double-entry](../fundamentals/ledgers-and-double-entry.md)
 - [Outbox pattern](outbox-pattern.md)
 - [Patterns index](README.md)
 - [Topic manifest](../topics/manifest.md)

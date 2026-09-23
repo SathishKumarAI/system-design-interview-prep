@@ -356,7 +356,9 @@ outside the boundary, consuming the log rather than contributing to it.
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Design a digital wallet](digital-wallet.md)
 - [Question bank](../07-drills/question-bank.md)
+- [Topic manifest](../topics/manifest.md)
 
 ## Sources
 

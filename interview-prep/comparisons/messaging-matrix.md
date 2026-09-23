@@ -219,7 +219,7 @@ above it is carrying job IDs rather than work.
 - [Batch vs streaming](batch-vs-streaming.md)
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Comparisons index](README.md)
-- [Design a distributed message queue](../03-backend-cases/message-queue.md)
+- [Design a distributed message queue](../03-backend-cases/distributed-message-queue.md)
 - [Technology selection tables](../08-reference/tech-selection.md)
 - [Topic manifest](../topics/manifest.md)
 

@@ -302,6 +302,7 @@ The fix is this page's fifth follow-up, and the LLM case makes it compulsory rat
 - [Fundamentals index](README.md)
 - [Idempotency](idempotency.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [Ledgers and double-entry](ledgers-and-double-entry.md)
 - [Saga pattern](../patterns/saga-pattern.md)
 - [Topic manifest](../topics/manifest.md)
 

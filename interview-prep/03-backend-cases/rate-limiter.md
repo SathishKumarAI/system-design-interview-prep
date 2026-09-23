@@ -264,6 +264,7 @@ unavailable limiter should fail *closed*, and that flip is the one line worth sa
 
 ## Referenced by
 
+- [Abuse and DDoS](../fundamentals/abuse-and-ddos.md)
 - [Backend cases index](README.md)
 - [Design a notification system](notification-system.md)
 - [Design a real-time leaderboard](leaderboard.md)

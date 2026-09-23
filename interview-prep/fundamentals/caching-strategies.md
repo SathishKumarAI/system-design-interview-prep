@@ -296,6 +296,7 @@ Refresh-ahead is the one pattern that transfers cleanly. The prompt-cache TTL **
 - [Cache failure modes](cache-failure-modes.md)
 - [Cache invalidation](cache-invalidation.md)
 - [Caching](../02-primitives/caching.md)
+- [CDN and edge caching](cdn-and-edge-caching.md)
 - [Consistency model matrix](../comparisons/consistency-model-matrix.md)
 - [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
 - [Fan-out on write vs read](../patterns/fanout-write-vs-read.md)

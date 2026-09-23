@@ -266,7 +266,9 @@ Two consequences follow, and both are staff-level answers:
 
 - [Backfill and reprocessing](backfill-and-reprocessing.md)
 - [Batch vs streaming](../comparisons/batch-vs-streaming.md)
+- [CQRS](cqrs.md)
 - [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
+- [Event sourcing](event-sourcing.md)
 - [Expand–contract migration](expand-contract-migration.md)
 - [Fan-out on write vs read](fanout-write-vs-read.md)
 - [Patterns index](README.md)

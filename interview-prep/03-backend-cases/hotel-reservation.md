@@ -358,6 +358,7 @@ takes an idempotency key it did not invent.
 
 - [Backend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
+- [Topic manifest](../topics/manifest.md)
 
 ## Sources
 
