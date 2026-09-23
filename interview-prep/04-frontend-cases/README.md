@@ -62,5 +62,3 @@ rendering, `scheduler.yield()`, web workers for heavy computation — not a conf
 ## Referenced by
 
 - [Interview prep index](../README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

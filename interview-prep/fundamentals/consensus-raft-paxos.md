@@ -291,6 +291,8 @@ The design consequence is about what must **not** reach the log. Prefix-cache-aw
 - [Cascading and metastable failures](cascading-and-metastable-failures.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
+- [Design a digital wallet](../03-backend-cases/digital-wallet.md)
+- [Design a stock exchange](../03-backend-cases/stock-exchange.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Graceful degradation](../patterns/graceful-degradation.md)

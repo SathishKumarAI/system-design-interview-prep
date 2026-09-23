@@ -308,7 +308,6 @@ cheap. Budget it before you promise a feature owner they can change an embedding
 - [ML and GenAI cases index](README.md)
 - [ML system design playbook](ml-playbook.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

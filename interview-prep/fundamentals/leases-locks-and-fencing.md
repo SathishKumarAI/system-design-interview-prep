@@ -252,6 +252,7 @@ Spot and preemptible GPU capacity makes the zombie holder the common case rather
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
 - [Delivery semantics](delivery-semantics.md)
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Fundamentals index](README.md)
 - [Idempotency](idempotency.md)
 - [Quorums and anti-entropy](quorums-and-anti-entropy.md)

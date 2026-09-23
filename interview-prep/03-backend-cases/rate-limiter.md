@@ -264,12 +264,13 @@ unavailable limiter should fail *closed*, and that flip is the one line worth sa
 
 ## Referenced by
 
+- [Abuse and DDoS](../fundamentals/abuse-and-ddos.md)
 - [Backend cases index](README.md)
 - [Design a notification system](notification-system.md)
+- [Design a real-time leaderboard](leaderboard.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Reliability patterns](../02-primitives/reliability-patterns.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

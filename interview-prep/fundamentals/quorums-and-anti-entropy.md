@@ -273,6 +273,7 @@ Retrieval then adds copies the database does not know about. A deletion request 
 - [Consistency model matrix](../comparisons/consistency-model-matrix.md)
 - [Consistency models](consistency-models.md)
 - [Consistent hashing](consistent-hashing.md)
+- [Design a distributed message queue](../03-backend-cases/distributed-message-queue.md)
 - [Fundamentals index](README.md)
 - [Kafka internals](kafka-internals.md)
 - [OLTP database matrix](../comparisons/oltp-database-matrix.md)

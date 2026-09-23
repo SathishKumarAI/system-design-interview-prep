@@ -297,10 +297,12 @@ The fix is this page's fifth follow-up, and the LLM case makes it compulsory rat
 - [Cache invalidation](cache-invalidation.md)
 - [Consistency and consensus](../02-primitives/consistency-and-consensus.md)
 - [Consistency models](consistency-models.md)
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
 - [Idempotency](idempotency.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [Ledgers and double-entry](ledgers-and-double-entry.md)
 - [Saga pattern](../patterns/saga-pattern.md)
 - [Topic manifest](../topics/manifest.md)
 

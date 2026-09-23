@@ -274,9 +274,9 @@ untouched by any of it.
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Design a CDN](cdn.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

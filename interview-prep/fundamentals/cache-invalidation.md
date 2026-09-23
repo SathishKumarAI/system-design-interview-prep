@@ -282,6 +282,8 @@ Semantic caching is the case with no good answer. The key is an embedding and th
 - [Cache failure modes](cache-failure-modes.md)
 - [Caching](../02-primitives/caching.md)
 - [Caching strategies](caching-strategies.md)
+- [CDN and edge caching](cdn-and-edge-caching.md)
+- [Design a proximity service](../03-backend-cases/proximity-service.md)
 - [Fundamentals index](README.md)
 - [Topic manifest](../topics/manifest.md)
 

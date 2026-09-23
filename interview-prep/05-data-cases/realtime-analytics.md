@@ -296,7 +296,6 @@ cheap, reversible, and the single highest-leverage decision on the page.
 - [Batch vs streaming](../comparisons/batch-vs-streaming.md)
 - [Data platform cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 - [Stream processing semantics](../fundamentals/stream-processing-semantics.md)
 
 ## Sources

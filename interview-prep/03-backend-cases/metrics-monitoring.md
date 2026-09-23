@@ -288,7 +288,6 @@ right.
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Google interview style](../09-company-styles/google.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

@@ -301,6 +301,7 @@ documents into a vector store nobody will think to check.
 - [Backfill and reprocessing](../patterns/backfill-and-reprocessing.md)
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Delivery semantics](delivery-semantics.md)
+- [Design a distributed message queue](../03-backend-cases/distributed-message-queue.md)
 - [Fundamentals index](README.md)
 - [Log vs queue](log-vs-queue.md)
 - [Messaging and streams](../02-primitives/messaging-and-streams.md)

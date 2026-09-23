@@ -291,8 +291,8 @@ the bug you will actually ship.
 ## Referenced by
 
 - [Frontend cases index](README.md)
+- [Pagination patterns](../patterns/pagination-patterns.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

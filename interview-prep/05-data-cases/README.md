@@ -70,5 +70,3 @@ like reading the same tables.
 - [Interview prep index](../README.md)
 - [Messaging and streams](../02-primitives/messaging-and-streams.md)
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

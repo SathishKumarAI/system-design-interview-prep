@@ -154,4 +154,3 @@ you look these up by topic.
 ## Referenced by
 
 - [Reference index](README.md)
-- [Repo index](../../INDEX.md)

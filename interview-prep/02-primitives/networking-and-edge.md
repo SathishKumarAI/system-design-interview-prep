@@ -131,6 +131,7 @@ back to origin is standard.
 
 ## Referenced by
 
+- [Application protocols](../fundamentals/application-protocols.md)
 - [Design a chat / messaging system](../03-backend-cases/chat-messaging.md)
 - [Design a collaborative editor (Google Docs / Figma)](../04-frontend-cases/collaborative-editor.md)
 - [Design a URL shortener](../03-backend-cases/url-shortener.md)

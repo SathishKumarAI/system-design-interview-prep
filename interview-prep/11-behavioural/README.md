@@ -61,7 +61,6 @@ stopped being an answer and started being a story about a story.
 ## Referenced by
 
 - [Interview prep index](../README.md)
-- [System design prep](../../README.md)
 
 ## Sources
 

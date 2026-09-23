@@ -305,12 +305,13 @@ and treat a template change as a full re-embed — because that is what it is.
 ## Referenced by
 
 - [Cache invalidation](../fundamentals/cache-invalidation.md)
+- [CQRS](../patterns/cqrs.md)
 - [Data platform cases index](README.md)
+- [Event sourcing](../patterns/event-sourcing.md)
 - [Log vs queue](../fundamentals/log-vs-queue.md)
 - [Materialized views and derived data](../patterns/materialized-views-and-derived-data.md)
 - [Outbox pattern](../patterns/outbox-pattern.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

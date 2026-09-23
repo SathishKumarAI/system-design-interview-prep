@@ -288,6 +288,7 @@ are optimising and say so, because you cannot have both on the same routing key.
 ## Referenced by
 
 - [Circuit breaker](circuit-breaker.md)
+- [DNS and anycast](../fundamentals/dns-and-anycast.md)
 - [Graceful degradation](graceful-degradation.md)
 - [Patterns index](README.md)
 - [Topic manifest](../topics/manifest.md)

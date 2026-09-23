@@ -307,7 +307,6 @@ id the server expands, hits a transport limit before a model limit. Send the id.
 - [Meta interview style](../09-company-styles/meta.md)
 - [Partitioning strategies](../fundamentals/partitioning-strategies.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

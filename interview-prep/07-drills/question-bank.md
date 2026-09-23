@@ -20,15 +20,18 @@ a real architecture to compare against (see [../10-resources/engineering-blogs.m
 | Pattern | Problems |
 |---|---|
 | **Read-heavy KV + cache** | [URL shortener](../03-backend-cases/url-shortener.md) · Pastebin · Image host · DNS-like lookup service |
-| **Counters & limits** | [Rate limiter](../03-backend-cases/rate-limiter.md) · Leaderboard · Analytics counter · Voting/likes at scale |
+| **Counters & limits** | [Rate limiter](../03-backend-cases/rate-limiter.md) · [Leaderboard](../03-backend-cases/leaderboard.md) · Analytics counter · Voting/likes at scale |
 | **Fanout & timelines** | [News feed](../03-backend-cases/news-feed.md) · Twitter · Instagram · Activity/notification inbox |
 | **Realtime connections** | [Chat](../03-backend-cases/chat-messaging.md) · Presence · Collaborative cursors · Live sports scores · Multiplayer game state |
 | **Multi-channel delivery** | [Notification system](../03-backend-cases/notification-system.md) · Email marketing platform · Webhook delivery service |
 | **Search & retrieval** | [Search + typeahead](../03-backend-cases/search-typeahead.md) · Product search · Log search · Code search |
 | **Big bytes** | [File sync / object store](../03-backend-cases/object-storage-sync.md) · [Video streaming](../03-backend-cases/video-streaming.md) · Photo storage · Backup service |
-| **Geospatial & matching** | [Ride hailing](../03-backend-cases/ride-hailing.md) · Food delivery · Nearby friends · Yelp/proximity · Ad targeting by location |
-| **Money & correctness** | [Payments + ledger](../03-backend-cases/payments-ledger.md) · Ticketmaster/seat booking · Hotel reservations · Inventory reservation · Wallet/points |
+| **Edge & delivery** | [Design a CDN](../03-backend-cases/cdn.md) · Image resizing at the edge · Global config distribution · Software update delivery |
+| **Geospatial & matching** | [Ride hailing](../03-backend-cases/ride-hailing.md) · [Proximity service](../03-backend-cases/proximity-service.md) · Food delivery · Nearby friends · Ad targeting by location |
+| **Money & correctness** | [Payments + ledger](../03-backend-cases/payments-ledger.md) · [Digital wallet](../03-backend-cases/digital-wallet.md) · [Hotel reservations](../03-backend-cases/hotel-reservation.md) · Ticketmaster/seat booking · Inventory reservation |
 | **Time series & telemetry** | [Metrics + alerting](../03-backend-cases/metrics-monitoring.md) · Distributed tracing backend · IoT ingestion |
+| **Messaging infrastructure** | [Distributed message queue](../03-backend-cases/distributed-message-queue.md) · Pub/sub broker · Webhook fanout bus · Change-log transport |
+| **Determinism & low latency** | [Stock exchange](../03-backend-cases/stock-exchange.md) · Ad auction server · Multiplayer game tick server · Real-time bidding exchange |
 | **Coordination** | Distributed job scheduler · Cron at scale · Distributed lock service · Config/feature-flag service · Service discovery |
 | **Crawl & pipeline** | Web crawler · Sitemap indexer · Price scraper (respecting robots.txt) |
 
@@ -90,5 +93,4 @@ Interviewers usually pick something adjacent to their product. Prepare the row t
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Drills index](README.md)
 - [File conventions](../CONVENTIONS.md)
-- [Repo index](../../INDEX.md)
 - [Resources index](../10-resources/README.md)

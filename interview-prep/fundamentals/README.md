@@ -36,6 +36,13 @@ deleted only once every topic it carries has a page here.
 | B-tree vs LSM internals, compaction, write stalls, amplification arithmetic | [storage-engines.md](storage-engines.md) |
 | Why is the planner ignoring my index? Composite order, cardinality errors, reading a plan | [indexing-and-query-planning.md](indexing-and-query-planning.md) |
 | Where to cache, which pattern, how big, and what the miss path costs | [caching-strategies.md](caching-strategies.md) |
+| Pull vs push, cache-key design, purge vs versioned URLs, origin shield, edge compute | [cdn-and-edge-caching.md](cdn-and-edge-caching.md) |
+| Why is DNS failover measured in minutes? TTL as a request, anycast withdrawal, the four caches you do not control | [dns-and-anycast.md](dns-and-anycast.md) |
+| How many round trips before the first byte? The RTT ladder, 0-RTT replay, where to terminate | [tls-and-connection-setup.md](tls-and-connection-setup.md) |
+| Which head-of-line blocking am I actually hitting? h1/h2/h3, gRPC on HTTP/2, SSE vs WebSocket | [application-protocols.md](application-protocols.md) |
+| Geohash edge problem, S2 vs H3 neighbour geometry, static vs moving objects | [geospatial-indexing.md](geospatial-indexing.md) |
+| Append-only entries, balance materialisation, the invariant you check continuously | [ledgers-and-double-entry.md](ledgers-and-double-entry.md) |
+| Volumetric vs application-layer vs enumeration, cost asymmetry, why a WAF is a budget | [abuse-and-ddos.md](abuse-and-ddos.md) |
 | The stale-set race, versioned keys, leases, CDC-driven invalidation | [cache-invalidation.md](cache-invalidation.md) |
 | Stampede, hot key, penetration, cold start — and why they don't self-recover | [cache-failure-modes.md](cache-failure-modes.md) |
 | Queue or log? Replay, fan-out, per-message retry, retention as a recovery bound | [log-vs-queue.md](log-vs-queue.md) |
@@ -96,5 +103,3 @@ If you cannot answer them out loud in two minutes, the page is not finished with
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
 - [Primitives index](../02-primitives/README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)

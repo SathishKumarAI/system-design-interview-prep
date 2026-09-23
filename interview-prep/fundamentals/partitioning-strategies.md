@@ -279,10 +279,14 @@ The ceiling arrives as a wall rather than a slope. **Azure AI Search enforces it
 ## Referenced by
 
 - [Consistent hashing](consistent-hashing.md)
+- [Design a distributed message queue](../03-backend-cases/distributed-message-queue.md)
+- [Design a real-time leaderboard](../03-backend-cases/leaderboard.md)
 - [Distributed transactions](../patterns/distributed-transactions.md)
 - [Fundamentals index](README.md)
+- [Geospatial indexing](geospatial-indexing.md)
 - [Hot shard mitigation](hot-shard-mitigation.md)
 - [Indexing and query planning](indexing-and-query-planning.md)
+- [Pagination patterns](../patterns/pagination-patterns.md)
 - [Replication and partitioning](../02-primitives/replication-and-partitioning.md)
 - [Replication topologies](replication-topologies.md)
 - [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)

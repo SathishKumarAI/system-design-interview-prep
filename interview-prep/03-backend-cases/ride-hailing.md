@@ -284,10 +284,10 @@ of magnitude.
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Design a proximity service](proximity-service.md)
 - [Engineering blogs and case studies](../10-resources/engineering-blogs.md)
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

@@ -304,7 +304,6 @@ happily let you skip.
 - [Frontend cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
 - [Quorums and anti-entropy](../fundamentals/quorums-and-anti-entropy.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

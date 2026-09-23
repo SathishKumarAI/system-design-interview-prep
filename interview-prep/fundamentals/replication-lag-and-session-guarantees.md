@@ -255,6 +255,7 @@ Conversation state is the other half, and it is the classic monotonic-reads bug 
 - [Cache invalidation](cache-invalidation.md)
 - [Caching strategies](caching-strategies.md)
 - [Consistency model matrix](../comparisons/consistency-model-matrix.md)
+- [CQRS](../patterns/cqrs.md)
 - [Expand–contract migration](../patterns/expand-contract-migration.md)
 - [Fundamentals index](README.md)
 - [Materialized views and derived data](../patterns/materialized-views-and-derived-data.md)

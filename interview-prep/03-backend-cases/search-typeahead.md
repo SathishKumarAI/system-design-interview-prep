@@ -272,10 +272,10 @@ and the reason `(content_hash, model_version)` belongs in the key from day one.
 ## Referenced by
 
 - [Backend cases index](README.md)
+- [Design a proximity service](proximity-service.md)
 - [Design a RAG assistant over company documents](../06-ml-cases/rag-assistant.md)
 - [Google interview style](../09-company-styles/google.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 
 ## Sources
 

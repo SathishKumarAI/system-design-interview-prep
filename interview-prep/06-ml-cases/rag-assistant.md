@@ -337,10 +337,10 @@ with no source is visibly unsupported.
 - [Books already on this machine](../10-resources/books-on-this-machine.md)
 - [Design an LLM serving platform](llm-serving-platform.md)
 - [Design search and typeahead](../03-backend-cases/search-typeahead.md)
+- [Geospatial indexing](../fundamentals/geospatial-indexing.md)
 - [Microsoft, Apple, Netflix and other big tech](../09-company-styles/microsoft-apple-netflix.md)
 - [ML and GenAI cases index](README.md)
 - [Question bank](../07-drills/question-bank.md)
-- [Repo index](../../INDEX.md)
 - [Storage and databases](../02-primitives/storage-and-databases.md)
 
 ## Sources

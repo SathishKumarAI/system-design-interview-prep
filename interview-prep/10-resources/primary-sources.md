@@ -119,7 +119,6 @@ say "we got this wrong".
 - [GitHub repositories](github-repos.md)
 - [Newsletters and Substacks](newsletters-substack.md)
 - [Resources index](README.md)
-- [System design prep](../../README.md)
 
 ## Sources
 

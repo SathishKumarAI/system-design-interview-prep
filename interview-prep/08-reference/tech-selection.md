@@ -129,6 +129,6 @@ things nobody on the team can debug at 3am.
 
 ## Referenced by
 
+- [Application protocols](../fundamentals/application-protocols.md)
 - [Comparisons index](../comparisons/README.md)
 - [Reference index](README.md)
-- [Repo index](../../INDEX.md)

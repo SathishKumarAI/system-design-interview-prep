@@ -300,6 +300,7 @@ the same rule as the last row of the Failure modes table — **deploy readers fi
 
 - [Backfill and reprocessing](backfill-and-reprocessing.md)
 - [Cell-based architecture](cell-based-architecture.md)
+- [Design a hotel reservation system](../03-backend-cases/hotel-reservation.md)
 - [Materialized views and derived data](materialized-views-and-derived-data.md)
 - [Patterns index](README.md)
 - [SQL vs NoSQL vs NewSQL](../comparisons/sql-vs-nosql-vs-newsql.md)

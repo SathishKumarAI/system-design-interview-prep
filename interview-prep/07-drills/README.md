@@ -66,5 +66,3 @@ Solo practice plateaus. Get real mocks:
 ## Referenced by
 
 - [Interview prep index](../README.md)
-- [Repo index](../../INDEX.md)
-- [System design prep](../../README.md)
