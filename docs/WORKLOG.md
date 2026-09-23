@@ -13,6 +13,87 @@ the reasoning is the part that isn't recoverable from the diff.
 
 ---
 
+## 2026-09-23 — Closing the three small gaps the audit filed
+
+Branches: `fix/gen-backlinks-code-fences` · `docs/normalise-sources-heading` ·
+`docs/feed-ranking-sequence-diagram`
+
+### What
+
+The three bounded findings from the audit below, fixed rather than carried.
+
+### 1. The code-fence bug, which was two bugs
+
+Both doc scripts ran their regexes over raw Markdown, so an *example* of the format was
+indistinguishable from an *instance* of it. That produced a matched pair of failures pointing in
+opposite directions:
+
+| Script | Symptom | Standing workaround it forced |
+|---|---|---|
+| `gen_backlinks.py` | Injected a generated backlink list into any fenced example containing `## Referenced by` or `## Sources`. Already damaged `CLAUDE.md` and `CONVENTIONS.md` | "Never put those headings in a fence", written into four separate documents and enforced by memory |
+| `check_links.py` | Reported `path/to/file.md` from a usage example as broken, permanently | `--exclude vendor "markdown files"` — a gate that is always red is not a gate |
+
+`scripts/_md.py` now owns one job: which byte offsets are inside a fenced block or an inline
+backtick span. `mask_code()` returns a **same-length** copy with those regions blanked, so a regex
+matches on the mask and slices the original. Same-length is the whole trick — offsets stay valid
+and nothing is re-derived.
+
+**The regression on the way in is the part worth keeping.** Reading a line like ` ```text``` ` as
+a fence opener masks every line to end of file. CommonMark is explicit that a backtick fence's
+info string may not contain a backtick, so that line is an inline span, not an opener.
+`basic/prep/CAP theorem.md:8` is exactly that shape; it hid the real `## Referenced by` 19 lines
+below, and `gen_backlinks.py` appended a second copy on every run. **The pass stopped converging**
+— which is the one property the whole generate-don't-maintain argument rests on. Caught only
+because the second run printed `1 changed` instead of `0 changed`, which is precisely why the
+documented loop runs it twice.
+
+`scripts/test_doc_scripts.py`: 13 assertions, no framework, each named after damage that actually
+happened.
+
+### 2. Two spellings of one heading
+
+52 pages ended `## Sources`, 44 ended `## Sources & further reading` — the split was every file
+written before the staff contract against every file written after it. Both worked, which is why
+it survived: `gen_backlinks.py` inserts before `\n## Sources\b`, and the word boundary matches
+`Sources &` just as happily. The cost was every grep, every contract check, and every reader
+deciding which of two endings to copy.
+
+All 44 normalised. The more useful half was fixing **`CONVENTIONS.md`**, which taught the old
+spelling in three places and would have regenerated the drift on the next file anyone added. Its
+frontmatter example also showed `difficulty: core` twelve lines above the rule saying topic and
+case frontmatter uses `tier:` and not `difficulty`.
+
+### 3. The last missing sequence diagram
+
+`06-ml-cases/feed-ranking.md` had a flowchart and a `stateDiagram` — two types, so a naive count
+passed, but not the rule. A case needs component layout **and** request flow, because a flowchart
+cannot show how many *blocking* round trips stand between request and response, and at a 50 ms p99
+that is the only question that matters. All 26 cases now carry both.
+
+### Not done, and why
+
+The `difficulty: core` frontmatter in 47 files stays. Converting it means assigning a real
+P0/P1/P2 per file from the manifest, which is a judgement call and not a `sed`. Filed in the
+manifest's drift table rather than half-applied.
+
+### Verification
+
+```
+$ python scripts/test_doc_scripts.py
+13 passed
+$ python scripts/gen_backlinks.py .          # twice
+233 files scanned, 934 inbound links mapped, 0 changed
+$ python scripts/check_links.py .            # no --exclude, for the first time
+checked 2023 relative links; broken: 0
+all relative links resolve
+$ grep -rh '^## Sources' interview-prep | sort | uniq -c
+     96 ## Sources
+```
+
+All 26 case files: ≥ 1 `flowchart` and ≥ 1 `sequenceDiagram`, 0 missing.
+
+---
+
 ## 2026-09-23 — Gap audit, and the stack that could not merge itself
 
 Branch: `docs/status-and-manifest-refresh` · PR #1 **merged**, #2–#9 open and conflicting

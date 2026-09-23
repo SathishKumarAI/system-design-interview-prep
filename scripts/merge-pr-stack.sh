@@ -43,6 +43,9 @@ STACK=(
   "docs/readme-front-door:7ac91f0"
   "chore/obsidian-vault-settings:fe21cc3"
   "build/vendor-doc-scripts:b14db6f"
+  "fix/gen-backlinks-code-fences:44c50d1"
+  "docs/normalise-sources-heading:bce692b"
+  "docs/feed-ranking-sequence-diagram:54d788f"
 )
 
 start_branch=$(git rev-parse --abbrev-ref HEAD)
