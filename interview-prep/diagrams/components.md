@@ -3,7 +3,7 @@ title: Diagram component library
 type: reference
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [diagrams, mermaid, conventions]
 ---
 
@@ -45,6 +45,22 @@ box diagram per topic is the anti-pattern this library exists to kill.
 | Arrow: bulk/batch | `==>` (thick) |
 | Boundary | `subgraph` for trust, region, or tier boundaries |
 | Colour | Only via the `classDef` set below. Never inline `style` |
+
+### Syntax that silently breaks a diagram
+
+A Mermaid block that fails to parse is invisible in the worst way: `grep -c '```mermaid'` counts
+it, GitHub renders a small error box, and some viewers render nothing at all. Three of this
+vault's diagrams were broken this way — including one in this file — and nothing caught it until
+they were put through the real renderer. From the repo root run `python scripts/preview.py`, open
+the URL it prints, and click **Check every diagram parses** before claiming a diagram is done.
+
+| Trap | Why | Write instead |
+|---|---|---|
+| **`;` anywhere in a sequence-diagram message or `Note`** | `;` is a statement separator. `A->>B: BEGIN; INSERT; COMMIT` parses as one message then two garbage statements | Commas or an em dash: `A->>B: BEGIN, INSERT, COMMIT` |
+| **HTML entities in sequence text** — `&middot;` `&amp;` `&nbsp;` | They *end in a semicolon*, so they hit the rule above. This is the non-obvious one | The literal character, or a word |
+| **`CK` as an `erDiagram` key** | Only `PK`, `FK` and `UK` exist. `CK` is read as an attribute name and the trailing comment then fails to parse | `UK`, and name the clustering role in the comment: `bigint seq UK "sort key"` |
+
+`<br/>` inside a `Note` is fine — it was never the problem, despite looking like the culprit.
 
 ### The palette (copy this block into any flowchart)
 
@@ -356,7 +372,7 @@ erDiagram
     }
     MESSAGE {
         uuid conversation_id PK "PARTITION KEY"
-        bigint seq CK "sort key — total order per conversation"
+        bigint seq UK "sort key — total order per conversation"
         uuid client_msg_id UK "idempotency"
         text body
     }

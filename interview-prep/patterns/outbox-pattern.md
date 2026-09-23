@@ -5,7 +5,7 @@ track: universal
 tier: P0
 status: drafted
 sources: [Debezium outbox docs, Kleppmann on dual writes, Postgres logical decoding docs]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [outbox, dual-write, cdc, debezium, relay, event-publishing]
 ---
 
@@ -61,7 +61,7 @@ sequenceDiagram
 
     rect rgb(240,255,240)
     Note over A,K: outbox — one transaction, one system
-    A->>D: BEGIN; INSERT order; INSERT outbox row; COMMIT
+    A->>D: BEGIN, INSERT order, INSERT outbox row, COMMIT — one transaction
     D-->>A: ok (atomic — both or neither)
     Note over D,K: relay publishes from the outbox,<br/>retries until acked
     end

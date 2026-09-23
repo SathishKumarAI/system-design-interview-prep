@@ -167,6 +167,7 @@ Source: [10 ADR anti-patterns — bool.dev](https://bool.dev/blog/detail/10-adr-
 - [ ] Frontmatter complete, `updated` bumped
 - [ ] Every section in the contract carries staff-level substance (no padding, no 101)
 - [ ] ≥ 2 diagram types, reusing `components.md` vocabulary
+- [ ] **Every Mermaid block parses** — `python scripts/preview.py`, then *Check every diagram parses*
 - [ ] Numbers are real and sourced, or labelled as order-of-magnitude
 - [ ] 2–3 sources cross-checked; incidents cited where they exist
 - [ ] Link check run, **0 broken links**, output quoted

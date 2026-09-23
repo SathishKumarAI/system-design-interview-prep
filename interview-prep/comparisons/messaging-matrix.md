@@ -5,7 +5,7 @@ track: universal
 tier: P0
 status: drafted
 sources: [Slack job queue 2017, Kafka/Pulsar/SQS/RabbitMQ docs, AWS Kinesis limits]
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [kafka, pulsar, sqs, rabbitmq, kinesis, comparison, queue, log]
 ---
 
@@ -84,7 +84,7 @@ sequenceDiagram
     B->>B: memory fills
     B--xP: cannot enqueue
     B--xC: dequeue ALSO needs memory → wedged
-    Note over B,C: Slack 2016: the queue locked in both directions;<br/>resolving the database contention did NOT unwedge it
+    Note over B,C: Slack 2016 — the queue locked in both directions,<br/>and resolving the database contention did NOT unwedge it
     end
 
     rect rgb(240,255,240)

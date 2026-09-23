@@ -6,6 +6,7 @@
 | Regenerate every `## Referenced by` list | `gen_backlinks.py` |
 | Does a folder meet the section contract / does a topic already exist? | `lint_docs.py` |
 | Publish the stacked docs PRs to `main` | `merge-pr-stack.sh` |
+| Render the vault, and check every diagram parses | `preview.py` |
 | Fence and inline-code masking the others depend on | `_md.py` |
 | Check that masking still works | `test_doc_scripts.py` |
 
