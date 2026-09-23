@@ -14,8 +14,13 @@ Written when work stopped. Kills the re-entry cost; does not summarise the repo.
 | The repo map | [INDEX.md](INDEX.md) |
 
 **Last updated:** 2026-09-23
-**Branch:** `docs/status-and-manifest-refresh`, stacked on `docs/applied-sections`
+**Branch:** `build/vendor-doc-scripts` — the tip of a 14-branch linear stack
 **PRs:** #1 **merged** 2026-09-23 · #2–#9 open and now *conflicting* — see the next action
+
+The stack, oldest first, is exactly the `STACK` list in
+[`scripts/merge-pr-stack.sh`](scripts/merge-pr-stack.sh). Four of its branches have no PR yet and
+two — `docs/resources-audit`, `docs/applied-sections` — had never been pushed at all. The script
+pushes and opens them as it goes.
 
 ---
 

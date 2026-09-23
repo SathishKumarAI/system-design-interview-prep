@@ -40,6 +40,9 @@ STACK=(
   "docs/resources-audit:d9b7aed"
   "docs/applied-sections:bea54ef"
   "docs/status-and-manifest-refresh:fb055cb"
+  "docs/readme-front-door:7ac91f0"
+  "chore/obsidian-vault-settings:fe21cc3"
+  "build/vendor-doc-scripts:b14db6f"
 )
 
 start_branch=$(git rev-parse --abbrev-ref HEAD)
@@ -100,5 +103,6 @@ echo "Done. main is now:"
 git log --oneline -12 main
 echo
 echo "Verify:"
-echo "  python ~/.claude/skills/staff-technical-docs/scripts/check_links.py ."
-echo "  expected: 1971 links checked, 4 broken"
+echo "  python scripts/gen_backlinks.py .                                  # twice, 0 changed"
+echo "  python scripts/check_links.py . --exclude vendor \"markdown files\""
+echo "  expected: 2022 relative links checked, 0 broken, exit 0"
