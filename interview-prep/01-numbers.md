@@ -229,7 +229,7 @@ vCPU ≈ $30/month            Egress ≈ $0.05–0.09/GB
 - [Reference index](08-reference/README.md)
 - [Repo index](../INDEX.md)
 - [Resources index](10-resources/README.md)
-- [System Design Interview Preparation](../README.md)
+- [System design prep](../README.md)
 
 ## Sources & further reading
 

@@ -52,7 +52,7 @@ Whatever the badge on the door:
 - [Behavioural question bank](../11-behavioural/question-bank.md)
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
-- [System Design Interview Preparation](../../README.md)
+- [System design prep](../../README.md)
 
 ## Sources
 

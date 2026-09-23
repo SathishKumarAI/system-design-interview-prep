@@ -84,4 +84,4 @@ one of them survives a follow-up question.
 
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
-- [System Design Interview Preparation](../../README.md)
+- [System design prep](../../README.md)

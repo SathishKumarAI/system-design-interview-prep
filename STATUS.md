@@ -40,7 +40,7 @@ gap in the repo.
 | `02-primitives/` **not started** | The other **5 of 12** have no successor page at all and no banner: `networking-and-edge` · `load-balancing-and-gateways` · `observability-and-delivery` · `security-and-multitenancy` · `cost-engineering`. That is 20 unwritten topics and five whole domains with nothing in `fundamentals/` |
 | Manifest | §7 records the decisions, §8 tracks progress: **40 / 123** topic pages. Batches 9–12 added no topic pages, so the count is unchanged and correct |
 | `08-reference/tech-selection.md` | **Not retired** — it still uniquely covers 13 decisions with no comparison page yet. Banner added; becomes a stub when they land |
-| Links / backlinks | **1967 links checked, 4 broken** (the `path/to/…` placeholders in `markdown files/md_blacklinks.md`), backlink pass idempotent |
+| Links / backlinks | **2019 links checked, 4 broken** (the `path/to/…` placeholders in `markdown files/md_blacklinks.md`), backlink pass idempotent |
 
 ## The next action
 
@@ -98,7 +98,7 @@ python ~/.claude/skills/staff-technical-docs/scripts/check_links.py .     # back
 python ~/.claude/skills/staff-technical-docs/scripts/lint_docs.py interview-prep/fundamentals --contract
 ```
 
-Expected today: **1967 links checked, 4 broken** (the placeholders above). Anything else is new
+Expected today: **2019 links checked, 4 broken** (the placeholders above). Anything else is new
 breakage. Quote the output — "links verified" is an assertion, the count is evidence.
 
 Those three scripts are **not in this repo**. Until they are vendored into `scripts/`, the
@@ -119,4 +119,5 @@ and worked around it in the docs rather than in the script.
 - [Next session — start here](docs/NEXT-SESSION.md)
 - [Repo index](INDEX.md)
 - [Session record — fundamentals batches 1–5](docs/sessions/2026-09-02-fundamentals-batches-1-5.md)
+- [System design prep](README.md)
 - [Worklog](docs/WORKLOG.md)

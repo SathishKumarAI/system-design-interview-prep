@@ -48,3 +48,4 @@ My apologize my friend for my doing the daily task.
 - [8-week study plan](interview-prep/07-drills/8-week-plan.md)
 - [Interview prep index](interview-prep/README.md)
 - [Repo index](INDEX.md)
+- [System design prep](README.md)

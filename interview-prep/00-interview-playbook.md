@@ -231,4 +231,4 @@ here is X." Cost reasoning is explicitly in the senior rubric now.
 - [Interview prep index](README.md)
 - [Repo index](../INDEX.md)
 - [Resources index](10-resources/README.md)
-- [System Design Interview Preparation](../README.md)
+- [System design prep](../README.md)

@@ -25,3 +25,4 @@ system-design-primer) and [../../data%20engineering/](../../data%20engineering/)
 
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
+- [System design prep](../../README.md)

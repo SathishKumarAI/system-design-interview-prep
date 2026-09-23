@@ -58,6 +58,11 @@ Two minutes is the target. A behavioural answer that runs past three minutes has
 stopped being an answer and started being a story about a story.
 
 
+## Referenced by
+
+- [Interview prep index](../README.md)
+- [System design prep](../../README.md)
+
 ## Sources
 
 - Amazon's published leadership principles and the bar-raiser format

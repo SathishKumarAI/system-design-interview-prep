@@ -69,3 +69,4 @@ Nearly every ML design is the same five stages. Learn the stages and new problem
 
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
+- [System design prep](../../README.md)

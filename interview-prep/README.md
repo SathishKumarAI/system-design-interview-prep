@@ -3,7 +3,7 @@ title: Interview prep index
 type: index
 track: universal
 status: drafted
-updated: 2026-09-02
+updated: 2026-09-23
 tags: [index]
 ---
 
@@ -34,6 +34,9 @@ This folder is the **interview layer** on top: framework, numbers, worked cases,
 | Term I forgot / which tech do I pick | [08-reference/](08-reference/README.md) |
 | What does Amazon / Meta / Google weight differently? | [09-company-styles/](09-company-styles/README.md) |
 | The primary sources this corpus cites, books I own, repos, newsletters, blogs, mocks | [10-resources/](10-resources/README.md) |
+| How do I answer "tell me about a time…"? | [11-behavioural/](11-behavioural/README.md) |
+| **Does this topic already have a file?** | [topics/manifest.md](topics/manifest.md) — read before creating anything |
+| What shapes and colours do diagrams use? | [diagrams/components.md](diagrams/components.md) |
 | How is every file here written? | [CONVENTIONS.md](CONVENTIONS.md) |
 | Templates to copy when adding a note | [_templates/](_templates/) |
 
@@ -50,7 +53,7 @@ covered as first-class sections in every case file here.
 
 ## How each case file is structured
 
-Same eight headings everywhere. Learn the shape once; it becomes your speaking order.
+The same eight-step skeleton everywhere. Learn the shape once; it becomes your speaking order.
 
 1. **Clarify** — questions to ask, and the answers you assume if the interviewer waves you on
 2. **Requirements** — functional, non-functional, explicit non-goals
@@ -60,6 +63,17 @@ Same eight headings everywhere. Learn the shape once; it becomes your speaking o
 6. **Architecture** — high level, then the one or two deep dives that matter
 7. **Scale & failure** — bottleneck, hotspot, what breaks at 10x, what happens when X dies
 8. **Ops & cost** — SLOs, metrics, rollout, dollar figure, and what you'd cut first
+
+Then two applied sections every case and topic page carries: **On AWS and Azure** — the managed
+service that already does this, and the knob that bites — and **In an LLM deployment**, because
+the same mechanism behaves differently in front of a GPU.
+
+> **In flight.** The staff section contract in [CLAUDE.md](../CLAUDE.md) wraps that skeleton in
+> ten headings (`Core concept` · `Mechanics & internals` · `Numbers that matter` · `Failure modes`
+> · `Trade-offs vs alternatives` · … ), keeping steps 1–8 *inside* `Mechanics & internals` and
+> `Numbers that matter`. The 40 pages in `fundamentals/`, `patterns/` and `comparisons/` are
+> written to it. **The 26 case files are not yet** — they still run the bare eight steps above.
+> Tracked as batch 13 in [topics/manifest.md](topics/manifest.md) §8.
 
 ## How to use this repo
 
@@ -81,4 +95,4 @@ the vendor calculator before putting any of them in a real design doc.
 
 - [CLAUDE.md — system-design-prep](../CLAUDE.md)
 - [Repo index](../INDEX.md)
-- [System Design Interview Preparation](../README.md)
+- [System design prep](../README.md)

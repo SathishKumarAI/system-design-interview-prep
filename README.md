@@ -1,60 +1,93 @@
-# System Design Interview Preparation 
-
-I am learning and making study materials for preparation. 
-
-** Documenting my journey of continuous learning and growth through daily challenges. ** 
-
 ---
-## Where to look
+title: System design prep
+type: index
+track: universal
+status: drafted
+updated: 2026-09-23
+tags: [index, entry-point]
+---
+
+# System design prep
+
+A staff/principal-level system design corpus, written to be **drilled**. Obsidian vault and git
+repo; every page is plain Markdown with Mermaid diagrams that render on GitHub without a plugin.
+
+**Audience: engineers who already have the fundamentals.** The value here is trade-offs under
+constraints, failure modes, quantitative reasoning, and where experienced engineers get the choice
+wrong. There are no definitions of what a load balancer is.
+
+## Start here
 
 | I want to… | Go to |
 |---|---|
-| **See everything in this repo** | [INDEX.md](INDEX.md) |
-| **Prepare for a design interview** | [interview-prep/](interview-prep/README.md) — framework, numbers, 26 worked cases, drills |
-| Run the 45 minutes | [interview-prep/00-interview-playbook.md](interview-prep/00-interview-playbook.md) |
-| Memorise the numbers | [interview-prep/01-numbers.md](interview-prep/01-numbers.md) |
-| Practise, with a plan | [interview-prep/07-drills/](interview-prep/07-drills/README.md) |
-| Prep for a specific company | [interview-prep/09-company-styles/](interview-prep/09-company-styles/README.md) |
-| Find books, repos, blogs | [interview-prep/10-resources/](interview-prep/10-resources/README.md) |
-| Read background concept notes | `basic/prep/` (see [INDEX.md](INDEX.md)) |
-| Read data-engineering notes | `data engineering/` (see [INDEX.md](INDEX.md)) |
+| **Run a design round tomorrow** | [interview-prep/00-interview-playbook.md](interview-prep/00-interview-playbook.md) — how to spend the 45 minutes and what is scored |
+| **Know the numbers cold** | [interview-prep/01-numbers.md](interview-prep/01-numbers.md) — latency ladder, capacity arithmetic, cost anchors |
+| **Study on a schedule** | [interview-prep/07-drills/8-week-plan.md](interview-prep/07-drills/8-week-plan.md) |
+| **See the whole curriculum** | [interview-prep/README.md](interview-prep/README.md) |
+| **See every file, legacy notes included** | [INDEX.md](INDEX.md) |
+| **Know where work stopped** | [STATUS.md](STATUS.md) |
 
-**Adding a note?** Follow [interview-prep/CONVENTIONS.md](interview-prep/CONVENTIONS.md) and copy
-a template from [interview-prep/_templates/](interview-prep/_templates/).
+## What is in here
 
----
-## Resources
+| Layer | Pages | What it answers |
+|---|---:|---|
+| [fundamentals/](interview-prep/fundamentals/README.md) | 25 | How does this mechanism actually work, what does it cost, how does it break? Consensus, isolation levels, LSM vs B-tree, watermarks, tail latency, metastable failure |
+| [patterns/](interview-prep/patterns/README.md) | 10 | Which shape do I assemble, and when does it earn its complexity? Outbox, saga, cells, fan-out, expand–contract, backfill |
+| [comparisons/](interview-prep/comparisons/README.md) | 5 | Which technology do I pick, and what do I regret? Each page commits to a recommendation rather than listing features |
+| [03–06 cases](interview-prep/03-backend-cases/README.md) | 26 | Worked designs across [backend](interview-prep/03-backend-cases/README.md), [frontend](interview-prep/04-frontend-cases/README.md), [data](interview-prep/05-data-cases/README.md) and [ML/GenAI](interview-prep/06-ml-cases/README.md) |
+| [07-drills/](interview-prep/07-drills/README.md) | 4 | Question bank, flashcards, an 8-week plan, and a rubric to score yourself against |
+| [08-reference/](interview-prep/08-reference/README.md) | 2 | Glossary and the technology-selection table |
+| [09-company-styles/](interview-prep/09-company-styles/README.md) | 5 | What Amazon, Meta, Google, Microsoft/Apple/Netflix and startups weight differently |
+| [10-resources/](interview-prep/10-resources/README.md) | 7 | The primary sources this corpus cites, books, repos, blogs, newsletters, mocks |
+| [11-behavioural/](interview-prep/11-behavioural/README.md) | 3 | The non-technical round: question bank, rubric, and a story inventory only you can fill |
+| [02-primitives/](interview-prep/02-primitives/README.md) | 12 | The older bundled notes, being split into `fundamentals/`. Kept until every topic they carry has a successor page |
 
-- I am currently learning from [System-design-primer](https://github.com/donnemartin/system-design-primer) from this GitHub Repo.
-## Introduction
+Every page carries two extras that most prep material omits: **`## On AWS and Azure`** — the
+managed service that already does this and the knob that bites — and **`## In an LLM deployment`**,
+because the same mechanism shows up differently in front of a GPU.
 
-System design interviews are a critical part of the technical interview process for many software engineering roles. These interviews evaluate your ability to design scalable, high-performing, and fault-tolerant systems. This repository serves as a one-stop resource to help you master these concepts and ace your interviews.
+Background concept notes from before the restructure live in `basic/prep/` and
+`data engineering/`, indexed in [INDEX.md](INDEX.md). They are kept, not maintained.
 
-The content provided here will walk you through the foundational principles of system design, offer real-world examples, and provide tips on how to approach design problems.
-## Why System Design?
+## How to use it
 
-System design interviews assess your ability to:
-- Architect solutions under ambiguous requirements.
-- Build large-scale, distributed systems.
-- Make trade-offs between performance, scalability, consistency, and availability.
-- Work with databases, caches, load balancers, and other infrastructure components.
-- Demonstrate your knowledge of real-world technologies and practices.
+**Never read a case file straight through.** Cover everything below *Requirements*, design it
+yourself on paper for 30 minutes, then diff against the file. The diff is your study list — the
+page you agreed with taught you nothing.
 
-Mastering system design not only helps you in interviews but also makes you a better software engineer by providing you with the skills to tackle complex challenges in real-world applications.
+- Score the attempt with [07-drills/self-scoring-rubric.md](interview-prep/07-drills/self-scoring-rubric.md).
+- Log what you missed in [Track your learning.md](Track%20your%20learning.md).
+- Fundamentals, patterns and comparisons are reference, not reading. Reach for one when a case
+  makes you hesitate, not before.
 
-### Obsidian Setup 
+## Contributing to it
 
-- To use Markdown links from the start so you don’t have to convert them later, 
-	- disable Settings > Files & Links > Use Wikilinks.
-- Once you do that, you can still type the double brackets (you have to if you want autocomplete suggestions), and they will convert to Markdown when completed.
-  
-## Links 
-[GitHub Cheat Sheet](https://education.github.com/git-cheat-sheet-education.pdf)
-[GitHub Markdown Cheat Sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+| Before you… | Read |
+|---|---|
+| Create any file | [interview-prep/topics/manifest.md](interview-prep/topics/manifest.md) — one topic, one canonical filename. Not listed? Add it there first |
+| Write a page | [interview-prep/CONVENTIONS.md](interview-prep/CONVENTIONS.md) and the section contract in [CLAUDE.md](CLAUDE.md) |
+| Draw anything | [interview-prep/diagrams/components.md](interview-prep/diagrams/components.md) — the shared Mermaid vocabulary. Do not invent a second visual language |
+| Copy a skeleton | [interview-prep/_templates/](interview-prep/_templates/) |
 
-Happy Learning, and Good Luck with your System Design Interviews!
+Two rules that are load-bearing rather than stylistic:
 
-If you have any questions or feedback, feel free to open an issue or contact me!
+- **Wikilinks are disabled in this vault.** Markdown links only, relative, with spaces escaped as
+  `%20` and parentheses as `%28` `%29`. Legacy `[[...]]` links stay; add no more. In Obsidian:
+  *Settings → Files & Links → Use Wikilinks* **off**.
+- **Numbers get a source, or the label "order of magnitude, verify before quoting".** Cloud prices
+  here are anchors for interview arithmetic, not quotes.
+
+Design decisions are recorded as ADRs in [docs/adr/](docs/adr/); the reasoning behind each batch is
+in [docs/WORKLOG.md](docs/WORKLOG.md).
+
+## Credit
+
+Started from [donnemartin/system-design-primer](https://github.com/donnemartin/system-design-primer),
+which is still the best free starting point and is where the `basic/prep/` notes come from.
+Everything under `interview-prep/` is written against the primary sources listed in
+[10-resources/primary-sources.md](interview-prep/10-resources/primary-sources.md).
+
+Questions, corrections, or a number you can show is wrong — open an issue.
 
 ## Referenced by
 

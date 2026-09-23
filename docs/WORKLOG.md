@@ -777,3 +777,4 @@ assertions, which is the weakest evidence produced this session.
 - [Repo index](../INDEX.md)
 - [Session record — fundamentals batches 1–5](sessions/2026-09-02-fundamentals-batches-1-5.md)
 - [STATUS](../STATUS.md)
+- [System design prep](../README.md)

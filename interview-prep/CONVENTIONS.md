@@ -160,5 +160,5 @@ That's the whole ritual. Three steps, or the index rots and the repo becomes a p
 - [Interview prep index](README.md)
 - [Patterns index](patterns/README.md)
 - [Repo index](../INDEX.md)
-- [System Design Interview Preparation](../README.md)
+- [System design prep](../README.md)
 - [Topic manifest](topics/manifest.md)

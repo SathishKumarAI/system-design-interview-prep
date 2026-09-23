@@ -75,3 +75,4 @@ If you can't say what a box pays with, you don't yet understand why it's there.
 - [Fundamentals index](../fundamentals/README.md)
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
+- [System design prep](../../README.md)

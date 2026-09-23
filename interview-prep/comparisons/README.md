@@ -77,4 +77,5 @@ became these pages.
 - [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
 - [Repo index](../../INDEX.md)
+- [System design prep](../../README.md)
 - [Technology selection tables](../08-reference/tech-selection.md)

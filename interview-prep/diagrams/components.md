@@ -391,8 +391,10 @@ erDiagram
 - [CLAUDE.md — system-design-prep](../../CLAUDE.md)
 - [File conventions](../CONVENTIONS.md)
 - [Fundamentals index](../fundamentals/README.md)
+- [Interview prep index](../README.md)
 - [Next session — start here](../../docs/NEXT-SESSION.md)
 - [Patterns index](../patterns/README.md)
+- [System design prep](../../README.md)
 - [Topic manifest](../topics/manifest.md)
 
 ## Sources

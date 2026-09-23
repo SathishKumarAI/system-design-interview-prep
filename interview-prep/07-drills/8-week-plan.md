@@ -71,3 +71,4 @@ learning in [../../Track your learning.md](../../Track%20your%20learning.md).
 - [Drills index](README.md)
 - [Interview prep index](../README.md)
 - [Repo index](../../INDEX.md)
+- [System design prep](../../README.md)

@@ -428,7 +428,9 @@ old `## 1. Clarify … ## 8. Ops & cost` skeleton and carry none of the ten cont
 - [Diagram component library](../diagrams/components.md)
 - [Docs index](../../docs/README.md)
 - [Fundamentals index](../fundamentals/README.md)
+- [Interview prep index](../README.md)
 - [Patterns index](../patterns/README.md)
+- [System design prep](../../README.md)
 
 ## Sources
 

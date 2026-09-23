@@ -164,4 +164,4 @@ see [interview-prep/10-resources/books-on-this-machine.md](interview-prep/10-res
 - [CLAUDE.md — system-design-prep](CLAUDE.md)
 - [Interview prep index](interview-prep/README.md)
 - [STATUS](STATUS.md)
-- [System Design Interview Preparation](README.md)
+- [System design prep](README.md)
