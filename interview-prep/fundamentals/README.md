@@ -55,10 +55,15 @@ deleted only once every topic it carries has a page here.
 | Deadline propagation, retry budgets, jitter, the 27× amplifier | [timeouts-retries-backoff.md](timeouts-retries-backoff.md) |
 | Goodput collapse, CoDel, adaptive LIFO, criticality classes | [load-shedding-and-admission-control.md](load-shedding-and-admission-control.md) |
 | Why the system stays down after the trigger is gone | [cascading-and-metastable-failures.md](cascading-and-metastable-failures.md) |
+| Round robin, P2C, peak-EWMA, Maglev, subsetting, slow start — and error funnelling | [load-balancing-algorithms.md](load-balancing-algorithms.md) |
+| Liveness vs readiness, the deep-check cascade, panic thresholds, preStop and GOAWAY | [health-checking-and-draining.md](health-checking-and-draining.md) |
+| Token bucket vs GCRA vs sliding window, distributed enforcement, the 429 contract | [rate-limiting-algorithms.md](rate-limiting-algorithms.md) |
+| What belongs at the edge, the ESB trap, BFF fan-out deadlines, the 29 s ceiling | [api-gateway-and-bff.md](api-gateway-and-bff.md) |
+| Sidecar vs ambient, the per-pod tax, retry amplification, control-plane failure | [service-mesh.md](service-mesh.md) |
 
 ## Written / planned
 
-Batch 1 (the consistency cluster) is written. The full plan — 47 fundamentals pages with canonical
+Batch 1 (the consistency cluster) is written. The full plan — 60 fundamentals pages with canonical
 names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/manifest.md) §1.
 **Read the manifest before creating any file here.**
 
@@ -70,8 +75,10 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | 4 | log-vs-queue · kafka-internals · delivery-semantics · stream-processing-semantics · idempotency | **done** |
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | **done** |
 | 6 | [patterns/](../patterns/README.md): outbox · saga · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | **done** |
+| 7 | load-balancing-algorithms · health-checking-and-draining · rate-limiting-algorithms · api-gateway-and-bff · service-mesh — §1.2 traffic management, complete | **done** |
 
-**25 of 47 fundamentals written.** The batches build on each other: batch 1 is what correctness
+**37 of 60 fundamentals written** (counted off disk against manifest §1 on 2026-09-25 — the
+previous "25 of 47" here was stale). The batches build on each other: batch 1 is what correctness
 costs, batch 2 is what splitting and copying data costs instead, batch 3 is the single node
 underneath, batch 4 is what happens once the work is asynchronous, and batch 5 is what happens
 when any of it is overloaded — five pages that are one argument: queueing explains the knee, tail

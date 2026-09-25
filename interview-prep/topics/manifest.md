@@ -76,11 +76,11 @@ their content has landed in the split pages — each row below names its source.
 
 | Canonical file | Tier | Aliases — never create | Scope | Action |
 |---|---|---|---|---|
-| `load-balancing-algorithms.md` | P0 | load-balancer.md, l4-vs-l7.md, lb.md | L4/L7, least-outstanding, power-of-two, EWMA, oscillation and damping | split ← load-balancing-and-gateways |
-| `health-checking-and-draining.md` | P0 | health-checks.md, readiness.md | Liveness vs readiness, deep-check cascade, min-healthy floor, connection draining | split ← load-balancing-and-gateways |
-| `api-gateway-and-bff.md` | P1 | gateway.md, bff.md, edge-api.md | What belongs at the edge vs the service; the ESB anti-pattern; per-client gateways | split ← load-balancing-and-gateways |
-| `service-mesh.md` | P2 | sidecar.md, istio.md, envoy.md, ambient-mesh.md | Sidecar vs ambient, added latency, control-plane failure, when 20+ services justifies it | split ← load-balancing-and-gateways |
-| `rate-limiting-algorithms.md` | P0 | throttling.md, token-bucket.md, quota.md | Token/leaky bucket, sliding window, local-vs-central accuracy trade, hot-key limiter | split ← 03/rate-limiter case |
+| [`load-balancing-algorithms.md`](../fundamentals/load-balancing-algorithms.md) ✅ | P0 | load-balancer.md, l4-vs-l7.md, lb.md | L4/L7, least-outstanding, power-of-two, EWMA, oscillation and damping | **written** ← load-balancing-and-gateways |
+| [`health-checking-and-draining.md`](../fundamentals/health-checking-and-draining.md) ✅ | P0 | health-checks.md, readiness.md | Liveness vs readiness, deep-check cascade, min-healthy floor, connection draining | **written** ← load-balancing-and-gateways |
+| [`api-gateway-and-bff.md`](../fundamentals/api-gateway-and-bff.md) ✅ | P1 | gateway.md, bff.md, edge-api.md | What belongs at the edge vs the service; the ESB anti-pattern; per-client gateways | **written** ← load-balancing-and-gateways |
+| [`service-mesh.md`](../fundamentals/service-mesh.md) ✅ | P2 | sidecar.md, istio.md, envoy.md, ambient-mesh.md | Sidecar vs ambient, added latency, control-plane failure, when 20+ services justifies it | **written** ← load-balancing-and-gateways |
+| [`rate-limiting-algorithms.md`](../fundamentals/rate-limiting-algorithms.md) ✅ | P0 | throttling.md, token-bucket.md, quota.md | Token/leaky bucket, sliding window, local-vs-central accuracy trade, hot-key limiter | **written** ← 03/rate-limiter case |
 
 ### 1.3 Caching
 
