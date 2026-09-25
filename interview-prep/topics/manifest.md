@@ -89,7 +89,7 @@ their content has landed in the split pages — each row below names its source.
 | [`caching-strategies.md`](../fundamentals/caching-strategies.md) ✅ | P0 | cache.md, cache-strategies.md, cache-patterns.md, caching.md | Aside/through/behind/refresh-ahead, layer placement economics | **written** ← caching |
 | [`cache-invalidation.md`](../fundamentals/cache-invalidation.md) ✅ | P0 | invalidation.md, ttl.md, cache-coherence.md | TTL vs versioned keys vs CDC-driven; the delete-on-write race, proven | **written** ← caching |
 | [`cache-failure-modes.md`](../fundamentals/cache-failure-modes.md) ✅ | P0 | stampede.md, dogpile.md, hot-key.md, cache-penetration.md | Stampede, hot key, penetration, cold start; single-flight, probabilistic expiry | **written** ← caching |
-| `redis-internals.md` | P1 | redis.md, memcached.md | Single-threaded command loop, O(N) command hazards, cluster hash slots, hash tags, persistence | split ← caching |
+| [`redis-internals.md`](../fundamentals/redis-internals.md) ✅ | P1 | redis.md, memcached.md | Single-threaded command loop, O(N) command hazards, cluster hash slots, hash tags, persistence | **written** ← caching |
 
 ### 1.4 Storage engines and data
 
@@ -97,11 +97,11 @@ their content has landed in the split pages — each row below names its source.
 |---|---|---|---|---|
 | [`storage-engines.md`](../fundamentals/storage-engines.md) ✅ | P0 | btree.md, lsm.md, lsm-tree.md, storage-internals.md | B-tree vs LSM internals, write/read/space amplification, compaction debt and latency cliffs | **written** ← storage-and-databases |
 | [`indexing-and-query-planning.md`](../fundamentals/indexing-and-query-planning.md) ✅ | P0 | indexes.md, index-design.md, sql-tuning.md | Composite order, covering, partial, cardinality; why the planner ignores your index | **written** ← storage-and-databases |
-| `serialization-and-schema-evolution.md` | P1 | protobuf.md, avro.md, encoding.md, schema-registry.md | Field-number compatibility, rolling deploys with both versions live, registry rules | new |
-| `object-storage-internals.md` | P1 | s3-internals.md, blob-storage.md, erasure-coding.md | Erasure coding vs replication, durability arithmetic, scrubbing, first-byte latency | split ← storage-and-databases |
-| `bloom-filters-and-sketches.md` | P1 | hyperloglog.md, hll.md, count-min.md, t-digest.md | Space/error trade, mergeability, where sketches silently mislead | new |
+| [`serialization-and-schema-evolution.md`](../fundamentals/serialization-and-schema-evolution.md) ✅ | P1 | protobuf.md, avro.md, encoding.md, schema-registry.md | Field-number compatibility, rolling deploys with both versions live, registry rules | **written** |
+| [`object-storage-internals.md`](../fundamentals/object-storage-internals.md) ✅ | P1 | s3-internals.md, blob-storage.md, erasure-coding.md | Erasure coding vs replication, durability arithmetic, scrubbing, first-byte latency | **written** ← storage-and-databases |
+| [`bloom-filters-and-sketches.md`](../fundamentals/bloom-filters-and-sketches.md) ✅ | P1 | hyperloglog.md, hll.md, count-min.md, t-digest.md | Space/error trade, mergeability, where sketches silently mislead | **written** |
 | [`geospatial-indexing.md`](../fundamentals/geospatial-indexing.md) ✅ | P1 | h3.md, s2.md, geohash.md, quadtree.md | Geohash edge problem, S2 vs H3 neighbour geometry, moving-object update cost | **written** ← 03/ride-hailing |
-| `vector-search-and-ann.md` | P0 | ann.md, hnsw.md, ivf-pq.md, embeddings-index.md | HNSW vs IVF-PQ, recall@k vs exact, quantisation, filtered search correctness | split ← 06/rag-assistant |
+| [`vector-search-and-ann.md`](../fundamentals/vector-search-and-ann.md) ✅ | P0 | ann.md, hnsw.md, ivf-pq.md, embeddings-index.md | HNSW vs IVF-PQ, recall@k vs exact, quantisation, filtered search correctness | **written** ← 06/rag-assistant |
 
 ### 1.5 Replication and partitioning
 

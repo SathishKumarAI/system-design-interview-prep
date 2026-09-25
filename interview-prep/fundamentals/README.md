@@ -60,6 +60,11 @@ deleted only once every topic it carries has a page here.
 | Token bucket vs GCRA vs sliding window, distributed enforcement, the 429 contract | [rate-limiting-algorithms.md](rate-limiting-algorithms.md) |
 | What belongs at the edge, the ESB trap, BFF fan-out deadlines, the 29 s ceiling | [api-gateway-and-bff.md](api-gateway-and-bff.md) |
 | Sidecar vs ambient, the per-pod tax, retry amplification, control-plane failure | [service-mesh.md](service-mesh.md) |
+| One thread, encodings, the fork that doubles RSS, eviction policies that stop writes | [redis-internals.md](redis-internals.md) |
+| Protobuf tags vs Avro resolution, compatibility modes, and which half deploys first | [serialization-and-schema-evolution.md](serialization-and-schema-evolution.md) |
+| Prefix throughput, multipart, why rename is a copy, the small-file bill | [object-storage-internals.md](object-storage-internals.md) |
+| 9.6 bits per element, 12 KB for a distinct count, and one-sided error as a design rule | [bloom-filters-and-sketches.md](bloom-filters-and-sketches.md) |
+| HNSW knobs, quantization, filtered search, and the recall you never measured | [vector-search-and-ann.md](vector-search-and-ann.md) |
 
 ## Written / planned
 
@@ -76,8 +81,9 @@ names, tiers and forbidden aliases — is in [../topics/manifest.md](../topics/m
 | 5 | timeouts-retries-backoff · load-shedding-and-admission-control · cascading-and-metastable-failures · tail-latency · queueing-theory-basics | **done** |
 | 6 | [patterns/](../patterns/README.md): outbox · saga · distributed-transactions · materialized-views-and-derived-data · expand-contract-migration | **done** |
 | 7 | load-balancing-algorithms · health-checking-and-draining · rate-limiting-algorithms · api-gateway-and-bff · service-mesh — §1.2 traffic management, complete | **done** |
+| 8 | redis-internals · serialization-and-schema-evolution · object-storage-internals · bloom-filters-and-sketches · vector-search-and-ann — §1.3–1.4 storage and data | **done** |
 
-**37 of 60 fundamentals written** (counted off disk against manifest §1 on 2026-09-25 — the
+**42 of 60 fundamentals written** (counted off disk against manifest §1 on 2026-09-25 — the
 previous "25 of 47" here was stale). The batches build on each other: batch 1 is what correctness
 costs, batch 2 is what splitting and copying data costs instead, batch 3 is the single node
 underneath, batch 4 is what happens once the work is asynchronous, and batch 5 is what happens
