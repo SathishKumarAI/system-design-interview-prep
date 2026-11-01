@@ -122,7 +122,7 @@ the root of the **small-file problem**:
 | `LIST` requests to enumerate | 1 000 | 1 |
 | `GET` requests to read all | 1 000 000 | 1 000 |
 | Request cost at $0.0004/1 000 GETs | ~$0.40 per full scan | ~$0.0004 |
-| Time at ~20 ms first-byte latency, 100-way parallel | ~3.5 minutes of pure latency | negligible |
+| Time at ~100 ms first-byte latency, 100-way parallel | ~17 minutes of pure latency | negligible |
 
 The bytes are identical and the job is 100× slower and 1 000× more expensive in requests. Compaction
 into larger objects is not tidiness; it is the main performance lever object storage offers.
@@ -139,7 +139,7 @@ sequenceDiagram
     participant D as Deep Archive (up to 12 h)
 
     J->>S: GET hot object
-    S-->>J: first byte ~10-20 ms
+    S-->>J: first byte ~100-200 ms (AWS's own figure)
     J->>I: GET warm object
     I-->>J: same latency, retrieval charge per GB
     J->>G: RestoreObject
@@ -157,12 +157,12 @@ that are still read weekly *increases* the bill. Move data by measured access ag
 |---|---|---|
 | Designed durability (S3 Standard) | **99.999999999%** (11 nines) | AWS docs |
 | Availability SLA | 99.9% (Standard); lower for One Zone classes | AWS SLA |
-| Request rate per prefix | **3 500** writes/s, **5 500** reads/s, unlimited prefixes | [AWS docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html) |
+| Request rate per prefix | **3 500** PUT/COPY/POST/DELETE and **5 500** GET/HEAD per second per *partitioned* prefix, unlimited prefixes | [AWS docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html), verified verbatim 2026-09-25 |
 | Max object size / parts | **5 TB** / 10 000 parts / 5 MB min part | AWS docs |
 | Single PUT max | 5 GB | AWS docs |
 | `LIST` page size | **1 000 keys** | AWS docs |
-| First-byte latency, Standard | ~**10–100 ms** (S3 Express One Zone: single-digit ms) | Order of magnitude |
-| Throughput per connection | ~50–100 MB/s; scale by parallel ranges/parts | Order of magnitude |
+| First-byte latency, Standard | AWS documents **~100–200 ms** for small objects and first-byte-out on larger ones (S3 Express One Zone: single-digit ms) | [AWS docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html), fetched 2026-09-25 |
+| Throughput per connection | ~50–100 MB/s; AWS documents single-instance aggregate up to **100 Gb/s** with enough parallelism | Same source |
 | Erasure-coding overhead | ~1.3–1.5× vs 3× replication | Structural |
 | Azure block blob max | **~190.7 TiB** (50 000 blocks × 4 000 MiB) | Azure docs |
 | Azure storage account request ceiling | **20 000 requests/s** per account (default) | Azure docs |
